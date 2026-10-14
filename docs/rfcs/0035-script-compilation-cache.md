@@ -41,7 +41,7 @@ Exported/prebuilt JavaScript remains the smallest startup path. A Rust launcher 
 
 ### Synchronous hook migration (unreleased)
 
-RFC 0026's registration amendment changes the Node adapter, not the cache contract. A hit must still avoid evaluating TypeScript/parser/configuration code in a fresh process. The same lazy compiler, observation validation, emitted bytes, source maps, bounds and optional-I/O fallback serve both adapters. Distinct build contents already invalidate old records. Default CLI Workers inherit the runner's options; explicit public registration remains uncached.
+RFC 0026's registration amendment changes the Node adapter, not the cache contract. A hit must still avoid evaluating TypeScript/parser/configuration code in a fresh process. The same lazy compiler, observation validation, emitted bytes, source maps, bounds and optional-I/O fallback serve both adapters. Distinct build contents already invalidate old records. The CLI cache applies to its own interpreter. Workers use the public registration preload, which remains uncached; see RFC 0026 for explicit CLI Worker registration and native startup-argument inheritance.
 
 ## Validation and completion
 

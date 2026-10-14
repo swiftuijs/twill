@@ -31,10 +31,9 @@ it('keeps the old-Node public preload relative to its own module', async () => {
 it('passes explicit entries and cache policy to the compatibility adapter', async () => {
   const { registerLoader } = await import('../src/loader-registration');
   const data = { entries: ['file:///script'], cache: true };
-  await registerLoader(data, true);
+  await registerLoader(data);
   expect(api.register).toHaveBeenCalledWith('./loader.js', expect.any(String), { data });
-  expect(process.execArgv.slice(0, -2)).toEqual(argv);
-  expect(process.execArgv.at(-2)).toBe('--import');
+  expect(process.execArgv).toEqual(argv);
 });
 it('prefers synchronous hooks and keeps the public preload uncached', async () => {
   const handle = { deregister: vi.fn() };
@@ -47,18 +46,11 @@ it('prefers synchronous hooks and keeps the public preload uncached', async () =
   });
   expect(process.execArgv).toEqual(argv);
 });
-it('adds one inheritable preload for the runner without changing argv or repeating flags', async () => {
+it('returns the synchronous registration handle without changing Node arguments', async () => {
   const handle = { deregister: vi.fn() };
   api.hooks = vi.fn(() => handle);
   const { registerLoader } = await import('../src/loader-registration');
-  const data = { entries: ['file:///script%20with%20spaces'], cache: true };
-  expect(await registerLoader(data, true)).toBe(handle);
-  const inherited = [...process.execArgv];
-  expect(inherited.slice(0, -2)).toEqual(argv);
-  expect(inherited.at(-2)).toBe('--import');
-  const code = decodeURIComponent(inherited.at(-1)!.slice('data:text/javascript,'.length));
-  expect(code).toContain('registerLoader(' + JSON.stringify(data) + ')');
-  expect(code).toContain('loader-registration.ts');
-  await registerLoader(data, true);
-  expect(process.execArgv).toEqual(inherited);
+  expect(await registerLoader({ entries: ['file:///script'], cache: true })).toBe(handle);
+  expect(api.register).not.toHaveBeenCalled();
+  expect(process.execArgv).toEqual(argv);
 });

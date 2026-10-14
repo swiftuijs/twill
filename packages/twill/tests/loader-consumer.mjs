@@ -35,8 +35,8 @@ export function verifyLoader(root, cli, register) {
         : ['--enable-source-maps', '--import', pathToFileURL(register).href],
       script,
     );
-  const check = (result, expected) => {
-    assert.equal(result.status, 0, result.stderr);
+  const check = (result, expected, label = 'loader') => {
+    assert.equal(result.status, 0, `${label}: ${result.stderr}`);
     assert.equal(result.stderr, '', 'Runner must not emit Node deprecation warnings');
     assert.deepEqual(JSON.parse(result.stdout), expected);
   };
@@ -113,17 +113,12 @@ if (workerData?.nested) {
 }`,
   );
   const parent = join(app, 'parent.twill');
+  const workerFlags = ['--enable-source-maps', '--import', pathToFileURL(register).href];
   for (const [mode, options, expected] of [
-    ['cli', '{}', 42],
-    ['cli', '{workerData:{nested:true}}', 43],
+    ['cli', JSON.stringify({ execArgv: workerFlags }), 42],
+    ['cli', JSON.stringify({ execArgv: workerFlags, workerData: { nested: true } }), 43],
     ['preload', '{}', 42],
-    [
-      'cli',
-      JSON.stringify({
-        execArgv: ['--enable-source-maps', '--import', pathToFileURL(register).href],
-      }),
-      42,
-    ],
+    ['preload', '{workerData:{nested:true}}', 43],
   ]) {
     writeFileSync(
       parent,
@@ -134,8 +129,18 @@ const closed=once(worker,'exit');
 const [value]=await once(worker,'message');
 await closed; console.log(JSON.stringify(value));`,
     );
-    check(run(parent, mode), expected);
+    check(run(parent, mode), expected, `${mode} Worker ${options}`);
   }
+  writeFileSync(
+    parent,
+    `import {Worker} from 'node:worker_threads';
+const worker=new Worker(new URL('./worker.mjs',import.meta.url));
+worker.once('error',error=>{console.error(error.message);process.exitCode=1;});`,
+  );
+  const unregistered = run(parent);
+  assert.equal(unregistered.status, 1);
+  assert(unregistered.stderr.includes('task.twill'));
+
   writeFileSync(
     join(app, 'failure.twill'),
     'const value=[1].map { n in n+1 };\nthrow new Error("original source failure");',
@@ -149,13 +154,14 @@ await closed; console.log(JSON.stringify(value));`,
     join(app, 'worker-failure.twill'),
     'const value=[1].map { n in n+1 };\nthrow new Error("worker source failure");',
   );
-  writeFileSync(
-    parent,
-    `import {Worker} from 'node:worker_threads';
-const worker=new Worker(new URL('./worker-error.mjs',import.meta.url));
-worker.once('error',error=>console.log(JSON.stringify(error.stack))); `,
-  );
   for (const mode of ['cli', 'preload']) {
+    const options = mode === 'cli' ? JSON.stringify({ execArgv: workerFlags }) : '{}';
+    writeFileSync(
+      parent,
+      `import {Worker} from 'node:worker_threads';
+const worker=new Worker(new URL('./worker-error.mjs',import.meta.url),${options});
+worker.once('error',error=>console.log(JSON.stringify(error.stack)));`,
+    );
     const result = run(parent, mode);
     assert.equal(result.status, 0, result.stderr);
     assert(JSON.parse(result.stdout).replaceAll('\\', '/').includes('worker-failure.twill:2:'));

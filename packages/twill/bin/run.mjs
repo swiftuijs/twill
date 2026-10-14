@@ -10,6 +10,6 @@ export async function run(filename, args) {
   const entries = native ? [] : [url, pathToFileURL(realpathSync(script)).href];
   process.argv = [process.execPath, script, ...args];
   process.setSourceMapsEnabled(true);
-  await registerLoader({ entries, cache: true }, true);
+  await registerLoader({ entries, cache: true });
   await import(url);
 }
