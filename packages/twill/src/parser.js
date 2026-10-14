@@ -20,6 +20,7 @@ function guardAt(input, offset, implicitMember = false) {
   const stack = [];
   let first = true;
   let missingElse = false;
+  let afterNonNull = false;
   try {
     for (;;) {
       const token = lexer.getToken();
@@ -32,7 +33,7 @@ function guardAt(input, offset, implicitMember = false) {
         !(implicitMember && label === '.')
       )
         return false;
-      if (first) {
+      if (first || afterNonNull) {
         // Juxtaposition with these tokens cannot continue an identifier
         // expression. A newline may instead terminate a native statement;
         // calls, member/index access, templates and TS assertions stay native.
@@ -52,8 +53,12 @@ function guardAt(input, offset, implicitMember = false) {
               'void',
               'delete',
             ].includes(label) ||
-            (token.type === tt.prefix && ['!', '~'].includes(token.value)) ||
-            (implicitMember && label === '.'));
+            (token.type === tt.prefix && token.value === '~') ||
+            (implicitMember && first && label === '.'));
+        // TS postfix non-null assertions can precede calls, properties,
+        // templates or another assertion. Only an adjacent operand reveals
+        // a guard negation; do not reserve valid native `guard!` expressions.
+        afterNonNull = token.type === tt.prefix && token.value === '!';
       }
       if (
         !stack.length &&

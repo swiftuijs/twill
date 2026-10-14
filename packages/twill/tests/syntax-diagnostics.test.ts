@@ -49,6 +49,7 @@ describe('actionable guard syntax diagnostics', () => {
     'guard delete input.value {}',
     'guard !input {}',
     'guard ~input {}',
+    'guard !!input {}',
   ])('recognizes a malformed condition or binding: %s', (statement) => {
     expect(() => transform('function f(input) { ' + statement + ' }')).toThrow(
       "Missing 'else' in guard statement",
@@ -93,6 +94,15 @@ describe('actionable guard syntax diagnostics', () => {
     'guard: { break guard; }',
     'guard as number;',
     'guard satisfies number;',
+    'guard!;',
+    'guard!!;',
+    'guard!.value;',
+    'guard!();',
+    'guard![value];',
+    'guard!`value`;',
+    'guard! as number;',
+    'guard! satisfies number;',
+    'guard!\nvalue;',
     'guard\nvalue;',
     'guard\nconst value = 1;',
     'object.guard(value);',
