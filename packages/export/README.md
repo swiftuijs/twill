@@ -1,5 +1,10 @@
 # <img src="https://twill.evecalm.com/logo.png" alt="Twill hummingbird" align="right" width="40" height="40" /> Twill source export
 
+[![npm version](https://img.shields.io/npm/v/%40swiftuijs%2Ftwill-export)](https://www.npmjs.com/package/@swiftuijs/twill-export)
+[![npm monthly downloads](https://img.shields.io/npm/dm/%40swiftuijs%2Ftwill-export)](https://www.npmjs.com/package/@swiftuijs/twill-export)
+[![CI](https://img.shields.io/github/actions/workflow/status/swiftuijs/twill/ci.yml?branch=main&label=CI)](https://github.com/swiftuijs/twill/actions/workflows/ci.yml)
+[![License](https://img.shields.io/npm/l/%40swiftuijs%2Ftwill-export)](https://github.com/swiftuijs/twill/blob/main/LICENSE)
+
 `@swiftuijs/twill-export` exports checked Twill projects to native TS/TSX. Twill is a TypeScript-based language with Swift-inspired syntax extensions. The package supplies the optional `twill export` subcommand and a programmatic API; applications do not ship it. Node 20.19+ or 22.12+ is required.
 
 Install the compiler and optional export package into your application, then run:

@@ -1,5 +1,10 @@
 # <img src="https://twill.evecalm.com/logo.png" alt="Twill hummingbird" align="right" width="40" height="40" /> Twill runtime
 
+[![npm version](https://img.shields.io/npm/v/%40swiftuijs%2Ftwill-runtime)](https://www.npmjs.com/package/@swiftuijs/twill-runtime)
+[![npm monthly downloads](https://img.shields.io/npm/dm/%40swiftuijs%2Ftwill-runtime)](https://www.npmjs.com/package/@swiftuijs/twill-runtime)
+[![CI](https://img.shields.io/github/actions/workflow/status/swiftuijs/twill/ci.yml?branch=main&label=CI)](https://github.com/swiftuijs/twill/actions/workflows/ci.yml)
+[![License](https://img.shields.io/npm/l/%40swiftuijs%2Ftwill-runtime)](https://github.com/swiftuijs/twill/blob/main/LICENSE)
+
 Optional, zero-dependency helpers for Twill, a TypeScript-based language with Swift-inspired syntax. Available in 0.2.0 for explicitly selected external cleanup helpers.
 
 The compiler defaults to self-contained inline code. External mode shares dynamic synchronous `defer` draining across modules:
