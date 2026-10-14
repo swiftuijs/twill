@@ -6,7 +6,7 @@ description: >-
   Twill build adapters, mixed TS/JS projects, and React/Vue integration.
 license: MIT
 metadata:
-  release: 0.3.0
+  release: 0.3.1
   website: https://twill.evecalm.com
   repository: https://github.com/swiftuijs/twill
 ---
@@ -19,7 +19,7 @@ Twill extends TypeScript/TSX with Swift-inspired syntax and emits ordinary JavaS
 
 1. Read the application's instructions, manifest, lockfile, tsconfig and existing build/test setup. Check the installed `@swiftuijs/twill` version and keep Twill tooling packages on the same version. Metadata records this skill's released-language baseline, not a compiler installation.
 2. Write dialect syntax in `.twill` (TS including JS) or `.twillx` (TSX). Native `.ts`, `.tsx`, `.js`, `.jsx` files retain native syntax. Change relative source imports to the actual `.twill` / `.twillx` path when renaming a module; do not leave a `.js` specifier targeting a renamed source. Declaration emission rewrites those dialect imports for ordinary JS/TS consumers. Adopt an appropriate module, respecting the user's requested scope.
-3. The 0.3.0 baseline includes associated-value enums, `match`, branch-local `if const`, external cleanup helpers, executable scripts/caching and the dependency-free Node shell SDK. Use the installed version's actual support; proposals or later source work do not prove npm availability. Keep compiler, tooling and editor versions coordinated.
+3. The 0.3.1 baseline includes associated-value enums, `match`, branch-local `if const`, external cleanup helpers, executable scripts/caching and the dependency-free Node shell SDK. Use the installed version's actual support; proposals or later source work do not prove npm availability. Keep compiler, tooling and editor versions coordinated.
 4. Use [syntax](https://twill.evecalm.com/syntax) and [compatibility](https://twill.evecalm.com/readiness) for detailed contracts. The parser targets documented TS 5.9 syntax; avoid claiming every TS program is compatible inside dialect files.
 
 Twill 0.3.0 fixes native same-name type/value declarations such as `type Command = {...}; const Command = {...};`, including interface/value pairs. Upgrade older 0.2.0 projects before relying on this parser repair.
@@ -51,7 +51,7 @@ Callbacks lower to arrows with lexical `this`. Keep ordinary `function` callback
 
 ### Early exits and nullish bindings
 
-Use `guard condition else { ... }` for a required exit on failure. Always include `else` and braces; `guard condition { ... }` is incomplete. The failure branch runs when the condition is false and must exit the enclosing scope. Use `guard const` to evaluate a nullable result once and preserve valid falsy values such as zero, false and empty strings. Successful bindings remain in the surrounding scope.
+Use `guard condition else { ... }` for a required exit on failure. Always include `else` and braces; `guard condition { ... }` is incomplete. From 0.3.1, incomplete guards receive actionable original-source diagnostics, including in the editor. The failure branch runs when the condition is false and must exit the enclosing scope. Use `guard const` to evaluate a nullable result once and preserve valid falsy values such as zero, false and empty strings. Successful bindings remain in the surrounding scope.
 
 ```twill
 export function label(input: { name?: string } | null): string {
@@ -180,7 +180,7 @@ pnpm exec eslint src
 
 Use the local package binaries and install missing tools before invoking them. A successful build does not replace type checking. Test nullish/falsy inputs, errors, cleanup order, async rejection and native boundary behavior relevant to the change. Measure performance-sensitive code against equivalent handwritten JS and include the generated output's allocations/scheduling in the comparison.
 
-For supported Node ESM execution use `node --enable-source-maps --import @swiftuijs/twill/register src/main.twill`. The loader handles local mixed imports, not dependencies or arbitrary CommonJS transforms. Published 0.3.0 still uses asynchronous loader registration and can emit DEP0205 on Node 26. The synchronous registration migration is unreleased; do not promise its warning removal or Worker preload behavior for npm 0.3.0. CLI-created Workers that import Twill need a native bootstrap and explicit `execArgv: ['--enable-source-maps', '--import', '@swiftuijs/twill/register']` with the compiler installed locally. Actual `node --import` startup flags follow Node's normal Worker inheritance. For problems, inspect `twill doctor -p tsconfig.json --json`, original-source diagnostics and generated TS/TSX. The VS Code extension provides mapped completion/navigation/formatting and explicit debugging. The [playground](https://twill.evecalm.com/playground) lowers syntax locally but does not execute or check project types.
+For supported Node ESM execution use `node --enable-source-maps --import @swiftuijs/twill/register src/main.twill`. The loader handles local mixed imports, not dependencies or arbitrary CommonJS transforms. From 0.3.1, registration uses synchronous Node hooks where available, avoiding DEP0205 on Node 26; supported Node 20 and early Node 22 retain the compatibility adapter. Version 0.3.0 still uses asynchronous registration. CLI-created Workers that import Twill need a native bootstrap and explicit `execArgv: ['--enable-source-maps', '--import', '@swiftuijs/twill/register']` with the compiler installed locally. Actual `node --import` startup flags follow Node's normal Worker inheritance. For problems, inspect `twill doctor -p tsconfig.json --json`, original-source diagnostics and generated TS/TSX. The VS Code extension provides mapped completion/navigation/formatting and explicit debugging. The [playground](https://twill.evecalm.com/playground) lowers syntax locally but does not execute or check project types.
 
 ## Scripts and subprocess ownership (0.3.0)
 

@@ -73,8 +73,8 @@ The [playground](https://twill.evecalm.com/playground) runs the actual compiler 
 Install the compiler as a development dependency in your application. Use Node 24 LTS for a new setup; the package supports `^20.19.0 || >=22.12.0`. Run from the directory containing your `package.json` (run `npm init -y` first for a new project). Default inline emission introduces no language runtime dependency into your application bundle. The [optional runtime](https://twill.evecalm.com/runtime) in 0.2.0 shares dynamic synchronous cleanup when explicitly selected.
 
 ```sh
-pnpm add -D @swiftuijs/twill@0.3.0
-# npm install --save-dev @swiftuijs/twill@0.3.0
+pnpm add -D @swiftuijs/twill@0.3.1
+# npm install --save-dev @swiftuijs/twill@0.3.1
 ```
 
 Add the Vite adapter to your existing configuration:
@@ -103,7 +103,7 @@ For a project-local command, install the compiler above, save this as `hello.twi
 console.log(process.argv.slice(2));
 ```
 
-Expected output is `[ 'hello world' ]`. On Linux/macOS, use `chmod +x hello.twill` then `npm exec --call './hello.twill "hello world"'` or `pnpm exec ./hello.twill 'hello world'` for a local shebang. For direct `./hello.twill` execution, install `@swiftuijs/twill` globally with `npm install --global @swiftuijs/twill@0.3.0` and keep `twill` on PATH. Windows uses the explicit CLI.
+Expected output is `[ 'hello world' ]`. On Linux/macOS, use `chmod +x hello.twill` then `npm exec --call './hello.twill "hello world"'` or `pnpm exec ./hello.twill 'hello world'` for a local shebang. For direct `./hello.twill` execution, install `@swiftuijs/twill` globally with `npm install --global @swiftuijs/twill@0.3.1` and keep `twill` on PATH. Windows uses the explicit CLI.
 
 Install `@swiftuijs/twill-shell` in the script's project only when using its subprocess API; a global compiler does not install project imports. Follow [shell scripting](https://twill.evecalm.com/scripting) for complete installation, a portable subprocess example, Node type checking and troubleshooting. Native JS/TS consumers need only the SDK.
 

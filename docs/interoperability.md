@@ -60,8 +60,8 @@ The plugin is a CommonJS entry for TS-server loading; the compiler's ESM imports
 
 See the [mixed-source example](https://github.com/swiftuijs/twill/tree/main/examples/mixed) for a complete module graph. Configure your own application following [getting started](./getting-started.md) and the [editor guide](./tooling.md).
 
-## Loader registration update (unreleased)
+## Loader registration update in 0.3.1
 
-Published 0.3.0 uses asynchronous Node hooks and can emit DEP0205 on Node 26. The source migration prefers `module.registerHooks()` where available, retaining the old API only for engines without it. Supported Node versions and ESM-oriented emission remain unchanged. This does not add CommonJS Twill transpilation.
+Version 0.3.0 uses asynchronous Node hooks and can emit DEP0205 on Node 26. Version 0.3.1 prefers `module.registerHooks()` where available, retaining the old API only for engines without it. Supported Node versions and ESM-oriented emission remain unchanged. This does not add CommonJS Twill transpilation.
 
-A program started with the `node --import` command above uses Node's normal preload inheritance for default and nested Workers. A Worker created inside a CLI script needs explicit `execArgv: ['--enable-source-maps', '--import', '@swiftuijs/twill/register']` to import Twill; install the compiler in that project. Use a native `.mjs` bootstrap that imports the `.twill` module. Replacing a Worker's `execArgv` also replaces its inherited preloads. Public registration is uncached. See [scripting](scripting.md#loader-registration-update-unreleased) for a complete Worker example.
+A program started with the `node --import` command above uses Node's normal preload inheritance for default and nested Workers. A Worker created inside a CLI script needs explicit `execArgv: ['--enable-source-maps', '--import', '@swiftuijs/twill/register']` to import Twill; install the compiler in that project. Use a native `.mjs` bootstrap that imports the `.twill` module. Replacing a Worker's `execArgv` also replaces its inherited preloads. Public registration is uncached. See [scripting](scripting.md#loader-registration-update-in-031) for a complete Worker example.

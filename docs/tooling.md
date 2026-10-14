@@ -48,7 +48,7 @@ The bundled provider uses editor indentation and Prettier defaults. To apply a p
 Install `@swiftuijs/twill-formatter` alongside Prettier 3.9:
 
 ```sh
-pnpm add -D @swiftuijs/twill-formatter@0.3.0 prettier
+pnpm add -D @swiftuijs/twill-formatter@0.3.1 prettier
 ```
 
 Configure `.prettierrc.json`:
@@ -69,7 +69,7 @@ The plugin recognizes both dialect extensions and preserves their syntax. Native
 Install `@swiftuijs/twill-linter` alongside ESLint 9 or 10:
 
 ```sh
-pnpm add -D @swiftuijs/twill-linter@0.3.0 eslint
+pnpm add -D @swiftuijs/twill-linter@0.3.1 eslint
 ```
 
 Use a flat `eslint.config.mjs`:

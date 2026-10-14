@@ -1,6 +1,6 @@
 # CLI reference
 
-The `@swiftuijs/twill` package provides the `twill` command. Install it in your application before running commands: `npm install --save-dev @swiftuijs/twill@0.3.0` or `pnpm add -D @swiftuijs/twill@0.3.0`. See [getting started](./getting-started.md#install) for prerequisites and a runnable first module, or [shell scripting](./scripting.md#install-a-global-command) for global installation.
+The `@swiftuijs/twill` package provides the `twill` command. Install it in your application before running commands: `npm install --save-dev @swiftuijs/twill@0.3.1` or `pnpm add -D @swiftuijs/twill@0.3.1`. See [getting started](./getting-started.md#install) for prerequisites and a runnable first module, or [shell scripting](./scripting.md#install-a-global-command) for global installation.
 
 Run project-local commands from your application root. Examples below use `pnpm exec twill ...`; with npm, use `npm exec -- twill ...`. Package scripts use `twill ...` directly. A global installation permits `twill ...` in your terminal.
 

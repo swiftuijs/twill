@@ -9,8 +9,8 @@ Start with a working React or Vue application and [install the compiler](./getti
 Install Vite 8 and `@vitejs/plugin-react` 6 alongside the compiler. The optional React subpath composes the standard plugin with Twill compilation and includes `.twill` / `.twillx` in its Fast Refresh filters:
 
 ```sh
-npm install --save-dev @swiftuijs/twill@0.3.0 vite@^8 @vitejs/plugin-react@^6
-# pnpm add -D @swiftuijs/twill@0.3.0 vite@^8 @vitejs/plugin-react@^6
+npm install --save-dev @swiftuijs/twill@0.3.1 vite@^8 @vitejs/plugin-react@^6
+# pnpm add -D @swiftuijs/twill@0.3.1 vite@^8 @vitejs/plugin-react@^6
 ```
 
 Keep React/ReactDOM and their type declarations installed by your React project. Save the following as `vite.config.ts`:

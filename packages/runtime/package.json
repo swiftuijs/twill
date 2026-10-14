@@ -1,6 +1,6 @@
 {
   "name": "@swiftuijs/twill-runtime",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Optional, zero-dependency runtime helpers for compiled Twill programs.",
   "type": "module",
   "license": "MIT",

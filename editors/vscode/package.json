@@ -2,7 +2,7 @@
   "name": "twill",
   "displayName": "Twill",
   "description": "Twill: TypeScript with Swift-inspired syntax extensions. Completion, diagnostics, navigation, formatting and source debugging.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "type": "module",
   "scripts": {

@@ -4,7 +4,7 @@ Build a Twill library as ordinary JavaScript with standard TypeScript declaratio
 
 Install the reviewed compiler in your library project following [getting started](./getting-started.md), alongside Vite. The examples below describe **your library's configuration**, not Twill's repository build.
 
-From your library's root (create `package.json` with `npm init -y` if needed), run `npm install --save-dev @swiftuijs/twill@0.3.0 vite` or `pnpm add -D @swiftuijs/twill@0.3.0 vite`. Set `"type": "module"` in the manifest for the ESM configuration below. Then create the listed files before running the package scripts.
+From your library's root (create `package.json` with `npm init -y` if needed), run `npm install --save-dev @swiftuijs/twill@0.3.1 vite` or `pnpm add -D @swiftuijs/twill@0.3.1 vite`. Set `"type": "module"` in the manifest for the ESM configuration below. Then create the listed files before running the package scripts.
 
 Twill's own tooling packages use this workflow: their repository sources are `.twill`, while consumers load ordinary JavaScript and `.d.ts` declarations. Writing a library in Twill does not require its consumers to install the compiler. The shell SDK similarly keeps Twill as a development dependency; the SDK uses Node directly with zero production dependencies.
 

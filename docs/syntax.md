@@ -57,7 +57,7 @@ guard const { property, nested: { value = fallback }, ...rest } = expression els
 guard const [first, ...rest] = expression else { exiting statements }
 ```
 
-`else` is required, even for a one-line guard. Write `guard b != 0 else { return 0; }`; `guard b != 0 { return 0; }` is incomplete. The braced block is the failure branch, so it executes when the condition is false and must exit the enclosing scope.
+`else` is required, even for a one-line guard. Write `guard b != 0 else { return 0; }`; `guard b != 0 { return 0; }` is incomplete. From 0.3.1, incomplete guards report the required spelling at the original source position in compiler and editor diagnostics. The braced block is the failure branch, so it executes when the condition is false and must exit the enclosing scope.
 
 A condition becomes `if (!(expression))`. An identifier binding becomes `const identifier = expression; if (identifier == null)`. Bindings use the surrounding JS lexical scope, evaluate their initializer once, retain falsy values, and support ordinary TS type annotations. Only one declaration is allowed. A binding used as an unbraced conditional/loop body is rejected; add braces. No callback, exception wrapper or runtime dependency is introduced.
 

@@ -9,8 +9,8 @@ The optional `@swiftuijs/twill-runtime` package shares dynamic synchronous clean
 With the compiler installed as described in [getting started](./getting-started.md#install), install the matching runtime as a production dependency in the same project:
 
 ```sh
-pnpm add @swiftuijs/twill-runtime@0.3.0
-# npm install @swiftuijs/twill-runtime@0.3.0
+pnpm add @swiftuijs/twill-runtime@0.3.1
+# npm install @swiftuijs/twill-runtime@0.3.1
 ```
 
 `twill.config.json`:

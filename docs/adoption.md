@@ -23,7 +23,7 @@ The packaged editor supports original-source definitions, references, completion
 Install the optional `@swiftuijs/twill-export` package at the same version as the compiler. It supplies `twill export`, which exports a checked source graph into a new directory:
 
 ```sh
-pnpm add -D @swiftuijs/twill-export@0.3.0
+pnpm add -D @swiftuijs/twill-export@0.3.1
 pnpm exec twill export -p tsconfig.json -o ../native-project --dry-run --json
 pnpm exec twill export -p tsconfig.json -o ../native-project
 ```
