@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'nod
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { compileModule } from '../src/loader-compiler';
+import { TwillSyntaxError } from '../src/compiler';
 import { fixtureRoot } from './helpers/fixture';
 
 const bridge = vi.hoisted(() => ({ require: vi.fn() }));
@@ -122,5 +123,5 @@ it('returns identical bytes on cache hits without loading the compiler in a fres
   expect(readFileSync(record, 'utf8')).toBe(bytes);
   expect(bridge.require).not.toHaveBeenCalled();
   writeFileSync(file, 'export const value: number = ;');
-  expect(() => createHooks({ cache: true }).load!(url, host, next)).toThrow('error TS');
+  expect(() => createHooks({ cache: true }).load!(url, host, next)).toThrow(TwillSyntaxError);
 });
