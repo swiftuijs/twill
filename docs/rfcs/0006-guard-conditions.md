@@ -23,6 +23,8 @@ Native returning if statements remain equivalent at runtime. A future broader ex
 
 ## Validation and completion
 
+Malformed guards should report the missing condition, `else` or failure block with the required spelling at original source coordinates, consistently through strict compilation and editor diagnostics. Recognition of an unambiguous malformed statement does not require its `else` token. Preserve ordinary calls, member/index access, templates, labels, TS assertions and newline-separated identifier statements; do not reserve `guard` globally or repair executable output. Diagnostic improvements are source changes until published.
+
 [Guard tests](../../packages/twill/tests/guard.test.ts) cover exits, illegal fallthrough, contextual recognition and dangling else. Check formatter/linter positions, break targets, nested guards and semantic diagnostics mapped to source.
 
 ## Decision history

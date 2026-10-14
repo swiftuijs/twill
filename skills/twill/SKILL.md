@@ -51,7 +51,7 @@ Callbacks lower to arrows with lexical `this`. Keep ordinary `function` callback
 
 ### Early exits and nullish bindings
 
-Use `guard condition else { ... }` for a required exit on failure. Use `guard const` to evaluate a nullable result once and preserve valid falsy values such as zero, false and empty strings. Successful bindings remain in the surrounding scope.
+Use `guard condition else { ... }` for a required exit on failure. Always include `else` and braces; `guard condition { ... }` is incomplete. The failure branch runs when the condition is false and must exit the enclosing scope. Use `guard const` to evaluate a nullable result once and preserve valid falsy values such as zero, false and empty strings. Successful bindings remain in the surrounding scope.
 
 ```twill
 export function label(input: { name?: string } | null): string {

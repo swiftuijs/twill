@@ -45,6 +45,25 @@ it('lowers JSX with the same runtime as an explicitly selected project', () => {
 });
 
 describe('virtual TypeScript projects', () => {
+  it.each([false, true])('retains actionable strict guard errors with recovery=%s', (recover) => {
+    const source =
+      'export function divide(a: number, b: number) {\n  guard b != 0 { return 0; }\n  return a / b;\n}';
+    const { root } = project({ 'divide.twill': source });
+    const selected = new TwillProject(join(root, 'tsconfig.json'), {}, { recover });
+    cleanups.push(() => selected.dispose());
+    const file = join(root, 'divide.twill');
+    expect(selected.diagnostics(file)).toEqual([
+      expect.objectContaining({
+        code: 90001,
+        line: 2,
+        column: 2,
+        message: expect.stringContaining("Missing 'else' in guard statement"),
+      }),
+    ]);
+    selected.update(file, source.replace('b != 0 {', 'b != 0 else {'));
+    expect(selected.diagnostics(file)).toEqual([]);
+  });
+
   it('infers callback parameters and checks cross-file imports', () => {
     const { project: p } = project({
       'numbers.twill': 'export const values: number[] = [1,2];',
