@@ -61,6 +61,7 @@ describe('actionable guard syntax diagnostics', () => {
     ['guard true else return;', "Guard 'else' must be followed by a block"],
     ['guard true else', "Guard 'else' must be followed by a block"],
     ['guard true else {}', 'Every guard else path must exit'],
+    ['guard true value else { return; }', "Expected 'else' after the guard condition or binding."],
   ])('explains the required guard structure: %s', (statement, message) => {
     const source = statement.endsWith('else')
       ? 'function f() { ' + statement
