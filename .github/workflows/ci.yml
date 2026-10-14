@@ -70,11 +70,6 @@ jobs:
       - name: Check types, lint and formatting
         if: needs.changes.outputs.core == 'true'
         run: pnpm typecheck && pnpm lint && pnpm format:check && pnpm verify:skills
-      - name: Show formatting corrections after failed static validation
-        if: failure() && needs.changes.outputs.core == 'true'
-        run: |
-          pnpm exec prettier --write packages/twill/src/loader*.ts packages/twill/src/register.ts packages/twill/bin/run.mjs packages/twill/tests/loader*.mjs packages/twill/tests/loader-sync.test.ts packages/twill/tests/register.test.ts packages/twill/tests/runner-consumer.mjs packages/twill/benchmarks/loader-startup.mjs
-          git diff -- packages/twill
       - name: Unit coverage and grammar tests
         if: needs.changes.outputs.core == 'true'
         # Coverage runs the unit suites; do not repeat them through pnpm check.

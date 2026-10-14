@@ -45,6 +45,21 @@ node packages/twill/benchmarks/refinement.mjs \
 
 Each worktree needs its frozen-lockfile dependencies. Keep other builds/tests idle during timing. The older reports below retain their original fixtures, environments and version boundaries; their absolute timings are not directly comparable to this run.
 
+## Synchronous loader registration (unreleased)
+
+Published 0.3.0 uses asynchronous Node loader hooks. The source migration prefers synchronous hooks when available, removing Twill's DEP0205 warning on Node 26 and the separate loader-thread handoff on that path. Older supported engines retain the compatibility adapter. Compilation, source maps and cache validation remain shared; valid hits and native delegation do not initialize the compiler. This changes interpreter startup, not generated application code or external-command execution.
+
+The [loader startup comparison](https://github.com/swiftuijs/twill/blob/main/packages/twill/benchmarks/loader-startup.mjs) builds the unchanged main revision before timing and compares actual old/new CLI launches. Each single-module and 25-import workload retains nine alternating fresh-process pairs for uncached, empty-cache and cache-hit execution, all raw observations, CPU/RSS observations and source/build identities. The Node 26 CI probe uploads `loader-startup.json` as the `loader-startup` artifact. Shared CI hosts introduce timing noise; these observations establish no general speedup or native startup parity. RSS is observed at script completion, not measured as a peak.
+
+Maintainers can reproduce from a built checkout with installed frozen-lockfile dependencies and the baseline commit available locally:
+
+```sh
+node packages/twill/benchmarks/loader-startup.mjs \
+  5a258030ef3876bfaec3a858134e8535d019dede loader-startup.json
+```
+
+Keep other builds/tests idle while measuring. The script creates and removes its own temporary baseline worktree and compares both variants on the same Node version and CPU affinity.
+
 ## Compiler measurements
 
 The following synthetic run was recorded on 2026-10-05, Linux x64, Node 24.19.0, an AMD EPYC 9V74 shared execution host. Each stage has five warmups and 15 timed samples. Syntax transformation preserves types; the plugin pipeline also erases types and lowers JSX. Both include high-resolution source maps with embedded source. Values are medians in milliseconds.
