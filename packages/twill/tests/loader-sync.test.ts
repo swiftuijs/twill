@@ -55,15 +55,31 @@ it('uses synchronous host resolution and only resolves missing relative sources'
   expect(hooks.resolve!('node:fs', context, () => result)).toBe(result);
   const parent = { ...context, parentURL: pathToFileURL(join(root, 'main.js')).href };
   const missing = Object.assign(new Error('missing'), { code: 'ERR_MODULE_NOT_FOUND' });
-  for (const [specifier, file] of [['./value?mode=test#part', 'value.twill'], ['./directory', 'directory/index.ts']])
-    expect(hooks.resolve!(specifier!, parent, () => { throw missing; })).toMatchObject({
-      url: pathToFileURL(join(root, file!)).href + (specifier!.includes('?') ? '?mode=test#part' : ''),
+  for (const [specifier, file] of [
+    ['./value?mode=test#part', 'value.twill'],
+    ['./directory', 'directory/index.ts'],
+  ])
+    expect(
+      hooks.resolve!(specifier!, parent, () => {
+        throw missing;
+      }),
+    ).toMatchObject({
+      url:
+        pathToFileURL(join(root, file!)).href + (specifier!.includes('?') ? '?mode=test#part' : ''),
       shortCircuit: true,
     });
   for (const specifier of ['package', './absent'])
-    expect(() => hooks.resolve!(specifier, parent, () => { throw missing; })).toThrow(missing);
+    expect(() =>
+      hooks.resolve!(specifier, parent, () => {
+        throw missing;
+      }),
+    ).toThrow(missing);
   const denied = Object.assign(new Error('denied'), { code: 'ERR_ACCESS_DENIED' });
-  expect(() => hooks.resolve!('./value', parent, () => { throw denied; })).toThrow(denied);
+  expect(() =>
+    hooks.resolve!('./value', parent, () => {
+      throw denied;
+    }),
+  ).toThrow(denied);
 });
 it('loads mixed local sources synchronously with original maps and lazy compiler reuse', () => {
   const root = fixture();

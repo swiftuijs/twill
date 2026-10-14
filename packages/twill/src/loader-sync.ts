@@ -21,9 +21,8 @@ export function createHooks(data: LoaderOptions = {}): RegisterHooksOptions {
       if (plan.cached !== undefined) return moduleSource(plan.cached);
       // require(ESM) is available on every Node version with registerHooks.
       // Never evaluate the compiler on native delegation or a disk-cache hit.
-      compileModule ??= (
-        require('./loader-compiler.js') as typeof import('./loader-compiler.js')
-      ).compileModule;
+      compileModule ??= (require('./loader-compiler.js') as typeof import('./loader-compiler.js'))
+        .compileModule;
       return state.complete(plan, compileModule(plan.source, plan.filename, plan.dialect));
     },
   };

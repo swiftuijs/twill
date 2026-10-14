@@ -51,7 +51,7 @@ export class LoaderState {
   prepare(url: string): PreparedModule | undefined {
     if (!url.startsWith('file:')) return;
     const filename = fileURLToPath(url);
-    const dialect = isTwillFile(filename) || this.entries.has(url);
+    const dialect = isTwillFile(url) || this.entries.has(url);
     if (!dialect && (isDependency(filename) || !needsTypeEmission(filename))) return;
     const source = readFileSync(filename, 'utf8');
     if (this.cacheEnabled && !this.cacheInitialized) {
