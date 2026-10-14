@@ -7,10 +7,10 @@ Swift-inspired subprocess tools for Twill and ordinary Node JS/TS scripts, Node-
 Use Node 24 LTS for a new setup (supported range: `^20.19.0 || >=22.12.0`). Run from the directory containing your `package.json`; for a new project, run `npm init -y` first. Install the SDK as a production dependency:
 
 ```sh
-npm install @swiftuijs/twill-shell@0.3.0
+npm install @swiftuijs/twill-shell@0.3.1
 ```
 
-With pnpm, use `pnpm add @swiftuijs/twill-shell@0.3.0`. This package supplies the process API; `@swiftuijs/twill` supplies the optional Twill source runner. A global compiler does not make this SDK available to project imports. Keep Twill packages on the same version.
+With pnpm, use `pnpm add @swiftuijs/twill-shell@0.3.1`. This package supplies the process API; `@swiftuijs/twill` supplies the optional Twill source runner. A global compiler does not make this SDK available to project imports. Keep Twill packages on the same version.
 
 ## Run ordinary JavaScript
 
@@ -37,8 +37,8 @@ Run `node command.mjs`. Expected output is `Hello from a child process`. This wo
 Install the compiler as well:
 
 ```sh
-npm install --save-dev @swiftuijs/twill@0.3.0
-# pnpm add -D @swiftuijs/twill@0.3.0
+npm install --save-dev @swiftuijs/twill@0.3.1
+# pnpm add -D @swiftuijs/twill@0.3.1
 ```
 
 Copy the JavaScript example to `command.twill` and add `#!/usr/bin/env twill` as its first line. Use the local command:
@@ -48,7 +48,7 @@ npm exec -- twill command.twill
 # pnpm exec twill command.twill
 ```
 
-On Linux/macOS, `chmod +x command.twill` enables `npm exec --call './command.twill'` or `pnpm exec ./command.twill`. To run `./command.twill` directly, install the compiler globally with `npm install --global @swiftuijs/twill@0.3.0` and keep its executable directory on PATH. Windows uses the explicit CLI. Arguments after the script path pass through unchanged. Application dependencies resolve from the script's location. Use compiler and SDK 0.3.0 or newer.
+On Linux/macOS, `chmod +x command.twill` enables `npm exec --call './command.twill'` or `pnpm exec ./command.twill`. To run `./command.twill` directly, install the compiler globally with `npm install --global @swiftuijs/twill@0.3.1` and keep its executable directory on PATH. Windows uses the explicit CLI. Arguments after the script path pass through unchanged. Application dependencies resolve from the script's location. Use compiler and SDK 0.3.0 or newer.
 
 For package scripts, Node type declarations, error handling and troubleshooting, follow the [complete shell scripting guide](https://twill.evecalm.com/scripting). [Getting started](https://twill.evecalm.com/getting-started) covers application modules and build integration.
 

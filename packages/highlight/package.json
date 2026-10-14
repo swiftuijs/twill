@@ -1,6 +1,6 @@
 {
   "name": "@swiftuijs/twill-highlight",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Portable Twill and TwillX TextMate grammars and browser-compatible Shiki highlighting.",
   "type": "module",
   "license": "MIT",

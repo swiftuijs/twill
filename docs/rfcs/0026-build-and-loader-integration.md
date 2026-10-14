@@ -31,9 +31,9 @@ Vite development retains its server watcher and full reload for language/JSX con
 
 Configuration refresh belongs to a build boundary, not each module or generated application code. The change adds no emitted helper, closure, copy or scheduling. Native compilation, dependency caches, filesystem watching and framework reload policies remain owned by the host. Real watch tests must close all watchers/compilers, including on failure. Rollup's Linux native watcher can lose repeated atomic replacements even with a plain native transform; validate ordinary default-watcher saves and atomic saves with host-configured polling rather than imposing polling on every user.
 
-## Synchronous registration amendment (unreleased)
+## Synchronous registration amendment (0.3.1)
 
-Use `module.registerHooks()` when that API exists (introduced in Node 22.15 and 23.5). Retain `module.register()` only on supported engines without synchronous hooks, including Node 20 and early Node 22. The latter API is deprecated in Node 26; modern execution must pass with `--throw-deprecation`. This amendment is not published in 0.3.0.
+Use `module.registerHooks()` when that API exists (introduced in Node 22.15 and 23.5). Retain `module.register()` only on supported engines without synchronous hooks, including Node 20 and early Node 22. The latter API is deprecated in Node 26; modern execution must pass with `--throw-deprecation`. This amendment ships in 0.3.1; 0.3.0 retains asynchronous registration.
 
 Share source selection, Node-first resolution fallback, compilation, configuration observations, inline original maps and persistent cache policy. The synchronous adapter returns plain objects, not promises. Load the compiler lazily with synchronous require(ESM) only on a miss; every engine providing synchronous hooks supports require(ESM). Advanced public registration stays uncached. Keep native JS/CJS, dependencies and non-file delegation; do not advertise a new CommonJS Twill transpiler.
 

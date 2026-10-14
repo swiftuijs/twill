@@ -2,7 +2,7 @@
 
 Install `@swiftuijs/twill` as a development dependency in your application. Select the adapter for your existing bundler. Native TS/JS and Twill can share the graph; no component lists, wrapping APIs or Twill config file are needed.
 
-Run `npm install --save-dev @swiftuijs/twill@0.3.0` or `pnpm add -D @swiftuijs/twill@0.3.0` from the application's directory containing `package.json`. Keep the host bundler and its existing scripts installed. For a new project, [getting started](./getting-started.md#build-with-vite) includes a complete Vite entry, configuration and run/build commands. The examples below show how to add Twill to an existing host setup.
+Run `npm install --save-dev @swiftuijs/twill@0.3.1` or `pnpm add -D @swiftuijs/twill@0.3.1` from the application's directory containing `package.json`. Keep the host bundler and its existing scripts installed. For a new project, [getting started](./getting-started.md#build-with-vite) includes a complete Vite entry, configuration and run/build commands. The examples below show how to add Twill to an existing host setup.
 
 The [optional runtime](./runtime.md) in 0.2.0 reads `runtime` from the common project configuration, or from the adapter options. External cleanup requires the runtime as a production dependency; inline remains the default.
 

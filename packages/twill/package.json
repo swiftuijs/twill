@@ -1,6 +1,6 @@
 {
   "name": "@swiftuijs/twill",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Twill extends TypeScript with Swift-inspired syntax: trailing closures, guards, defer and checked switch expressions. Compiles to ordinary JavaScript.",
   "main": "./dist/typescript-plugin.cjs",
   "repository": {

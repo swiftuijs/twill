@@ -27,16 +27,16 @@ npm init -y
 npm pkg set type=module
 ```
 
-Install the compiler locally. These commands pin 0.3.0 so the installed runner matches this guide, including when a package manager delays recently published versions:
+Install the compiler locally. These commands pin 0.3.1 so the installed runner matches this guide, including when a package manager delays recently published versions:
 
 ::: code-group
 
 ```sh [npm]
-npm install --save-dev @swiftuijs/twill@0.3.0
+npm install --save-dev @swiftuijs/twill@0.3.1
 ```
 
 ```sh [pnpm]
-pnpm add -D @swiftuijs/twill@0.3.0
+pnpm add -D @swiftuijs/twill@0.3.1
 ```
 
 :::
@@ -111,7 +111,7 @@ The shebang is `#!/usr/bin/env twill` with an ASCII `#!` at the very start of th
 For a standalone script that you want to run directly from your terminal, install the compiler globally:
 
 ```sh
-npm install --global @swiftuijs/twill@0.3.0
+npm install --global @swiftuijs/twill@0.3.1
 twill --help
 twill hello.twill 'hello world'
 ```
@@ -134,11 +134,11 @@ In the same project, install the SDK as a production dependency. Keep it on the 
 ::: code-group
 
 ```sh [npm]
-npm install @swiftuijs/twill-shell@0.3.0
+npm install @swiftuijs/twill-shell@0.3.1
 ```
 
 ```sh [pnpm]
-pnpm add @swiftuijs/twill-shell@0.3.0
+pnpm add @swiftuijs/twill-shell@0.3.1
 ```
 
 :::
@@ -218,9 +218,9 @@ The Node ESM loader remains available for advanced Node integration:
 node --enable-source-maps --import @swiftuijs/twill/register scripts/build.twill
 ```
 
-## Loader registration update (unreleased)
+## Loader registration update in 0.3.1
 
-The source update uses Node's synchronous hooks where available, removing Twill's DEP0205 warning on Node 26. npm 0.3.0 still uses the old registration API; installing that version does not include this migration. Supported Node 20 and early Node 22 keep the compatibility adapter. No command syntax or SDK installation changes.
+Version 0.3.1 uses Node's synchronous hooks where available, removing Twill's DEP0205 warning on Node 26. Version 0.3.0 still uses the old registration API; upgrade the compiler to 0.3.1 for this fix. Supported Node 20 and early Node 22 keep the compatibility adapter. No command syntax or SDK installation changes.
 
 For a Worker that imports Twill, install `@swiftuijs/twill` locally in the script's project. A CLI script registers hooks for its own interpreter; configure the Worker's preload explicitly:
 
