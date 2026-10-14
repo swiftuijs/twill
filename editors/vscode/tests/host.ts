@@ -843,8 +843,7 @@ export async function run() {
     async () => vscode.languages.getDiagnostics(broken.uri),
     (items) =>
       items.some(
-        (item) =>
-          item.code === 90001 && item.message.includes("Missing 'else' in guard statement"),
+        (item) => item.code === 90001 && item.message.includes("Missing 'else' in guard statement"),
       ),
   );
   const guardProblem = guardProblems.find((item) => item.code === 90001)!;

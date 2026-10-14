@@ -60,12 +60,13 @@ function guardAt(input, offset, implicitMember = false) {
         ['if', 'for', 'while', 'switch', 'try', 'return', 'throw', 'var', 'export'].includes(label)
       )
         return missingElse ? 'missingElse' : false;
-      if (!first && !stack.length && label === 'const')
-        return missingElse ? 'missingElse' : false;
+      if (!first && !stack.length && label === 'const') return missingElse ? 'missingElse' : false;
       first = false;
       if (!stack.length && label === 'else') return true;
-      if (!stack.length && ['eof', ';', '}'].includes(label))
-        return missingElse ? 'missingElse' : false;
+      // EOF is terminal even inside an unfinished group. Editor input must
+      // never spin while waiting for a closing delimiter.
+      if (label === 'eof') return !stack.length && missingElse ? 'missingElse' : false;
+      if (!stack.length && [';', '}'].includes(label)) return missingElse ? 'missingElse' : false;
       if (['(', '[', '{', '${'].includes(label)) stack.push(label);
       else if ([')', ']', '}'].includes(label)) {
         if (!stack.length) return false;

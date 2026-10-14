@@ -39,6 +39,16 @@ describe('actionable guard syntax diagnostics', () => {
     'guard input != `else` { return 0; }',
     'guard input > 0;',
     'guard input',
+    'guard true {}',
+    'guard 1 {}',
+    'guard "ready" {}',
+    'guard this.ready {}',
+    'guard new Boolean(input) {}',
+    'guard typeof input === "number" {}',
+    'guard void input {}',
+    'guard delete input.value {}',
+    'guard !input {}',
+    'guard ~input {}',
   ])('recognizes a malformed condition or binding: %s', (statement) => {
     expect(() => transform('function f(input) { ' + statement + ' }')).toThrow(
       "Missing 'else' in guard statement",
@@ -66,6 +76,7 @@ describe('actionable guard syntax diagnostics', () => {
   );
 
   it.each([
+    'guard',
     'guard();',
     'guard = value;',
     'guard += value;',
@@ -93,6 +104,13 @@ describe('actionable guard syntax diagnostics', () => {
     'preserves ordinary trailing-closure calls named guard: %s',
     (source) => {
       expect(transform(source)).toMatchObject({ guards: 0, closures: 1 });
+    },
+  );
+
+  it.each(['guard const {', 'guard value(', 'guard (', 'guard [', 'guard {'])(
+    'terminates lookahead for an unfinished group: %s',
+    (source) => {
+      expect(() => transform(source)).toThrow(TwillSyntaxError);
     },
   );
 
