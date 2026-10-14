@@ -168,7 +168,7 @@ Install only `@swiftuijs/twill-shell` in your JS project. Copy the `command.twil
 node command.mjs
 ```
 
-This example uses ordinary JavaScript and needs no compiler. Native TypeScript uses your existing TS runner/build. SDK imports always come from `@swiftuijs/twill-shell`; `@swiftuijs/twill-shell-native` is its automatically installed implementation dependency.
+This example uses ordinary JavaScript and needs no compiler. Native TypeScript uses your existing TS runner/build. SDK imports always come from `@swiftuijs/twill-shell`. Version 0.3.0 has no native dependency; the deprecated native package remains only for older SDK compatibility.
 
 ## Type-check your scripts
 
@@ -217,6 +217,28 @@ The Node ESM loader remains available for advanced Node integration:
 ```sh
 node --enable-source-maps --import @swiftuijs/twill/register scripts/build.twill
 ```
+
+## Loader registration update (unreleased)
+
+The source update uses Node's synchronous hooks where available, removing Twill's DEP0205 warning on Node 26. npm 0.3.0 still uses the old registration API; installing that version does not include this migration. Supported Node 20 and early Node 22 keep the compatibility adapter. No command syntax or SDK installation changes.
+
+For a Worker that imports Twill, install `@swiftuijs/twill` locally in the script's project. A CLI script registers hooks for its own interpreter; configure the Worker's preload explicitly:
+
+```twill
+import { Worker } from 'node:worker_threads';
+
+const worker = new Worker(new URL('./worker.mjs', import.meta.url), {
+  execArgv: ['--enable-source-maps', '--import', '@swiftuijs/twill/register'],
+});
+```
+
+Use a native bootstrap file `worker.mjs`:
+
+```js
+import './task.twill';
+```
+
+Alternatively, start the parent with `node --enable-source-maps --import @swiftuijs/twill/register parent.twill`; default and nested Workers then inherit those real startup arguments through Node. Replacing `execArgv` replaces inherited preloads. Public registration does not enable the CLI compilation cache. Native CJS and dependencies remain delegated to Node.
 
 ## Repeated script startup
 

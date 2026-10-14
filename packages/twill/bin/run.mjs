@@ -1,6 +1,6 @@
 import { resolve, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { register } from 'node:module';
+import { registerLoader } from '../dist/loader-registration.js';
 import { realpathSync } from 'node:fs';
 
 export async function run(filename, args) {
@@ -10,6 +10,6 @@ export async function run(filename, args) {
   const entries = native ? [] : [url, pathToFileURL(realpathSync(script)).href];
   process.argv = [process.execPath, script, ...args];
   process.setSourceMapsEnabled(true);
-  register('../dist/loader.js', import.meta.url, { data: { entries, cache: true } });
+  await registerLoader({ entries, cache: true });
   await import(url);
 }

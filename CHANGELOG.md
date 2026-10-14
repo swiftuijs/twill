@@ -4,6 +4,8 @@
 
 - Recognize unambiguous incomplete guard statements and explain missing conditions, `else` and braced failure branches at original source positions. Share the diagnostics between compilation, project checking, formatter/linter parsing and VS Code; preserve native uses of the contextual `guard` identifier. Stop guard lookahead at EOF even inside unfinished groups so malformed editor input cannot spin indefinitely.
 
+- Prefer synchronous Node module hooks for the CLI and public preload, avoiding DEP0205 on Node 26 while retaining the supported older-Node adapter. Share compilation/cache policy, keep compiler loading lazy on hits and verify explicit CLI Worker registration and Node's default/nested startup-preload inheritance with original error positions.
+
 ## 0.3.0
 
 - Provide complete project-local/global script installation, shebang, JavaScript SDK, type-check/build and troubleshooting paths.

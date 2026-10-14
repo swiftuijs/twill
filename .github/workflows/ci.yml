@@ -188,3 +188,47 @@ jobs:
           architecture: ${{ matrix.arch }}
       - run: node packages/shell/tests/consumer.mjs
       - run: node packages/twill/tests/runner-consumer.mjs
+
+  loader-node:
+    needs: [changes, verify]
+    if: needs.changes.outputs.core == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22.12.0', '22.15.0', '26']
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v7.0.0
+        with:
+          name: twill-packages
+          path: downloaded
+      - name: Use the exact validated compiler build
+        run: |
+          mkdir -p extracted
+          twill_archive=$(node -p '"downloaded/swiftuijs-twill-" + JSON.parse(require("fs").readFileSync("packages/twill/package.json", "utf8")).version + ".tgz"')
+          tar -xzf "$twill_archive" -C extracted
+          cp -R extracted/package/dist packages/twill/dist
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Verify actual loader API boundaries and Workers
+        run: node packages/twill/tests/loader-consumer.mjs
+      - name: Compare old and new fresh-process startup
+        if: matrix.node == '26'
+        run: node packages/twill/benchmarks/loader-startup.mjs 5a258030ef3876bfaec3a858134e8535d019dede loader-startup.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: matrix.node == '26' && success()
+        with:
+          name: loader-startup
+          path: loader-startup.json
+          if-no-files-found: error

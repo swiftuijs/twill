@@ -31,6 +31,16 @@ Vite development retains its server watcher and full reload for language/JSX con
 
 Configuration refresh belongs to a build boundary, not each module or generated application code. The change adds no emitted helper, closure, copy or scheduling. Native compilation, dependency caches, filesystem watching and framework reload policies remain owned by the host. Real watch tests must close all watchers/compilers, including on failure. Rollup's Linux native watcher can lose repeated atomic replacements even with a plain native transform; validate ordinary default-watcher saves and atomic saves with host-configured polling rather than imposing polling on every user.
 
+## Synchronous registration amendment (unreleased)
+
+Use `module.registerHooks()` when that API exists (introduced in Node 22.15 and 23.5). Retain `module.register()` only on supported engines without synchronous hooks, including Node 20 and early Node 22. The latter API is deprecated in Node 26; modern execution must pass with `--throw-deprecation`. This amendment is not published in 0.3.0.
+
+Share source selection, Node-first resolution fallback, compilation, configuration observations, inline original maps and persistent cache policy. The synchronous adapter returns plain objects, not promises. Load the compiler lazily with synchronous require(ESM) only on a miss; every engine providing synchronous hooks supports require(ESM). Advanced public registration stays uncached. Keep native JS/CJS, dependencies and non-file delegation; do not advertise a new CommonJS Twill transpiler.
+
+The CLI remains in the current Node process with unchanged script argv, Node arguments, cwd, environment, I/O and exits. Programmatic hook registration is local to that interpreter. CLI-created Workers that import Twill must supply `execArgv: ['--enable-source-maps', '--import', '@swiftuijs/twill/register']`. Programs actually started with `node --import @swiftuijs/twill/register` use Node's normal startup-argument inheritance for default and nested Workers. Replacing a Worker's `execArgv` must include that preload when needed. Do not mutate Node arguments, patch Worker constructors or install a process supervisor.
+
+Validate the minimum old API boundary, the first synchronous API version and Node 26 using actual processes, including cache-hit lazy loading, native CJS delegation, default/nested/explicit Worker bootstraps and errors. Reuse the exact artifact validated by normal CI; this needs focused Linux Node-version probes, not an additional OS/CPU matrix. Compare actual old/new builds using alternating fresh-process samples for uncached, empty-cache and cache-hit startup. Retain all samples and artifact identities; no universal speedup or native startup parity follows.
+
 ## Validation and completion
 
 [Real build tests](../../packages/twill/tests/build.test.ts), [interop](../../packages/twill/tests/interop.test.ts), [runtime hooks](../../packages/twill/tests/runtime-hooks.test.ts), independent Node consumers and React/Vue examples exercise actual hosts. Verify sourcemaps, JSX runtime settings, errors, disposal, dependency delegation and Fast Refresh behavior.
