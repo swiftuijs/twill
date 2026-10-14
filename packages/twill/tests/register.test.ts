@@ -33,7 +33,8 @@ it('passes explicit entries and cache policy to the compatibility adapter', asyn
   const data = { entries: ['file:///script'], cache: true };
   await registerLoader(data, true);
   expect(api.register).toHaveBeenCalledWith('./loader.js', expect.any(String), { data });
-  expect(process.execArgv).toEqual(argv);
+  expect(process.execArgv.slice(0, -2)).toEqual(argv);
+  expect(process.execArgv.at(-2)).toBe('--import');
 });
 it('prefers synchronous hooks and keeps the public preload uncached', async () => {
   const handle = { deregister: vi.fn() };

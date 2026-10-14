@@ -222,7 +222,7 @@ node --enable-source-maps --import @swiftuijs/twill/register scripts/build.twill
 
 The source update uses Node's synchronous hooks where available, removing Twill's DEP0205 warning on Node 26. npm 0.3.0 still uses the old registration API; installing that version does not include this migration. Supported Node 20 and early Node 22 keep the compatibility adapter. No command syntax or SDK installation changes.
 
-Default and nested Workers inherit the modern runner's private preload through `process.execArgv`. Explicitly replacing a Worker's `execArgv` opts out of that inheritance; include the public `--import @swiftuijs/twill/register` preload if the worker imports Twill. Use `--enable-source-maps` for original worker error locations with an explicit preload. Native CJS and dependencies remain delegated to Node.
+Default and nested Workers inherit the runner's private preload through `process.execArgv`. Explicitly replacing a Worker's `execArgv` opts out of that inheritance; include the public `--import @swiftuijs/twill/register` preload if the worker imports Twill. Use `--enable-source-maps` for original worker error locations with an explicit preload. Native CJS and dependencies remain delegated to Node.
 
 ## Repeated script startup
 
