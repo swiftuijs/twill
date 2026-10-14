@@ -12,13 +12,14 @@ const bases = {
   tsx: Parser.extend(tsPlugin({ allowSatisfies: true })),
 };
 
-// `guard` remains an ordinary JS identifier unless its expression is followed
-// by a top-level `else`. Token lookahead ignores strings/comments and balanced
-// groups; it never rewrites source or attempts to parse the expression itself.
+// Keep native uses of the contextual identifier, but also recognize an
+// unambiguous malformed guard without `else`. Token lookahead ignores lexical
+// contents and balanced groups; it never rewrites or parses an expression.
 function guardAt(input, offset, implicitMember = false) {
   const lexer = Parser.tokenizer(input.slice(offset), { ecmaVersion: 'latest' });
   const stack = [];
   let first = true;
+  let missingElse = false;
   try {
     for (;;) {
       const token = lexer.getToken();
@@ -31,15 +32,40 @@ function guardAt(input, offset, implicitMember = false) {
         !(implicitMember && label === '.')
       )
         return false;
+      if (first) {
+        // Juxtaposition with these tokens cannot continue an identifier
+        // expression. A newline may instead terminate a native statement;
+        // calls, member/index access, templates and TS assertions stay native.
+        missingElse =
+          !/[\r\n\u2028\u2029]/.test(input.slice(offset, offset + token.start)) &&
+          ((token.type === tt.name && !['as', 'satisfies'].includes(token.value)) ||
+            [
+              'const',
+              'num',
+              'string',
+              'true',
+              'false',
+              'null',
+              'this',
+              'new',
+              'typeof',
+              'void',
+              'delete',
+            ].includes(label) ||
+            (token.type === tt.prefix && ['!', '~'].includes(token.value)) ||
+            (implicitMember && label === '.'));
+      }
       if (
         !stack.length &&
         ['if', 'for', 'while', 'switch', 'try', 'return', 'throw', 'var', 'export'].includes(label)
       )
-        return false;
-      if (!first && !stack.length && label === 'const') return false;
+        return missingElse ? 'missingElse' : false;
+      if (!first && !stack.length && label === 'const')
+        return missingElse ? 'missingElse' : false;
       first = false;
       if (!stack.length && label === 'else') return true;
-      if (!stack.length && ['eof', ';', '}'].includes(label)) return false;
+      if (!stack.length && ['eof', ';', '}'].includes(label))
+        return missingElse ? 'missingElse' : false;
       if (['(', '[', '{', '${'].includes(label)) stack.push(label);
       else if ([')', ']', '}'].includes(label)) {
         if (!stack.length) return false;
@@ -312,7 +338,14 @@ function parserFor(language) {
         node.cleanup = cleanup;
         return this.finishNode(node, 'DeferStatement');
       }
-      if (!this.isContextual('guard') || !guardAt(this.input, this.end, !!this.implicitClosure)) {
+      const guard =
+        this.isContextual('guard') && guardAt(this.input, this.end, !!this.implicitClosure);
+      if (guard === 'missingElse')
+        this.raise(
+          this.start,
+          "Missing 'else' in guard statement. Put 'else' before the failure block: 'guard condition else { return ...; }'.",
+        );
+      if (!guard) {
         const statement = super.parseStatement(context, ...args);
         if (context && statement.type === 'TwillEnumDeclaration')
           this.raise(
@@ -325,6 +358,8 @@ function parserFor(language) {
       node.singleStatement = !!context;
       this.next();
       node.binding = null;
+      if (this.type === tt._else)
+        this.raise(this.start, "Guard needs a condition or 'const' binding before 'else'.");
       if (this.type === tt._const) {
         if (context)
           this.raise(node.start, 'A guard binding requires a block; add braces around this body.');
@@ -336,8 +371,14 @@ function parserFor(language) {
           this.raise(node.start, 'guard const requires one binding declaration.');
       } else node.test = this.parseExpression();
       node.elseStart = this.start;
-      this.expect(tt._else);
-      if (this.type !== tt.braceL) this.unexpected();
+      if (this.type !== tt._else)
+        this.raise(this.start, "Expected 'else' after the guard condition or binding.");
+      this.next();
+      if (this.type !== tt.braceL)
+        this.raise(
+          this.start,
+          "Guard 'else' must be followed by a block, for example 'else { return ...; }'.",
+        );
       node.failure = this.parseBlock();
       if (!exits(node.failure))
         this.raise(

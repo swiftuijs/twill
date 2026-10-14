@@ -57,6 +57,8 @@ guard const { property, nested: { value = fallback }, ...rest } = expression els
 guard const [first, ...rest] = expression else { exiting statements }
 ```
 
+`else` is required, even for a one-line guard. Write `guard b != 0 else { return 0; }`; `guard b != 0 { return 0; }` is incomplete. The braced block is the failure branch, so it executes when the condition is false and must exit the enclosing scope.
+
 A condition becomes `if (!(expression))`. An identifier binding becomes `const identifier = expression; if (identifier == null)`. Bindings use the surrounding JS lexical scope, evaluate their initializer once, retain falsy values, and support ordinary TS type annotations. Only one declaration is allowed. A binding used as an unbraced conditional/loop body is rejected; add braces. No callback, exception wrapper or runtime dependency is introduced.
 
 A destructured binding checks the **whole initializer** in a hygienic temporary, then destructures after the failure block. Getters, nested patterns, defaults, array iteration and rest follow native JS behavior and run only on success. It does not validate individual fields, non-null nested values or untrusted JSON. An annotation applies to the whole initializer. Pattern names retain their native temporal dead zone in the initializer and failure block; using them there is an error. In an identifier guard, the identifier is initialized before the failure block and can contain null/undefined there.

@@ -190,3 +190,37 @@ it.each([
   fixture();
   await expect(main(args)).rejects.toThrow(/runtime/);
 });
+
+it.each(['check', 'doctor', 'declarations'])(
+  '%s explains malformed guards in text and JSON',
+  async (command) => {
+    const source =
+      'export function divide(a: number, b: number) {\n  guard b != 0 { return 0; }\n  return a / b;\n}';
+    const { config, log, error } = fixture(source);
+    expect(await main([command, '-p', config])).toBe(1);
+    expect((command === 'doctor' ? log : error).mock.calls.flat().join('\n')).toContain(
+      "Missing 'else' in guard statement",
+    );
+    expect(await main([command, '-p', config, '--json'])).toBe(1);
+    const report = JSON.parse(log.mock.calls.at(-1)![0]);
+    expect(command === 'check' ? report : report.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 90001,
+        line: 2,
+        column: 2,
+        message: expect.stringContaining("Missing 'else' in guard statement"),
+      }),
+    ]);
+  },
+);
+
+it('compile reports a guard correction and does not emit invalid output', async () => {
+  const { root, input } = fixture(
+    'function divide(a: number, b: number) {\n  guard b != 0 { return 0; }\n  return a / b;\n}',
+  );
+  const output = join(root, 'divide.js');
+  await expect(main(['compile', input, '--js', '-o', output])).rejects.toThrow(
+    "Missing 'else' in guard statement",
+  );
+  expect(existsSync(output)).toBe(false);
+});

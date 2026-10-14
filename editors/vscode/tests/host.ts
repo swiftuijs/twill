@@ -830,6 +830,37 @@ export async function run() {
     { tabSize: 2, insertSpaces: true },
   );
   assert.equal(brokenEdits?.length ?? 0, 0, 'Invalid source must never return a formatting edit');
+  const guardSource =
+    'export function divide(a: number, b: number) {\n  guard b != 0 { return 0; }\n  return a / b;\n}';
+  const malformedGuard = new vscode.WorkspaceEdit();
+  malformedGuard.replace(
+    broken.uri,
+    new vscode.Range(broken.positionAt(0), broken.positionAt(broken.getText().length)),
+    guardSource,
+  );
+  assert(await vscode.workspace.applyEdit(malformedGuard));
+  const guardProblems = await eventually(
+    async () => vscode.languages.getDiagnostics(broken.uri),
+    (items) =>
+      items.some(
+        (item) =>
+          item.code === 90001 && item.message.includes("Missing 'else' in guard statement"),
+      ),
+  );
+  const guardProblem = guardProblems.find((item) => item.code === 90001)!;
+  assert.equal(guardProblem.range.start.line, 1);
+  assert.equal(guardProblem.range.start.character, 2);
+  assert(guardProblem.message.includes('guard condition else { return ...; }'));
+  const correctGuard = new vscode.WorkspaceEdit();
+  correctGuard.insert(broken.uri, position(broken, 'b != 0 {', 7), 'else ');
+  assert(await vscode.workspace.applyEdit(correctGuard));
+  await eventually(
+    async () => vscode.languages.getDiagnostics(broken.uri),
+    (items) => items.length === 0,
+  );
+  console.log(
+    'PASS: guard diagnostics explain missing else at the original token and clear after correction',
+  );
   const noHover = await vscode.commands.executeCommand<vscode.Hover[]>(
     'vscode.executeHoverProvider',
     formatting.uri,
