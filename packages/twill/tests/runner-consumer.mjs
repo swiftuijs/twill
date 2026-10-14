@@ -16,6 +16,7 @@ import {
 import { tmpdir } from 'node:os';
 import { resolve, join, delimiter, dirname } from 'node:path';
 import { npmConsumer as npm } from './helpers/npm-consumer.mjs';
+import { verifyLoader } from './loader-consumer.mjs';
 
 const version = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
@@ -29,6 +30,7 @@ try {
     stdio: 'pipe',
   });
   const cli = join(root, 'node_modules/@swiftuijs/twill/bin/twill.mjs');
+  verifyLoader(root, cli, join(root, 'node_modules/@swiftuijs/twill/dist/register.js'));
   const cache = join(root, 'private-cache');
   process.env.TWILL_CACHE_DIR = cache;
   delete process.env.TWILL_CACHE;

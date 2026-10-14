@@ -180,7 +180,7 @@ pnpm exec eslint src
 
 Use the local package binaries and install missing tools before invoking them. A successful build does not replace type checking. Test nullish/falsy inputs, errors, cleanup order, async rejection and native boundary behavior relevant to the change. Measure performance-sensitive code against equivalent handwritten JS and include the generated output's allocations/scheduling in the comparison.
 
-For supported Node ESM execution use `node --enable-source-maps --import @swiftuijs/twill/register src/main.twill`. The loader handles local mixed imports, not dependencies or arbitrary CommonJS transforms. For problems, inspect `twill doctor -p tsconfig.json --json`, original-source diagnostics and generated TS/TSX. The VS Code extension provides mapped completion/navigation/formatting and explicit debugging. The [playground](https://twill.evecalm.com/playground) lowers syntax locally but does not execute or check project types.
+For supported Node ESM execution use `node --enable-source-maps --import @swiftuijs/twill/register src/main.twill`. The loader handles local mixed imports, not dependencies or arbitrary CommonJS transforms. Published 0.3.0 still uses asynchronous loader registration and can emit DEP0205 on Node 26. The synchronous registration migration is unreleased; do not promise its warning removal or Worker preload behavior for npm 0.3.0. For problems, inspect `twill doctor -p tsconfig.json --json`, original-source diagnostics and generated TS/TSX. The VS Code extension provides mapped completion/navigation/formatting and explicit debugging. The [playground](https://twill.evecalm.com/playground) lowers syntax locally but does not execute or check project types.
 
 ## Scripts and subprocess ownership (0.3.0)
 

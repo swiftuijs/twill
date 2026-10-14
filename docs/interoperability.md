@@ -59,3 +59,9 @@ Other TS-server editors can load the installed npm package with this tsconfig se
 The plugin is a CommonJS entry for TS-server loading; the compiler's ESM imports still use the package's normal exports. The bridge uses the Twill TypeScript 5.9 virtual checker and the native host's library paths. It adds a cached language service for configured mixed projects. Unchanged source versions retain snapshots and programs; it does not replace runtime execution. Other editors' unsaved dialect buffers need their own configuration integration. Auto-import edits, organize imports and rename also map across dialect boundaries; native TypeScript import-alias rename semantics are preserved. Unmappable edits are withheld. Formatting and general refactoring are not supplied by this bridge.
 
 See the [mixed-source example](https://github.com/swiftuijs/twill/tree/main/examples/mixed) for a complete module graph. Configure your own application following [getting started](./getting-started.md) and the [editor guide](./tooling.md).
+
+## Loader registration update (unreleased)
+
+Published 0.3.0 uses asynchronous Node hooks and can emit DEP0205 on Node 26. The source migration prefers `module.registerHooks()` where available, retaining the old API only for engines without it. Supported Node versions and ESM-oriented emission remain unchanged. This does not add CommonJS Twill transpilation.
+
+The modern CLI carries a private preload in `process.execArgv` so default and nested Workers can import Twill. Native worker bootstrap modules can import a `.twill` module normally. If you explicitly replace a Worker's `execArgv`, include `--import @swiftuijs/twill/register` and `--enable-source-maps` when those features are needed. The public preload itself is uncached. See [scripting](scripting.md) for the runner/cache boundary.

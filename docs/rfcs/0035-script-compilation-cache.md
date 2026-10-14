@@ -39,6 +39,10 @@ The loader may reuse parsed configuration for up to 64 source directories within
 
 Exported/prebuilt JavaScript remains the smallest startup path. A Rust launcher alone retains the compiler work. A separate native emitter requires TypeScript/JSX, Twill syntax and source-map conformance; it is outside this proposal. Source-only version boundaries must remain explicit in guides and the official skill. Parser/checker, editor, formatter, linter, highlighter, declaration/export and bundler contracts are unchanged because cached output is the existing emitter result.
 
+### Synchronous hook migration (unreleased)
+
+RFC 0026's registration amendment changes the Node adapter, not the cache contract. A hit must still avoid evaluating TypeScript/parser/configuration code in a fresh process. The same lazy compiler, observation validation, emitted bytes, source maps, bounds and optional-I/O fallback serve both adapters. Distinct build contents already invalidate old records. Default CLI Workers inherit the runner's options; explicit public registration remains uncached.
+
 ## Validation and completion
 
 Exercise real fresh interpreter runs: miss/hit, direct/explicit/shebang and extensionless entry, mixed native/dialect imports, query URLs, symlinks, argv/I/O/PID/exit/error behavior, and identical original-source maps. Test content changes with preserved timestamps; inherited configuration changes/creation/deletion; malformed configuration; source/build/dependency identity changes; cache collisions, bounds, corruption, permissions, symlinks, concurrent writes and inaccessible directories. Independent packed consumers on Node 20 and Windows/macOS must exercise miss and hit.

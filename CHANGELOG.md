@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Prefer synchronous Node module hooks for the CLI and public preload, avoiding DEP0205 on Node 26 while retaining the supported older-Node adapter. Share compilation/cache policy, keep compiler loading lazy on hits and preserve default/nested Worker execution through an inheritable preload; explicit Worker `execArgv` must include registration when needed.
+
 ## 0.3.0
 
 - Provide complete project-local/global script installation, shebang, JavaScript SDK, type-check/build and troubleshooting paths.
