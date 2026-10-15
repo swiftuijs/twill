@@ -1,3 +1,8 @@
+---
+title: 'Twill AI assistance and official skill'
+description: 'Install the official Twill AI skill, choose your agent setup and download verified instructions for syntax, tooling and application development.'
+---
+
 <script setup>
 import { withBase } from 'vitepress';
 </script>

@@ -1,3 +1,8 @@
+---
+title: 'Twill editor, formatter and linter'
+description: 'Set up Twill in VS Code with TypeScript assistance, Prettier formatting, ESLint diagnostics, generated-source inspection and Node debugging.'
+---
+
 # Editor and tooling
 
 For AI-assisted application development, install the [official Twill skill](./ai.md). It covers syntax choices, integrations, performance boundaries and checks for the project's installed toolchain.

@@ -1,3 +1,8 @@
+---
+title: 'Twill compatibility and limitations'
+description: 'Review supported TypeScript syntax, Node and editor requirements, integration coverage and known Twill language and tooling limitations before adoption.'
+---
+
 # Compatibility and limitations
 
 Twill 0.3 is an experimental TypeScript extension language with a tested development workflow. It is ready for a scoped evaluation of the documented compiler, editor and build integrations. A broad production-ready claim would go beyond the current evidence.

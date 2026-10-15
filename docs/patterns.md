@@ -1,3 +1,8 @@
+---
+title: 'Practical Twill patterns'
+description: 'Apply Twill to input validation, resource cleanup, callbacks and typed application logic with practical TypeScript-based examples.'
+---
+
 # Practical patterns
 
 Twill uses TypeScript's types and ordinary JavaScript control flow. Its useful building blocks are early validation, explicit outcomes, owned cleanup and normal callbacks. They work in backend services, command-line tools and UI applications with the same semantics.

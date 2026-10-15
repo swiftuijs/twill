@@ -1,3 +1,8 @@
+---
+title: 'Twill and native TypeScript interoperability'
+description: 'Mix Twill with TypeScript, JavaScript and npm libraries. Understand module resolution, Node loader registration, JSX and native-source compatibility.'
+---
+
 # Mixed Twill, TypeScript and JavaScript projects
 
 All source formats can coexist in one module graph. Twill imports native `.ts`/`.js`; native `.ts`/`.js` imports Twill. A mixed graph compiles to ordinary modules without an interop runtime, proxy functions or value conversion. Exported types and JSDoc participate in TypeScript checking; type-only imports erase normally. Re-exports, dynamic imports and cyclic ESM live bindings retain their ordinary behavior.

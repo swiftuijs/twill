@@ -527,3 +527,66 @@ test('input size limits preserve the current draft and generated output stays re
   await expect(generated(page)).toContainText('recovered');
   await expect(page.getByRole('status')).toContainText('Compiled in');
 });
+
+test('SEO metadata is page-specific in static HTML and client navigation', async ({ page }) => {
+  const descriptions = new Set<string>();
+  for (const route of [
+    '',
+    'why-twill',
+    'getting-started',
+    'performance',
+    'scripting',
+    'benchmark-history',
+  ]) {
+    const response = await page.request.get(route || './');
+    expect(response.ok()).toBe(true);
+    const html = await response.text();
+    expect(html).toContain('property="og:title"');
+    expect(html).toContain('name="twitter:card"');
+    await page.goto(route || './');
+    const description = await page.locator('meta[name="description"]').getAttribute('content');
+    expect(description).toBeTruthy();
+    expect(descriptions.has(description!)).toBe(false);
+    descriptions.add(description!);
+    await expect(page.locator('meta[property="og:description"]')).toHaveAttribute(
+      'content',
+      description!,
+    );
+    await expect(page.locator('meta[name="twitter:description"]')).toHaveAttribute(
+      'content',
+      description!,
+    );
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+      'content',
+      await page.title(),
+    );
+    await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
+      'content',
+      `https://twill.evecalm.com/${route}`,
+    );
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+  }
+  await page.goto('performance#node-shell-sdk');
+  await expect(page.locator('#node-shell-sdk')).toHaveCount(1);
+  const before = await page.locator('meta[property="og:description"]').getAttribute('content');
+  await page.locator('.vp-doc a[href$="benchmark-history"]').first().click();
+  await expect(page).toHaveURL(/benchmark-history/);
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
+    'content',
+    'https://twill.evecalm.com/benchmark-history',
+  );
+  await expect(page.locator('meta[property="og:description"]')).not.toHaveAttribute(
+    'content',
+    before!,
+  );
+  await expect(page.locator('.vp-doc')).toContainText(
+    'The native 1 MiB capture and duplex workloads exceed the historical 1.10 target',
+  );
+  const legacyAnchors = await page
+    .locator('.vp-doc h2[id], .vp-doc h3[id]')
+    .evaluateAll((headings) => headings.map((heading) => heading.id));
+  await page.goto('performance');
+  for (const id of legacyAnchors) {
+    await expect(page.locator(`[id="${id}"]`)).toHaveCount(1);
+  }
+});

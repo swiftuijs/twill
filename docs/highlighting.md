@@ -1,3 +1,8 @@
+---
+title: 'Twill syntax highlighting with Shiki'
+description: 'Highlight Twill and TwillX with shared TextMate grammars and browser-compatible Shiki integrations for documentation, applications and editors.'
+---
+
 # Code highlighting on the web
 
 Use `@swiftuijs/twill-highlight` to display Twill in documentation, blogs, code previews or web applications. It works with Shiki in browsers and server rendering, and exports TextMate grammars for other compatible engines. No VS Code extension or compiler is required.

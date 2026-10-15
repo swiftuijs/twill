@@ -1,3 +1,8 @@
+---
+title: 'Adopt Twill in an existing project'
+description: 'Try Twill incrementally, keep native TypeScript alongside dialect sources and export checked projects back to native TS or TSX.'
+---
+
 # Adopt Twill gradually
 
 Start with a module whose control flow benefits from explicit validation or cleanup. Keep the existing TS/JS project, libraries and framework configuration. Twill files and native files can import each other; `twill.config.json` is optional.

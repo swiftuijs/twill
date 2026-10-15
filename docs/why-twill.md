@@ -1,3 +1,8 @@
+---
+title: 'Why Twill? Clearer TypeScript control flow'
+description: 'See how Twill guards, defer and trailing closures clarify validation, resource cleanup and callbacks while keeping TypeScript types and JavaScript libraries.'
+---
+
 # Why Twill?
 
 Twill extends TypeScript and TSX with Swift-inspired syntax that makes validation, resource lifetimes and business outcomes visible. It adds a small set of syntax forms, compiles to ordinary JS/TS and keeps your existing types, libraries and framework APIs.

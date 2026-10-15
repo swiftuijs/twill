@@ -1,3 +1,8 @@
+---
+title: 'React source study with Twill'
+description: 'Inspect a Twill rewrite of a pinned React source snapshot, its native renderer validation and the scope and limitations of the comparison.'
+---
+
 # React framework source study
 
 Can Twill handle code inside a framework, rather than just components written with that framework? This study rewrites the React 19.3.0 **client-core source graph** and compares it with the same source written in native JavaScript.
