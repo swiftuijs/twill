@@ -3,6 +3,7 @@ import { resolve, join, dirname } from 'node:path';
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { stageTypeScriptPlugin } from './stage-tsserver.mjs';
 
 process.chdir(fileURLToPath(new URL('../../../', import.meta.url)));
 
@@ -28,21 +29,11 @@ for (const name of [
 const manifest = JSON.parse(readFileSync('editors/vscode/package.json', 'utf8'));
 delete manifest.scripts;
 delete manifest.devDependencies;
-manifest.dependencies['@swiftuijs/twill-vscode-tsserver'] = JSON.parse(
-  readFileSync('editors/twill-typescript-plugin/package.json', 'utf8'),
-).version;
-writeFileSync(join(stage, 'package.json'), JSON.stringify(manifest, null, 2) + '\n');
-const plugin = join(stage, 'node_modules/@swiftuijs/twill-vscode-tsserver');
-mkdirSync(plugin, { recursive: true });
-cpSync('editors/twill-typescript-plugin/LICENSE', join(plugin, 'LICENSE'));
-mkdirSync(join(plugin, 'dist'), { recursive: true });
-cpSync('editors/twill-typescript-plugin/dist/index.cjs', join(plugin, 'dist/index.cjs'));
-const pluginManifest = JSON.parse(
-  readFileSync('editors/twill-typescript-plugin/package.json', 'utf8'),
-);
-delete pluginManifest.devDependencies;
-delete pluginManifest.scripts;
-writeFileSync(join(plugin, 'package.json'), JSON.stringify(pluginManifest, null, 2) + '\n');
+const pluginName = stageTypeScriptPlugin(stage);
+// The bridge executes only in tsserver; ship its loader copy once.
+rmSync(join(stage, 'dist/tsserver.cjs'));
+rmSync(join(stage, 'dist/tsserver.LICENSE.txt'));
+manifest.dependencies = { [pluginName]: manifest.version };
 const require = createRequire(import.meta.url);
 // Both editor hosts share one pinned engine, independent of workspace installs.
 const typescriptRoot = dirname(require.resolve('typescript/package.json'));
