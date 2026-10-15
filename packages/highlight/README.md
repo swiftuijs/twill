@@ -1,5 +1,10 @@
 # <img src="https://twill.evecalm.com/logo.png" alt="Twill hummingbird" align="right" width="40" height="40" /> Twill highlighting
 
+[![npm version](https://img.shields.io/npm/v/%40swiftuijs%2Ftwill-highlight)](https://www.npmjs.com/package/@swiftuijs/twill-highlight)
+[![npm monthly downloads](https://img.shields.io/npm/dm/%40swiftuijs%2Ftwill-highlight)](https://www.npmjs.com/package/@swiftuijs/twill-highlight)
+[![CI](https://img.shields.io/github/actions/workflow/status/swiftuijs/twill/ci.yml?branch=main&label=CI)](https://github.com/swiftuijs/twill/actions/workflows/ci.yml)
+[![License](https://img.shields.io/npm/l/%40swiftuijs%2Ftwill-highlight)](https://github.com/swiftuijs/twill/blob/main/LICENSE)
+
 TextMate grammars and browser-compatible Shiki highlighting for Twill, a TypeScript-based language with Swift-inspired syntax extensions. The package imports no compiler, TypeScript engine, VS Code APIs or UI framework. The docs site and VSIX use the same grammar files.
 
 ```sh

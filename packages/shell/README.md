@@ -1,5 +1,10 @@
 # <img src="https://twill.evecalm.com/logo.png" alt="Twill hummingbird" align="right" width="40" height="40" /> Twill shell
 
+[![npm version](https://img.shields.io/npm/v/%40swiftuijs%2Ftwill-shell)](https://www.npmjs.com/package/@swiftuijs/twill-shell)
+[![npm monthly downloads](https://img.shields.io/npm/dm/%40swiftuijs%2Ftwill-shell)](https://www.npmjs.com/package/@swiftuijs/twill-shell)
+[![CI](https://img.shields.io/github/actions/workflow/status/swiftuijs/twill/ci.yml?branch=main&label=CI)](https://github.com/swiftuijs/twill/actions/workflows/ci.yml)
+[![License](https://img.shields.io/npm/l/%40swiftuijs%2Ftwill-shell)](https://github.com/swiftuijs/twill/blob/main/LICENSE)
+
 Swift-inspired subprocess tools for Twill and ordinary Node JS/TS scripts, Node-based in 0.3.0.
 
 ## Install in your project

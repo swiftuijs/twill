@@ -1,5 +1,10 @@
 # <img src="https://twill.evecalm.com/logo.png" alt="Twill hummingbird" align="right" width="40" height="40" /> Twill
 
+[![npm version](https://img.shields.io/npm/v/%40swiftuijs%2Ftwill)](https://www.npmjs.com/package/@swiftuijs/twill)
+[![npm monthly downloads](https://img.shields.io/npm/dm/%40swiftuijs%2Ftwill)](https://www.npmjs.com/package/@swiftuijs/twill)
+[![CI](https://img.shields.io/github/actions/workflow/status/swiftuijs/twill/ci.yml?branch=main&label=CI)](https://github.com/swiftuijs/twill/actions/workflows/ci.yml)
+[![License](https://img.shields.io/npm/l/%40swiftuijs%2Ftwill)](https://github.com/swiftuijs/twill/blob/main/LICENSE)
+
 **TypeScript. Clearer flow.**
 
 Twill is a **TypeScript-based language with Swift-inspired syntax extensions**, built by [forth.ink](https://forth.ink). It extends TypeScript and TSX with guards, `defer`, trailing closures and checked switch expressions. Use TypeScript's type system and existing JavaScript libraries; compile to ordinary JavaScript.

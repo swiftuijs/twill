@@ -1,5 +1,10 @@
 # <img src="https://twill.evecalm.com/logo.png" alt="Twill hummingbird" align="right" width="40" height="40" /> Twill formatter
 
+[![npm version](https://img.shields.io/npm/v/%40swiftuijs%2Ftwill-formatter)](https://www.npmjs.com/package/@swiftuijs/twill-formatter)
+[![npm monthly downloads](https://img.shields.io/npm/dm/%40swiftuijs%2Ftwill-formatter)](https://www.npmjs.com/package/@swiftuijs/twill-formatter)
+[![CI](https://img.shields.io/github/actions/workflow/status/swiftuijs/twill/ci.yml?branch=main&label=CI)](https://github.com/swiftuijs/twill/actions/workflows/ci.yml)
+[![License](https://img.shields.io/npm/l/%40swiftuijs%2Ftwill-formatter)](https://github.com/swiftuijs/twill/blob/main/LICENSE)
+
 Prettier 3.9 plugin for Twill, a TypeScript-based language with Swift-inspired syntax extensions. Formats `.twill`, `.twillx` and native TS/TSX while preserving trailing closures, guards and defer. It uses Prettier's own TypeScript parser/printer; compilation helpers never enter formatted source.
 
 Install in your application:

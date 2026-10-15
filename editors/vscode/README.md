@@ -1,5 +1,10 @@
 # <img src="https://twill.evecalm.com/logo.png" alt="Twill hummingbird" align="right" width="40" height="40" /> Twill for VS Code
 
+[![Release version](https://img.shields.io/github/v/release/swiftuijs/twill)](https://github.com/swiftuijs/twill/releases/latest)
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-install-007ACC)](https://marketplace.visualstudio.com/items?itemName=forth-ink.twill)
+[![CI](https://img.shields.io/github/actions/workflow/status/swiftuijs/twill/ci.yml?branch=main&label=CI)](https://github.com/swiftuijs/twill/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/swiftuijs/twill)](https://github.com/swiftuijs/twill/blob/main/LICENSE)
+
 **Write clearer JavaScript and TypeScript, with the editor tools you already expect.**
 
 Twill is a TypeScript-based language with Swift-inspired syntax extensions. It extends TypeScript and TSX, using TypeScript's type system and adding: readable callbacks, explicit early exits, cleanup beside resource acquisition, and checked handling of business states. You write `.twill` or `.twillx` files; the Twill compiler turns them into ordinary JavaScript, using your existing libraries and framework runtimes.
