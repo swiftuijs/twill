@@ -16,7 +16,6 @@ for (const path of [
   'packages/runtime/package.json',
   'packages/shell/package.json',
   'editors/vscode/package.json',
-  'editors/twill-typescript-plugin/package.json',
 ])
   assert.equal(manifest(path).version, version, `Version mismatch: ${path}`);
 assert(
@@ -25,12 +24,7 @@ assert(
 );
 if (process.env.RELEASE_TAG)
   assert.equal(process.env.RELEASE_TAG, `v${version}`, 'Tag must match package versions');
-for (const path of [
-  'package.json',
-  'apps/docs/package.json',
-  'editors/vscode/package.json',
-  'editors/twill-typescript-plugin/package.json',
-])
+for (const path of ['package.json', 'apps/docs/package.json', 'editors/vscode/package.json'])
   assert.equal(manifest(path).private, true, `Internal workspace must be private: ${path}`);
 const artifacts = [];
 const budgets = {

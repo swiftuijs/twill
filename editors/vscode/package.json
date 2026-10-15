@@ -6,7 +6,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build && node scripts/prepare-editor.mjs",
+    "build": "vite build && vite build --config vite.tsserver.config.ts && node scripts/prepare-editor.mjs",
     "package": "pnpm --filter twill... run build && pnpm package:built",
     "typecheck": "twill check -p tsconfig.json",
     "verify": "node tests/verify-editor-plugin.mjs",
@@ -101,9 +101,6 @@
   "extensionDependencies": [
     "vscode.typescript-language-features"
   ],
-  "dependencies": {
-    "@swiftuijs/twill-vscode-tsserver": "workspace:*"
-  },
   "devDependencies": {
     "@shikijs/langs": "2.5.0",
     "@swiftuijs/twill": "workspace:*",

@@ -189,26 +189,7 @@ importers:
         specifier: ^3.1.8
         version: 3.3.12(typescript@5.9.3)
 
-  editors/twill-typescript-plugin:
-    devDependencies:
-      '@swiftuijs/twill':
-        specifier: workspace:*
-        version: link:../../packages/twill
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.4
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
-      vite:
-        specifier: 'catalog:'
-        version: 8.3.2(@types/node@26.6.4)(esbuild@0.28.2)(sass@1.105.1)(terser@5.51.2)
-
   editors/vscode:
-    dependencies:
-      '@swiftuijs/twill-vscode-tsserver':
-        specifier: workspace:*
-        version: link:../twill-typescript-plugin
     devDependencies:
       '@shikijs/langs':
         specifier: 2.5.0

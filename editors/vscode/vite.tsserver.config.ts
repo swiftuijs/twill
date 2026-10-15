@@ -4,8 +4,10 @@ import { nodeViteConfig } from '../../packages/twill/scripts/node-vite-config.mj
 
 export default defineConfig({
   ...nodeViteConfig({
-    entry: 'src/index.twill',
-    filename: 'index.cjs',
+    entry: 'src/tsserver.twill',
+    filename: 'tsserver.cjs',
+    emptyOutDir: false,
+    license: 'tsserver.LICENSE.txt',
     external: ['typescript'],
     minify: true,
     footer: 'module.exports = module.exports.default;',

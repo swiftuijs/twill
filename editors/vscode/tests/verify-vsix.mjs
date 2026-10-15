@@ -12,7 +12,9 @@ process.chdir(fileURLToPath(new URL('../../../', import.meta.url)));
 const root = mkdtempSync(join(tmpdir(), 'twill-vsix-'));
 try {
   const files = await readVsix('dist/twill.vsix', (name) =>
-    /^extension\/(?:node_modules\/|dist\/typescript-lib\/|syntaxes\/|package\.json$)/.test(name),
+    /^extension\/(?:node_modules\/|dist\/(?:typescript-lib\/|tsserver\.cjs$)|syntaxes\/|package\.json$)/.test(
+      name,
+    ),
   );
   const manifest = JSON.parse(files.get('extension/package.json').toString());
   assert.equal(
@@ -29,6 +31,18 @@ try {
       `Missing grammar ${grammar.path}`,
     );
   assert(files.has('extension/node_modules/@swiftuijs/twill-vscode-tsserver/dist/index.cjs'));
+  assert(!files.has('extension/dist/tsserver.cjs'), 'Do not ship a duplicate bridge bundle');
+  const bridge = JSON.parse(
+    files.get('extension/node_modules/@swiftuijs/twill-vscode-tsserver/package.json').toString(),
+  );
+  assert.equal(bridge.version, manifest.version);
+  assert.equal(bridge.private, true);
+  assert.equal(manifest.dependencies[bridge.name], manifest.version);
+  assert(
+    !editorManifest.dependencies?.[bridge.name],
+    'The bridge is an internal module, not a source package dependency',
+  );
+
   assert(files.has('extension/dist/typescript-lib/lib.es2022.full.d.ts'));
   assert(files.has('extension/node_modules/typescript/lib/typescript.js'));
   const engine = JSON.parse(files.get('extension/node_modules/typescript/package.json').toString());

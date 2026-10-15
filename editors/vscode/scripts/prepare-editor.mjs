@@ -24,10 +24,7 @@ for (const extension of ['twill', 'twillx'])
 rmSync('editors/vscode/licenses', { recursive: true, force: true });
 mkdirSync('editors/vscode/licenses', { recursive: true });
 copyFileSync('editors/vscode/dist/THIRD_PARTY_LICENSES.txt', 'editors/vscode/licenses/editor.txt');
-copyFileSync(
-  'editors/twill-typescript-plugin/dist/THIRD_PARTY_LICENSES.txt',
-  'editors/vscode/licenses/tsserver.txt',
-);
+copyFileSync('editors/vscode/dist/tsserver.LICENSE.txt', 'editors/vscode/licenses/tsserver.txt');
 copyFileSync(
   'packages/twill/dist/typescript-plugin.LICENSE.txt',
   'editors/vscode/licenses/compiler-bridge.txt',
@@ -38,5 +35,4 @@ writeFileSync(
 );
 copyFileSync('LICENSE', 'editors/vscode/LICENSE');
 copyFileSync('CHANGELOG.md', 'editors/vscode/CHANGELOG.md');
-copyFileSync('LICENSE', 'editors/twill-typescript-plugin/LICENSE');
 copyFileSync('packages/twill/schemas/twill.schema.json', 'editors/vscode/twill.schema.json');

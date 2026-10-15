@@ -8,13 +8,9 @@ coverage/
 editors/vscode/licenses/
 examples/**/.vite/
 benchmark-results.json
-editors/twill-typescript-plugin/*.cjs
-editors/twill-typescript-plugin/LICENSE
 .vscode-test/
 packages/twill/README.md
 packages/twill/LICENSE
-editors/twill-typescript-plugin/*.map
-editors/twill-typescript-plugin/THIRD_PARTY_LICENSES.txt
 project-results.json
 release-manifest.json
 bundle-results.json
