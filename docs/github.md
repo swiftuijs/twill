@@ -1,3 +1,8 @@
+---
+title: 'Twill syntax highlighting on GitHub'
+description: 'Understand GitHub rendering of Twill files, current highlighting support and practical options for sharing readable source examples.'
+---
+
 # GitHub language detection and highlighting
 
 GitHub uses [Linguist](https://github.com/github-linguist/linguist) to classify source files and select highlighting grammars. Installing the Twill VSIX changes your editor; it does not install a grammar on GitHub.

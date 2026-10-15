@@ -1,3 +1,8 @@
+---
+title: 'Get started with Twill and TypeScript'
+description: 'Install Twill, run your first TypeScript-based module, configure type checking and add a Vite application with npm or pnpm.'
+---
+
 # Getting started
 
 Twill extends TypeScript and TSX with Swift-inspired syntax, using TypeScript's type system and compiling to ordinary JavaScript. Use `.twill` for TS (including ordinary JS syntax) and `.twillx` for TSX. Native `.ts`, `.tsx`, `.js` and `.jsx` files keep their usual syntax.

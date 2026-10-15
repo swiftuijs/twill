@@ -1,3 +1,8 @@
+---
+title: 'Twill CLI reference'
+description: 'Reference Twill compile, check, run, declarations, export and doctor commands, configuration options, source maps and diagnostic output.'
+---
+
 # CLI reference
 
 The `@swiftuijs/twill` package provides the `twill` command. Install it in your application before running commands: `npm install --save-dev @swiftuijs/twill@0.3.1` or `pnpm add -D @swiftuijs/twill@0.3.1`. See [getting started](./getting-started.md#install) for prerequisites and a runnable first module, or [shell scripting](./scripting.md#install-a-global-command) for global installation.

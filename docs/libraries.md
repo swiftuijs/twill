@@ -1,3 +1,8 @@
+---
+title: 'Build libraries and declarations with Twill'
+description: 'Publish Twill-authored libraries as ordinary JavaScript and TypeScript declarations, with native consumer imports and explicit runtime dependencies.'
+---
+
 # Libraries and declarations
 
 Build a Twill library as ordinary JavaScript with standard TypeScript declarations. Consumers can import it from native TS/JS without a Twill compiler or editor extension.

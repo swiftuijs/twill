@@ -2,8 +2,8 @@
 layout: page
 sidebar: false
 footer: false
-title: Playground
-description: Explore Twill with a live, local compiler and highlighted source and output.
+title: 'Twill playground'
+description: 'Try Twill in your browser. Edit TypeScript-inspired syntax and inspect generated TS or TSX locally without uploading your source.'
 ---
 
 <TwillPlayground />

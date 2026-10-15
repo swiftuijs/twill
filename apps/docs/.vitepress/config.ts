@@ -75,12 +75,29 @@ export default defineConfig({
   sitemap: { hostname: site },
   transformPageData(pageData) {
     const path = pageData.relativePath.replace(/(^|\/)index\.md$/, '$1').replace(/\.md$/, '');
-    // Frontmatter head participates in client navigation as well as static HTML.
+    // Keep page-specific metadata in frontmatter so client navigation updates it too.
+    const canonical = new URL(path, site + '/').href;
+    const title = `${pageData.title} | Twill`;
+    const description = pageData.description;
+    const image = site + '/logo.png';
     pageData.frontmatter.head ??= [];
-    pageData.frontmatter.head.push([
-      'link',
-      { rel: 'canonical', href: new URL(path, site + '/').href },
-    ]);
+    pageData.frontmatter.head.push(
+      ['link', { rel: 'canonical', href: canonical }],
+      ['meta', { property: 'og:type', content: 'website' }],
+      ['meta', { property: 'og:site_name', content: 'Twill' }],
+      ['meta', { property: 'og:title', content: title }],
+      ['meta', { property: 'og:description', content: description }],
+      ['meta', { property: 'og:url', content: canonical }],
+      ['meta', { property: 'og:image', content: image }],
+      ['meta', { property: 'og:image:width', content: '512' }],
+      ['meta', { property: 'og:image:height', content: '512' }],
+      ['meta', { property: 'og:image:alt', content: 'Twill hummingbird logo' }],
+      ['meta', { name: 'twitter:card', content: 'summary' }],
+      ['meta', { name: 'twitter:title', content: title }],
+      ['meta', { name: 'twitter:description', content: description }],
+      ['meta', { name: 'twitter:image', content: image }],
+      ['meta', { name: 'twitter:image:alt', content: 'Twill hummingbird logo' }],
+    );
   },
   lang: 'en',
   themeConfig: {

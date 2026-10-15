@@ -1,3 +1,8 @@
+---
+title: 'Twill syntax and semantics'
+description: 'Reference Twill trailing closures, implicit members, guard, defer, switch, enums and match, including evaluation order and TypeScript compatibility boundaries.'
+---
+
 # Syntax and semantics
 
 The extension adds a trailing closure to an identifier, a member expression, or a call expression. The closure becomes the call's final argument. Parenthesized callable results, such as `(factory()) { ... }`, invoke the result. Empty parentheses can be omitted, including tightly written TS type arguments: `items.map<number> { x in x * 2 }`. Spaced comparisons retain the ordinary JS operator grammar. Calls can chain after the closure: `items.map { x in x * 2 }.filter(Boolean)`.

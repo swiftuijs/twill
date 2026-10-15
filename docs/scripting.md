@@ -1,3 +1,8 @@
+---
+title: 'Shell scripting with Twill and Node.js'
+description: 'Install and run Twill scripts, configure shebangs and Workers, and use the optional Node subprocess SDK with bounded output, cancellation and typed errors.'
+---
+
 # Shell scripting
 
 Twill scripts combine native Node APIs with Swift-inspired `guard`, trailing closures and `defer`. This guide takes you from installation to a runnable script, then adds subprocess execution.

@@ -1,3 +1,8 @@
+---
+title: 'Twill language overview'
+description: 'Learn how Twill extends TypeScript and TSX with Swift-inspired syntax, preserves native JavaScript behavior and emits ordinary JavaScript.'
+---
+
 # Twill: TypeScript with Swift-inspired syntax extensions
 
 Twill is a TypeScript-based language with Swift-inspired syntax extensions. It extends TypeScript and TSX with guards, `defer`, trailing closures and checked switch expressions, using TypeScript's type system and compiling to ordinary JavaScript. Install `@swiftuijs/twill` as a development dependency; the CLI is `twill`. `.twill` / `.twillx` use TypeScript / TSX, including JavaScript syntax with optional types. Native JS remains a native source format.
