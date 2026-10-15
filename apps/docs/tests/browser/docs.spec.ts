@@ -582,4 +582,11 @@ test('SEO metadata is page-specific in static HTML and client navigation', async
   await expect(page.locator('.vp-doc')).toContainText(
     'The native 1 MiB capture and duplex workloads exceed the historical 1.10 target',
   );
+  const legacyAnchors = await page
+    .locator('.vp-doc h2[id], .vp-doc h3[id]')
+    .evaluateAll((headings) => headings.map((heading) => heading.id));
+  await page.goto('performance');
+  for (const id of legacyAnchors) {
+    await expect(page.locator(`[id="${id}"]`)).toHaveCount(1);
+  }
 });

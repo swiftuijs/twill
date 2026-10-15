@@ -48,7 +48,7 @@ The compiler, formatter, linter and editor are development tools. Their installe
 
 <a id="compiler-measurements"></a>
 <a id="mixed-projects-and-editing"></a>
-<a id="refinements-in-030"></a>
+<a id="refinements-in-0-3-0"></a>
 
 ## Compilation and editor feedback
 
@@ -58,7 +58,7 @@ The compiler reuses validated project configuration, and the editor reuses uncha
 
 For scale, an older Linux/Node 24.19 synthetic mixed project with 1,002 source files measured about 1,020 ms for a cold check and 71/101 ms for edited-hover p50/p95. These observations exclude VS Code rendering and the native TS-server bridge; they are not a responsiveness target. The [mixed-project measurement](./benchmark-history.md#mixed-projects-and-editing) records the fixture, scope and memory observations. Profile your project's dependencies and editing patterns before drawing a conclusion.
 
-<a id="synchronous-loader-registration-in-031"></a>
+<a id="synchronous-loader-registration-in-0-3-1"></a>
 
 ## Script startup and compilation caching
 
@@ -73,12 +73,12 @@ Measure these paths separately:
 
 Earlier Linux/Node 24 source-cache measurements reported roughly 514 ms uncached, 544 ms with an empty cache, 157 ms with valid hits and 44 ms for the native reference. They illustrate why a cache hit and a cold start are different workloads; they are not current-version startup promises. [Original cache measurements](./benchmark-history.md#earlier-node-shell-sdk-measurements) retain all samples and identities.
 
-The current runner uses synchronous Node hooks where available and retains the compatibility adapter on supported older engines. This avoids Twill's DEP0205 warning on Node 26. The [0.3.1 loader comparison](./benchmark-history.md#synchronous-loader-registration-in-031) measures this adapter change separately; warning removal does not establish a universal startup speedup.
+The current runner uses synchronous Node hooks where available and retains the compatibility adapter on supported older engines. This avoids Twill's DEP0205 warning on Node 26. The [0.3.1 loader comparison](./benchmark-history.md#synchronous-loader-registration-in-0-3-1) measures this adapter change separately; warning removal does not establish a universal startup speedup.
 
 Exported or prebuilt JavaScript avoids source compilation at launch. See [shell scripting](./scripting.md#repeated-script-startup) for cache configuration and privacy boundaries, and [adoption](./adoption.md) for native export.
 
 <a id="node-shell-sdk"></a>
-<a id="node-shell-sdk-in-030"></a>
+<a id="node-shell-sdk-in-0-3-0"></a>
 
 ## Optional Node shell SDK
 
@@ -95,7 +95,7 @@ The retained 0.3.0 Linux/Node 24 comparison found the following paired median wa
 | 32 concurrent Node children  |                 1.000× |
 | 128 concurrent Node children |                 1.009× |
 
-The first two workloads exceed the historical 1.10 target. Their measured costs were explicitly accepted for the Node replacement; the failed strict report remains intact. These are host-specific workload results, not native parity or a general application slowdown estimate. [The complete measurement and acceptance](./benchmark-history.md#node-shell-sdk-in-030) retain confidence intervals, every workload, memory and cold-start observations, source/build identities and the explicit release decision.
+The first two workloads exceed the historical 1.10 target. Their measured costs were explicitly accepted for the Node replacement; the failed strict report remains intact. These are host-specific workload results, not native parity or a general application slowdown estimate. [The complete measurement and acceptance](./benchmark-history.md#node-shell-sdk-in-0-3-0) retain confidence intervals, every workload, memory and cold-start observations, source/build identities and the explicit release decision.
 
 The current SDK does not use the retired Rust addon. Its historical speedups and abrupt-disposal guarantees do not apply. Applications cancel and await outstanding operations before worker/process shutdown; forced termination cannot complete asynchronous cleanup. See [execution and version boundaries](./scripting.md#execution-and-version-boundary).
 
@@ -113,9 +113,9 @@ Start with one representative module or script and an equivalent native baseline
 <a id="earlier-node-shell-sdk-measurements"></a>
 <a id="rust-subprocess-experiment-historical"></a>
 <a id="rust-shell-backend"></a>
-<a id="rust-shell-backend-historical-020"></a>
+<a id="rust-shell-backend-historical-0-2-0"></a>
 <a id="expanded-platform-coverage"></a>
-<a id="020-public-sdk-measurements"></a>
+<a id="_0-2-0-public-sdk-measurements"></a>
 
 ## Measurement methodology and history
 
