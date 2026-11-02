@@ -621,8 +621,17 @@ export function transform(source: string, options: TransformOptions = {}) {
     if (component)
       code.prependLeft(
         closures.at(-1).end,
-        (vue ? (slotObject ? '}}' : '}') : nativeChild ? '' : bareChild ? '}' : directChild ? ')}' : ')()}') +
-          `</${calleeName(node.callee)}>)`,
+        (vue
+          ? slotObject
+            ? '}}'
+            : '}'
+          : nativeChild
+            ? ''
+            : bareChild
+              ? '}'
+              : directChild
+                ? ')}'
+                : ')()}') + `</${calleeName(node.callee)}>)`,
       );
     else code.appendLeft(closures.at(-1).end, ')');
     // The parser may visit nested trailing calls after this one. Edits use

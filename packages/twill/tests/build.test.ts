@@ -379,7 +379,11 @@ export const view=Panel { <button>Save</button>; };`,
           target: 'node',
           entry: input,
           externals: external,
-          output: { path: join(root, 'dist'), filename: 'slots.cjs', library: { type: 'commonjs2' } },
+          output: {
+            path: join(root, 'dist'),
+            filename: 'slots.cjs',
+            library: { type: 'commonjs2' },
+          },
           plugins: [tool === 'webpack' ? webpackPlugin(options) : rspackPlugin(options)],
         };
         const compiler =
@@ -404,16 +408,15 @@ export const view=Panel { <button>Save</button>; };`,
         }
       }
       expect(code).toMatch(
-        vueDefaultSlot === 'object'
-          ? /children:\s*\{\s*default:/
-          : /children:\s*\(\)\s*=>/,
+        vueDefaultSlot === 'object' ? /children:\s*\{\s*default:/ : /children:\s*\(\)\s*=>/,
       );
       const module = { exports: {} as { view: any } };
-      Function('module', 'exports', 'require', code)(
-        module,
-        module.exports,
-        createRequire(import.meta.url),
-      );
+      Function(
+        'module',
+        'exports',
+        'require',
+        code,
+      )(module, module.exports, createRequire(import.meta.url));
       expect(await renderToString(createSSRApp({ render: () => module.exports.view }))).toBe(
         '<section><button>Save</button></section>',
       );

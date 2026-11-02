@@ -14,10 +14,7 @@
     },
     "runtime": {
       "type": "string",
-      "enum": [
-        "inline",
-        "external"
-      ],
+      "enum": ["inline", "external"],
       "default": "inline",
       "description": "Inline cleanup code, or import versioned runtime helpers for dynamic synchronous defer scopes."
     },

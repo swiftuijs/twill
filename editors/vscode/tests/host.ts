@@ -693,7 +693,6 @@ export async function run() {
     'PASS: configuration saves refresh native TS hover and diagnostics with unsaved overlays',
   );
 
-
   await vscode.workspace.fs.writeFile(
     vscode.Uri.file(join(root, 'vue-slot-option.twillx')),
     Buffer.from(

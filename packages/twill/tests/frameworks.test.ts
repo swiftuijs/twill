@@ -37,11 +37,7 @@ function compile(
   )(require, {}, ...Object.values(bindings));
 }
 
-function diagnostics(
-  source: string,
-  jsxImportSource = 'react',
-  options: TransformOptions = {},
-) {
+function diagnostics(source: string, jsxImportSource = 'react', options: TransformOptions = {}) {
   // An ancestor node_modules supplies actual framework and declaration types.
   const root = fixtureRoot('.twill-ui-test-');
   writeFileSync(

@@ -85,12 +85,15 @@ it.each(['null', '"auto"', 'true', '1', '[]', '{}'])(
   },
 );
 
-it.each(['object', 'function'])('loads the %s Vue default-slot representation', (vueDefaultSlot) => {
-  const root = mkdtempSync(join(tmpdir(), 'twill-vue-config-'));
-  roots.push(root);
-  writeFileSync(join(root, 'twill.config.json'), JSON.stringify({ vueDefaultSlot }));
-  expect(loadConfig(root).vueDefaultSlot).toBe(vueDefaultSlot);
-});
+it.each(['object', 'function'])(
+  'loads the %s Vue default-slot representation',
+  (vueDefaultSlot) => {
+    const root = mkdtempSync(join(tmpdir(), 'twill-vue-config-'));
+    roots.push(root);
+    writeFileSync(join(root, 'twill.config.json'), JSON.stringify({ vueDefaultSlot }));
+    expect(loadConfig(root).vueDefaultSlot).toBe(vueDefaultSlot);
+  },
+);
 it.each(['null', '"auto"', 'true', '1', '[]', '{}'])(
   'rejects an invalid Vue default-slot representation %s',
   (source) => {
