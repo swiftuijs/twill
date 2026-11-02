@@ -137,6 +137,10 @@ jobs:
           node packages/shell/tests/consumer.mjs
       # Keep the audit mandatory without hiding behavioral regressions behind
       # an inherited advisory. A failure still prevents validated uploads.
+      - name: Restore repository runtime for dependency checks
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 22
       - name: Check dependency security and peers
         run: pnpm deps:check
       - name: Upload validated distributions
