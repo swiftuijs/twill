@@ -45,26 +45,42 @@ export function ciScope(paths, full = false) {
 }
 
 export function eventScope({ eventName, eventPath, forceFull = false, cwd }) {
-  if (forceFull || eventName !== 'pull_request')
-    return { scope: complete(), reason: 'Full main/manual/scheduled/release verification' };
+  if (forceFull || !['pull_request', 'push'].includes(eventName))
+    return { scope: complete(), reason: 'Full manual/scheduled/release verification' };
   try {
     const event = JSON.parse(readFileSync(eventPath, 'utf8'));
-    const base = event.pull_request?.base?.sha;
-    if (!/^[a-f0-9]{40}$/.test(base ?? '')) throw new Error('Missing valid PR base SHA');
+    const validSha = (value) => /^[a-f0-9]{40}$/.test(value ?? '') && !/^0{40}$/.test(value);
+    let range;
+    if (eventName === 'push') {
+      if (
+        event.ref !== 'refs/heads/main' ||
+        event.forced ||
+        event.deleted ||
+        !validSha(event.before) ||
+        !validSha(event.after) ||
+        execFileSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf8' }).trim() !== event.after
+      )
+        throw new Error('Missing trustworthy main push range');
+      range = `${event.before}..${event.after}`;
+    } else {
+      const base = event.pull_request?.base?.sha;
+      if (!validSha(base)) throw new Error('Missing valid PR base SHA');
+      range = `${base}...HEAD`;
+    }
     // NUL separation preserves spaces/newlines. Disable rename detection so
     // moving native code into a docs directory still selects its old owner.
-    const paths = execFileSync(
-      'git',
-      ['diff', '--name-only', '--no-renames', '-z', `${base}...HEAD`],
-      {
-        cwd,
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe'],
-      },
-    )
+    const paths = execFileSync('git', ['diff', '--name-only', '--no-renames', '-z', range], {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
       .split('\0')
       .filter(Boolean);
-    return { scope: ciScope(paths), reason: `Complete PR diff: ${paths.length} changed paths` };
+    const scope = ciScope(paths);
+    return {
+      scope: eventName === 'push' && scope.core ? complete() : scope,
+      reason: `Complete ${eventName === 'push' ? 'main push' : 'PR'} diff: ${paths.length} changed paths`,
+    };
   } catch {
     return { scope: complete(), reason: 'Diff unavailable or invalid: full verification' };
   }

@@ -2,7 +2,11 @@
 
 ## Unreleased
 
+- Skip unrelated compiler/platform validation for trustworthy documentation-only main pushes; preserve independent Linux Pages deployment and full code/dependency/release checks.
+
 - Build CI candidates once and validate coverage, browser/editor integration and installed consumers in parallel. Keep the required aggregate, original coverage/size/security gates and exact-artifact promotion; isolate repository and minimum-consumer Node runtimes.
+
+- Refresh Vite, URI parsing and extension-packaging dependencies, and validate scoped minimatch 11/glob 14 upgrades for repository tools. Preserve the audit gate and document application-level overrides for the upstream linter dependency chain; repository overrides do not propagate through published packages.
 
 - Build the VS Code tsserver bridge as an internal extension module instead of a separate workspace package. Preserve the shared compiler plugin, automatic native TS/JS integration and the private loader identity in packaged extensions.
 

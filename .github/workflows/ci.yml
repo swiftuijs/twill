@@ -33,7 +33,7 @@ jobs:
       - uses: ./.github/actions/setup-workspace
       - name: Validate CI routing, gates and workflow contracts before builds
         run: pnpm test:ci
-      - name: Select checks from the complete PR diff
+      - name: Select checks from the complete change range
         id: scope
         run: node scripts/ci-scope.mjs
         env:

@@ -72,10 +72,11 @@ test('dependency/build/workflow and unknown paths never fall through to a reduce
   ])
     assert.deepEqual(ciScope([path]), all);
 });
-test('non-PR and forced release events always select the full matrix without consulting a diff', () => {
-  for (const eventName of ['push', 'schedule', 'workflow_dispatch', 'workflow_call', undefined])
+test('manual/scheduled/release and forced events always select the full matrix', () => {
+  for (const eventName of ['schedule', 'workflow_dispatch', 'workflow_call', undefined])
     assert.deepEqual(eventScope({ eventName, eventPath: '/not-present' }).scope, all);
   assert.deepEqual(eventScope({ eventName: 'pull_request', forceFull: true }).scope, all);
+  assert.deepEqual(eventScope({ eventName: 'push', forceFull: true }).scope, all);
 });
 test('missing/malformed events or unavailable base history fail conservatively', () => {
   assert.deepEqual(eventScope({ eventName: 'pull_request', eventPath: '/not-present' }).scope, all);
@@ -126,12 +127,29 @@ test('actual PR CLI writes reduced outputs for docs, and includes every commit i
     );
     assert.deepEqual(JSON.parse(result).scope, docs);
     assert.equal(readFileSync(output, 'utf8'), 'core=false\nshell=false\n');
+    const documentation = git('rev-parse', 'HEAD');
+    const push = (before, after, extra = {}) => {
+      writeFileSync(eventPath, JSON.stringify({ ref: 'refs/heads/main', before, after, ...extra }));
+      return eventScope({ eventName: 'push', eventPath, cwd }).scope;
+    };
+    assert.deepEqual(push(base, documentation), docs);
+    for (const extra of [{ forced: true }, { deleted: true }, { ref: 'refs/tags/v1.0.0' }])
+      assert.deepEqual(push(base, documentation, extra), all);
+    for (const before of ['0'.repeat(40), 'f'.repeat(40), '--bad'])
+      assert.deepEqual(push(before, documentation), all);
+    assert.deepEqual(push(base, base), all, 'A stale checkout must not reduce checks');
+    writeFileSync(eventPath, JSON.stringify({ pull_request: { base: { sha: base } } }));
     mkdirSync(join(cwd, 'packages/shell/src'), { recursive: true });
     writeFileSync(join(cwd, 'packages/shell/src/index.twill'), 'changed ABI\n');
     commit();
     writeFileSync(join(cwd, 'README.md'), '# latest commit only changes docs\n');
     commit();
     assert.equal(eventScope({ eventName: 'pull_request', eventPath, cwd }).scope.shell, true);
+    const mixed = git('rev-parse', 'HEAD');
+    assert.deepEqual(push(documentation, mixed), all, 'Every commit in a push must be included');
+    mkdirSync(join(cwd, 'editors/vscode'), { recursive: true });
+    writeFileSync(join(cwd, 'editors/vscode/example.js'), 'code');
+    assert.deepEqual(push(mixed, commit()), all, 'Main code pushes retain the full matrix');
   } finally {
     rmSync(folder, { recursive: true, force: true });
   }

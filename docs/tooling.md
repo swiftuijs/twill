@@ -118,6 +118,31 @@ Use Microsoft's ESLint extension for editor lint feedback. In `.vscode/settings.
 }
 ```
 
+### Dependency security
+
+If your application's audit reports [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249), current upstream ESLint/typescript-eslint dependencies may still select minimatch 10. Twill validates minimatch 11 with ESLint 9/10 on Node 20.19.0. Apply the temporary override in your **application root**; merge it with existing settings.
+
+Use ESLint 10 for this security workaround. If upgrading from ESLint 9, run `npm install --save-dev eslint@^10` or `pnpm add -D eslint@^10` and review its migration requirements. Twill retains ESLint 9 compatibility, but ESLint 9 also depends on older minimatch majors that this scoped override does not replace.
+
+For npm, add to `package.json`, then run `npm update minimatch` and `npm audit`. The explicit update refreshes existing lockfile resolutions; an ordinary install can retain the old nested version with npm 10.
+
+```json
+{
+  "overrides": {
+    "minimatch@^10.0.0": "^11.0.3"
+  }
+}
+```
+
+For pnpm, add to `pnpm-workspace.yaml`, then run `pnpm install` and `pnpm audit`:
+
+```yaml
+overrides:
+  'minimatch@10': '^11.0.3'
+```
+
+Run your lint and test commands after changing resolution. The override replaces only minimatch 10 requests; remove it when upstream dependencies select a patched version themselves. Twill's repository overrides do not propagate through published packages, so installing the linter alone does not apply this application setting. Other application dependencies may have separate audit findings.
+
 ## Check before building
 
 A bundler emits code; it does not prove types or exhaustive union handling. Add application scripts to `package.json`:

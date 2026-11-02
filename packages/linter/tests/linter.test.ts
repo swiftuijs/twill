@@ -7,6 +7,32 @@ import { join } from 'node:path';
 
 afterEach(disposeProjects);
 describe('ESLint Twill processor', () => {
+  it('discovers nested dialect files with braces/extglobs and respects flat-config ignores', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'twill-lint-globs-'));
+    try {
+      mkdirSync(join(root, 'src/nested'), { recursive: true });
+      mkdirSync(join(root, 'src/generated'));
+      writeFileSync(join(root, 'src/main.twill'), 'export const value = [1].map { n in n*2 };');
+      writeFileSync(join(root, 'src/nested/view.twillx'), 'export const value = 1;');
+      writeFileSync(join(root, 'src/generated/bad.twill'), 'invalid {');
+      const eslint = new ESLint({
+        cwd: root,
+        overrideConfigFile: true,
+        overrideConfig: [{ ignores: ['**/generated/**'] }, ...twill.configs.recommended!],
+      });
+      for (const pattern of ['src/**/*.{twill,twillx}', 'src/**/*.@(twill|twillx)']) {
+        const results = await eslint.lintFiles([pattern]);
+        expect(
+          results
+            .map((result) => result.filePath.slice(root.length + 1).replaceAll('\\', '/'))
+            .sort(),
+        ).toEqual(['src/main.twill', 'src/nested/view.twillx']);
+        expect(results.flatMap((result) => result.messages)).toEqual([]);
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
   const engine = (extra: any = {}, fix = false) =>
     new ESLint({
       overrideConfigFile: true,

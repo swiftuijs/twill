@@ -120,8 +120,54 @@ try {
     },
   );
   verifyExhaustive();
+  // Published packages cannot impose root overrides on applications. Exercise
+  // the documented npm opt-in using a real independent install, not workspace
+  // resolution, under both supported ESLint majors.
+  const application = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+  application.overrides = { 'minimatch@^10.0.0': '^11.0.3' };
+  writeFileSync(join(root, 'package.json'), JSON.stringify(application));
+  // npm 10 can retain the old nested resolution when an override is added
+  // after installation. Update that dependency explicitly without deleting
+  // the application's lockfile or changing unrelated dependency ranges.
+  npm(['update', 'minimatch', '--ignore-scripts', '--no-audit', '--no-fund'], {
+    cwd: root,
+    stdio: 'pipe',
+  });
+  for (const eslintVersion of ['10.12.0', '9.39.5']) {
+    npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', `eslint@${eslintVersion}`], {
+      cwd: root,
+      stdio: 'pipe',
+    });
+    const dependencies = JSON.parse(
+      npm(['ls', 'minimatch', '--all', '--json'], {
+        cwd: root,
+        encoding: 'utf8',
+      }),
+    );
+    let patchedMatchers = 0;
+    function inspect(tree) {
+      for (const [name, dependency] of Object.entries(tree.dependencies ?? {})) {
+        if (name === 'minimatch') {
+          assert(
+            !dependency.version.startsWith('10.'),
+            'An application override must replace every minimatch 10',
+          );
+          if (dependency.version.startsWith('11.')) patchedMatchers++;
+        }
+        inspect(dependency);
+      }
+    }
+    inspect(dependencies);
+    assert(patchedMatchers > 0, 'The consumer must exercise minimatch 11');
+    run(['node_modules/eslint/bin/eslint.js', 'main.twill']);
+    verifyExhaustive();
+    if (eslintVersion.startsWith('10.')) {
+      const audit = JSON.parse(npm(['audit', '--json'], { cwd: root, encoding: 'utf8' }));
+      assert.equal(audit.metadata.vulnerabilities.total, 0);
+    }
+  }
   console.log(
-    'Independent npm consumer: ESLint 9/10 syntax, typed exhaustiveness and public linter types passed.',
+    'Independent npm consumer: ESLint 9/10 syntax, typed exhaustiveness, public types, minimatch 11 overrides and ESLint 10 audit passed.',
   );
 } finally {
   rmSync(root, { recursive: true, force: true });

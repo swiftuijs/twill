@@ -19,6 +19,18 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const readYaml = (path) => parse(readFileSync(join(root, path), 'utf8'), { uniqueKeys: true });
 const workflow = readYaml('.github/workflows/ci.yml');
 const { jobs } = workflow;
+
+test('Pages deployment is an independent Linux workflow with no platform-validation dependency', () => {
+  const pages = readYaml('.github/workflows/docs.yml');
+  assert.deepEqual(Object.keys(pages.jobs), ['build', 'deploy']);
+  assert.equal(pages.jobs.deploy.needs, 'build');
+  assert.equal(pages.on.workflow_run, undefined);
+  for (const job of Object.values(pages.jobs)) {
+    assert.equal(job['runs-on'], 'ubuntu-24.04');
+    assert.equal(job.uses, undefined);
+  }
+  assert(pages.jobs.deploy.steps.some((step) => step.uses?.startsWith('actions/deploy-pages@')));
+});
 const list = (value) => (Array.isArray(value) ? value : value ? [value] : []);
 const uses = (steps, name) => steps.find((step) => step.uses === name);
 
