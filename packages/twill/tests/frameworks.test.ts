@@ -440,35 +440,39 @@ describe('readable native children and lazy slots', () => {
     ).toBe('<button>42</button>');
   });
 
-  it.each(['react', 'vue'])('preserves nested component boundaries inside collectors for %s', (runtime) => {
-    const Panel =
-      runtime === 'react'
-        ? (props: { children?: React.ReactNode }) => createElement('section', null, props.children)
-        : defineComponent({
-            setup(_, { slots }) {
-              return () => h('section', null, slots.default?.());
-            },
-          });
-    const Item =
-      runtime === 'react'
-        ? (props: { children?: React.ReactNode }) => createElement('button', null, props.children)
-        : defineComponent({
-            setup(_, { slots }) {
-              return () => h('button', null, slots.default?.());
-            },
-          });
-    const source = 'return Panel { "before"; Item { <span>Save</span>; }; };';
-    const tree = compile(source, { Panel, Item }, runtime);
-    if (runtime === 'react') {
-      expect(renderToStaticMarkup(tree)).toBe(
-        '<section>before<button><span>Save</span></button></section>',
-      );
-    } else {
-      return renderToString(createSSRApp({ render: () => tree })).then((html) =>
-        expect(html).toBe('<section>before<button><span>Save</span></button></section>'),
-      );
-    }
-  });
+  it.each(['react', 'vue'])(
+    'preserves nested component boundaries inside collectors for %s',
+    (runtime) => {
+      const Panel =
+        runtime === 'react'
+          ? (props: { children?: React.ReactNode }) =>
+              createElement('section', null, props.children)
+          : defineComponent({
+              setup(_, { slots }) {
+                return () => h('section', null, slots.default?.());
+              },
+            });
+      const Item =
+        runtime === 'react'
+          ? (props: { children?: React.ReactNode }) => createElement('button', null, props.children)
+          : defineComponent({
+              setup(_, { slots }) {
+                return () => h('button', null, slots.default?.());
+              },
+            });
+      const source = 'return Panel { "before"; Item { <span>Save</span>; }; };';
+      const tree = compile(source, { Panel, Item }, runtime);
+      if (runtime === 'react') {
+        expect(renderToStaticMarkup(tree)).toBe(
+          '<section>before<button><span>Save</span></button></section>',
+        );
+      } else {
+        return renderToString(createSSRApp({ render: () => tree })).then((html) =>
+          expect(html).toBe('<section>before<button><span>Save</span></button></section>'),
+        );
+      }
+    },
+  );
 
   it('emits the same minified JavaScript as handwritten JSX', () => {
     const generated = transform('export const view = Slot { <button>Save</button>; };', {
@@ -534,13 +538,12 @@ describe('readable native children and lazy slots', () => {
     },
   );
 
-
   it('preserves computed __proto__ slot keys as own properties', () => {
     const Panel = defineComponent({ setup: () => () => h('section') });
     const source = 'Panel {} __proto__: { <span>Own slot</span>; }';
-    expect(
-      transform(source, { filename: 'slot.twillx', jsxImportSource: 'vue' }).code,
-    ).toContain('["__proto__"]');
+    expect(transform(source, { filename: 'slot.twillx', jsxImportSource: 'vue' }).code).toContain(
+      '["__proto__"]',
+    );
     const tree = compile('return ' + source + ';', { Panel }, 'vue');
     expect(Object.hasOwn(tree.children, '__proto__')).toBe(true);
     expect(Object.getPrototypeOf(tree.children)).toBe(Object.prototype);

@@ -28,3 +28,11 @@ Native switches with explicit never checks remain supported. Multi-statement arm
 ## Decision history
 
 Retrospective contract; stronger explicit-default coverage remains a lint policy.
+
+## Shared return emission amendment (unreleased)
+
+A direct return that is the only statement in an existing block may reuse that block for generated subject/tag snapshots and native branches. Other direct returns keep their own lexical block. Preserve per-arm binding scopes, one-time subject/tag evaluation, descriptor witnesses, exhaustiveness checks, unmatched-value errors and suspension ownership.
+
+An eligible implicitly returning trailing callback or content function can return the match/switch through native branches in its existing function body, without a second IIFE. Retain the expression boundary for direct eval and keep the existing explicit-return restriction for await/yield. General expression positions still need an expression-producing boundary. Remove only the original return statement's terminating semicolon when replacing it with a block; unbraced if/else ownership must remain valid.
+
+This changes generated structure, not matching grammar or native switch-statement behavior. Compare equivalent native execution, lexical TDZ/eval boundaries, scopes, mappings and output budgets. It is not included in published 0.3.1.

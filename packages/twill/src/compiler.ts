@@ -607,22 +607,17 @@ export function transform(source: string, options: TransformOptions = {}) {
         else {
           // Parentheses retain object/comma expression meaning in block returns.
           code.prependLeft(statement.start, 'return (');
-          code.appendLeft(source[statement.end - 1] === ';' ? statement.end - 1 : statement.end, ')');
+          code.appendLeft(
+            source[statement.end - 1] === ';' ? statement.end - 1 : statement.end,
+            ')',
+          );
         }
       }
     }
     if (component)
       code.prependLeft(
         closures.at(-1).end,
-        (vue
-          ? '}}'
-          : nativeChild
-            ? ''
-            : bareChild
-              ? '}'
-              : directChild
-                ? ')}'
-                : ')()}') +
+        (vue ? '}}' : nativeChild ? '' : bareChild ? '}' : directChild ? ')}' : ')()}') +
           `</${calleeName(node.callee)}>)`,
       );
     else code.appendLeft(closures.at(-1).end, ')');

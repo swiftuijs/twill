@@ -163,7 +163,7 @@ export default function App() {
 }
 ```
 
-The unreleased source compiler prints eligible lone React JSX children directly and single-expression Vue slots as concise arrows. Vue slot objects and lazy invocation remain required; published 0.3.1 predates this output cleanup. Application syntax and runtime ownership are unchanged.
+The unreleased source compiler simplifies single-expression callbacks/render props/slots, eligible direct JSX children and return-only match/switch blocks. Eligible implicit match returns avoid another IIFE. Vue slot objects, lazy invocation, lexical scopes, single evaluation and exhaustiveness checks remain required. General expression/eval/suspension boundaries remain; published 0.3.1 predates this output cleanup. Application syntax and runtime ownership are unchanged.
 
 For Vue JSX use the normal Twill adapter and `jsxImportSource: "vue"`. Component closures become lazy slots. Vue SFCs and framework SSR/HMR need their standard host integrations. Import component libraries normally; [SwiftUI.js](https://swiftuijs.evecalm.com/) is a sibling React library with its own setup, not a compiler dependency. See [frameworks](https://twill.evecalm.com/frameworks) and [build tools](https://twill.evecalm.com/build-tools).
 

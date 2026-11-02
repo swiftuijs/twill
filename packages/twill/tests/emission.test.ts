@@ -38,25 +38,32 @@ it('keeps lexical this/arguments and implicitReturn:false behavior', () => {
   const source =
     'function run(){const owner={value:4,read(){return [1].map { this.value + arguments.length }[0];}};return owner.read(7);}';
   expect(evaluate(source)).toBe(5);
-  expect(evaluate('function run(){return [1].map { n in n + 1 };}', undefined, { implicitReturn: false })).toEqual([undefined]);
+  expect(
+    evaluate('function run(){return [1].map { n in n + 1 };}', undefined, {
+      implicitReturn: false,
+    }),
+  ).toEqual([undefined]);
 });
 
-it.each(['switch', 'match'])('reuses a return-only block for %s without deleting arm scopes', (keyword) => {
-  const branch =
-    keyword === 'switch'
-      ? 'case {kind:"loaded",value}:value;default:0;'
-      : 'case State.loaded({value}):value;default:0;';
-  const source = 'function run(input){return ' + keyword + '(input){' + branch + '};}';
-  const result = transform(source);
-  const ast = ts.createSourceFile('emission.ts', result.code, ts.ScriptTarget.Latest, true);
-  const run = ast.statements[0] as ts.FunctionDeclaration;
-  expect(run.body!.statements[0]!.kind).toBe(ts.SyntaxKind.VariableStatement);
-  expect(run.body!.statements.some(ts.isEmptyStatement)).toBe(false);
-  expect(result.code).toContain(': { const');
-  expect(arrows(result.code)).toHaveLength(0);
-  expect(evaluate(source, { kind: 'loaded', value: 7 })).toBe(7);
-  expect(evaluate(source, { kind: 'absent' })).toBe(0);
-});
+it.each(['switch', 'match'])(
+  'reuses a return-only block for %s without deleting arm scopes',
+  (keyword) => {
+    const branch =
+      keyword === 'switch'
+        ? 'case {kind:"loaded",value}:value;default:0;'
+        : 'case State.loaded({value}):value;default:0;';
+    const source = 'function run(input){return ' + keyword + '(input){' + branch + '};}';
+    const result = transform(source);
+    const ast = ts.createSourceFile('emission.ts', result.code, ts.ScriptTarget.Latest, true);
+    const run = ast.statements[0] as ts.FunctionDeclaration;
+    expect(run.body!.statements[0]!.kind).toBe(ts.SyntaxKind.VariableStatement);
+    expect(run.body!.statements.some(ts.isEmptyStatement)).toBe(false);
+    expect(result.code).toContain(': { const');
+    expect(arrows(result.code)).toHaveLength(0);
+    expect(evaluate(source, { kind: 'loaded', value: 7 })).toBe(7);
+    expect(evaluate(source, { kind: 'absent' })).toBe(0);
+  },
+);
 
 it.each([
   'match(value){case State.loaded({value:result}):result;default:0;}',
@@ -102,7 +109,9 @@ it('retains temporary scopes when earlier statements could observe their TDZ', (
 
 it('retains the original suspension restriction for implicit match returns', () => {
   expect(() =>
-    transform('const result=[1].map { async value in match(value){default:await Promise.resolve(value);} };'),
+    transform(
+      'const result=[1].map { async value in match(value){default:await Promise.resolve(value);} };',
+    ),
   ).toThrow('requires a direct return');
 });
 

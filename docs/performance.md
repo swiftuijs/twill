@@ -122,3 +122,9 @@ Start with one representative module or script and an equivalent native baseline
 The [benchmark archive](./benchmark-history.md) preserves the original compiler, cleanup, branching, enum, project/editor, React source, optional-helper and shell reports, including failed reviews and retired implementations. Use it to inspect methods and reproduce a specific result. Different fixtures, versions and environments are not one comparable performance series.
 
 Correctness and generated-output budgets are enforced separately from timing observations. Controlled-host timing targets are not portable guarantees across CI runners. Reproduction instructions are in the archive and the [contributor guide](https://github.com/swiftuijs/twill/blob/main/docs/contributing/tooling.md#benchmark-changes).
+
+## Shared emission cleanup (unreleased)
+
+The source compiler emits simple callbacks/render props/Vue slots as concise arrows and eligible React JSX children as native nested JSX. Return-only match/switch blocks reuse their enclosing block where safe; eligible implicit callback returns use native branches without another IIFE. General expression and direct-eval boundaries, required cleanup functions, subject/tag snapshots, per-arm lexical scopes and erased type witnesses remain.
+
+The canonical playground examples share one regression suite through the actual public compiler and generated-code formatter. Native differential execution, framework rendering, source mappings, strict checking and the existing minified-output budgets validate the cleanup. No runtime speedup or broad byte-parity claim follows from fewer TSX braces. These source changes are not included in published 0.3.1.

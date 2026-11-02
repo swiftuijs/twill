@@ -84,7 +84,8 @@ export function lowerSwitchExpressions(
   const visit = (node: Node, parent?: Node) => {
     if (node.type === 'BlockStatement' && node.body.length === 1) {
       const statement = node.body[0];
-      const value = statement.type === 'ReturnStatement' ? statement.argument : statement.expression;
+      const value =
+        statement.type === 'ReturnStatement' ? statement.argument : statement.expression;
       if (
         value?.type === 'TwillSwitchExpression' &&
         (statement.type === 'ReturnStatement' || implicit.has(value))
