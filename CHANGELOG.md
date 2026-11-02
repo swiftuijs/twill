@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Refresh compatible Vite, URI parsing and extension-packaging dependency versions to address 17 dependency-audit findings. The upstream minimatch/glob major-version advisories remain unresolved; retain the existing audit gate.
+
 - Build the VS Code tsserver bridge as an internal extension module instead of a separate workspace package. Preserve the shared compiler plugin, automatic native TS/JS integration and the private loader identity in packaged extensions.
 
 ## 0.3.1
