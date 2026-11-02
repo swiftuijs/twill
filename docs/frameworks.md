@@ -66,13 +66,13 @@ The source compiler simplifies a lone JSX child to ordinary nested JSX:
 ```tsx
 <Panel>
   <button>Save</button>
-</Panel>
+</Panel>;
 ```
 
 A one-expression Vue slot uses a concise lazy arrow:
 
 ```tsx
-<Panel>{{ default: () => <button>Save</button> }}</Panel>
+<Panel>{{ default: () => <button>Save</button> }}</Panel>;
 ```
 
 The Vue braces represent a JSX expression containing the slot object. The arrow preserves lazy evaluation and reactive reads. Dynamic React expressions and content requiring declarations, cleanup or control flow retain their necessary wrappers. Published 0.3.1 predates this output cleanup; no application syntax or configuration changes.

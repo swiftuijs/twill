@@ -414,7 +414,11 @@ export function transform(source: string, options: TransformOptions = {}) {
         const tokens = Parser.tokenizer(gap, { ecmaVersion: 'latest' });
         const first = tokens.getToken();
         const last = tokens.getToken();
-        code.overwrite(tagEnd, callEnd, opening + gap.slice(first.end, last.start));
+        code.overwrite(
+          tagEnd,
+          callEnd,
+          opening + (nativeChild ? '' : gap.slice(first.end, last.start)),
+        );
       } else code.appendLeft(callEnd, opening);
     } else if (hadParens) {
       // Keep comments and trailing commas intact. The closing parenthesis is

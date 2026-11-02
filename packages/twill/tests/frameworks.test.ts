@@ -527,7 +527,7 @@ describe('readable native children and lazy slots', () => {
     expect(events).toEqual(['cleanup']);
   });
 
-  it.each(['react', 'vue'])('retains original JSX token mappings and diagnostics for %s', (runtime) => {
+  it.each(['react', 'vue'])('maps JSX tokens and type errors for %s', (runtime) => {
     const source =
       'declare const Slot: any;\nexport const view = Slot {\n  <button>{(1).toUpperCase()}</button>;\n};';
     const result = transform(source, { filename: 'mapped.twillx', jsxImportSource: runtime });
