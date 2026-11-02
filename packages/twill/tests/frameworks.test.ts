@@ -474,6 +474,21 @@ describe('readable native children and lazy slots', () => {
     },
   );
 
+  it('retains comma grouping and evaluates React child expressions once in order', () => {
+    const events: number[] = [];
+    const Panel = (props: { children: number }) => createElement('span', null, props.children);
+    const source = 'Panel { (record(1), record(2)); }';
+    expect(transform(source, { filename: 'comma.twillx' }).code).toContain('>{(');
+    const record = (value: number) => {
+      events.push(value);
+      return value;
+    };
+    expect(renderToStaticMarkup(compile('return ' + source + ';', { Panel, record }))).toBe(
+      '<span>2</span>',
+    );
+    expect(events).toEqual([1, 2]);
+  });
+
   it('emits the same minified JavaScript as handwritten JSX', () => {
     const generated = transform('export const view = Slot { <button>Save</button>; };', {
       filename: 'child.twillx',
@@ -538,13 +553,34 @@ describe('readable native children and lazy slots', () => {
     },
   );
 
+  it('preserves dynamic native-tag behavior of the default slot object', async () => {
+    let reads = 0;
+    const read = () => {
+      reads++;
+      return 'Save';
+    };
+    const tree = compile('return Panel { <button>{read()}</button>; };', {
+      Panel: 'section',
+      read,
+    }, 'vue');
+    expect(reads).toBe(1);
+    expect(await renderToString(createSSRApp({ render: () => tree }))).toBe(
+      '<section><button>Save</button></section>',
+    );
+    expect(reads).toBe(1);
+  });
+
   it('preserves computed __proto__ slot keys as own properties', () => {
     const source = 'Panel {} __proto__: { "Own slot"; }';
     const result = transform(source, { filename: 'slot.twillx', jsxImportSource: 'vue' });
     const ast = ts.createSourceFile('slot.tsx', result.code, ts.ScriptTarget.Latest, true);
     let record: ts.ObjectLiteralExpression | undefined;
     const find = (node: ts.Node) => {
-      if (ts.isJsxExpression(node) && node.expression && ts.isObjectLiteralExpression(node.expression))
+      if (
+        ts.isJsxExpression(node) &&
+        node.expression &&
+        ts.isObjectLiteralExpression(node.expression)
+      )
         record = node.expression;
       ts.forEachChild(node, find);
     };
