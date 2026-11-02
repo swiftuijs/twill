@@ -559,12 +559,12 @@ describe('readable native children and lazy slots', () => {
       reads++;
       return 'Save';
     };
-    const source = 'return Panel { <button>{read()}</button>; };';
+    const source = 'return Panel { read(); };';
     const tree = compile(source, { Panel: 'section', read }, 'vue');
     expect(reads).toBe(1);
-    expect(await renderToString(createSSRApp({ render: () => tree }))).toBe(
-      '<section><button>Save</button></section>',
-    );
+    expect(await renderToString(createSSRApp({ render: () => tree }))).toBe('<section>Save</section>');
+    const shorthand = h('section', null, read);
+    expect(await renderToString(createSSRApp({ render: () => shorthand }))).toBe('<section></section>');
     expect(reads).toBe(1);
   });
 
