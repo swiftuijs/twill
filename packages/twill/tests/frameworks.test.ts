@@ -567,9 +567,9 @@ describe('readable native children and lazy slots', () => {
     );
     const shorthand = h('section', null, read);
     expect(await renderToString(createSSRApp({ render: () => shorthand }))).toBe(
-      '<section></section>',
+      '<section>Save</section>',
     );
-    expect(reads).toBe(1);
+    expect(reads).toBe(2);
   });
 
   it('preserves computed __proto__ slot keys as own properties', () => {

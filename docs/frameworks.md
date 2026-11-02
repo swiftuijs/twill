@@ -76,3 +76,5 @@ A one-expression Vue slot uses a concise lazy arrow:
 ```
 
 The Vue braces represent a JSX expression containing the slot object. The arrow preserves lazy evaluation and reactive reads. Dynamic React expressions and content requiring declarations, cleanup or control flow retain their necessary wrappers. Published 0.3.1 predates this output cleanup; no application syntax or configuration changes.
+
+The slot object also preserves the declared Vue 3.3 compatibility floor for variables that resolve to native tags. A known component may accept a function-only default slot, but the compiler does not assume every uppercase tag is a component object. Named slots also retain their object representation.
