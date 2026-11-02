@@ -766,7 +766,7 @@ export async function run() {
   assert.equal(vscode.window.activeTextEditor?.document.languageId, 'typescript');
   const generated = vscode.window.activeTextEditor!.document.getText();
   assert(generated.includes('=>'));
-  assert.match(generated, /=>\s*\{\n\s+return/);
+  assert.match(generated, /=>\s*timesTwo\(item\)/);
   assert.equal(api.getText(), originalSource, 'Generated display must not edit source');
   const invalidView = new vscode.WorkspaceEdit();
   invalidView.replace(
