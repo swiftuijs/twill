@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Refresh Vite, URI parsing and extension-packaging dependencies, and validate scoped minimatch 11/glob 14 upgrades for repository tools. Preserve the audit gate and document application-level overrides for the upstream linter dependency chain; repository overrides do not propagate through published packages.
+
 - Build the VS Code tsserver bridge as an internal extension module instead of a separate workspace package. Preserve the shared compiler plugin, automatic native TS/JS integration and the private loader identity in packaged extensions.
 
 ## 0.3.1

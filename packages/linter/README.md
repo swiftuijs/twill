@@ -53,6 +53,10 @@ Twill 0.2.0 adds `if const value = lookup() { use(value); }` with branch-local n
 
 Twill 0.2.0 includes associated-value enums and `match` expressions: `match (state) { case State.loaded({ value }): value; default: 0; }`. Named payload bindings and erased factory descriptors compile to native switches without calling factories. Native switch statements retain JS fallthrough; match and switch expressions return one result without fallthrough. Use the coordinated 0.2.0 packages and extension. Compiler, formatter, linter, highlighter, export and editor changes are validated together. See [syntax and compatibility](https://twill.evecalm.com/syntax#match-expressions) and [RFC 0016](https://github.com/swiftuijs/twill/blob/main/docs/rfcs/0016-pattern-matching.md).
 
+## Dependency security
+
+For minimatch audit findings in upstream ESLint/typescript-eslint dependencies, see the [validated npm/pnpm application overrides](https://twill.evecalm.com/tooling#dependency-security). Repository overrides do not propagate through published packages.
+
 ## Development
 
 This package's implementation uses Twill and emits ordinary JavaScript. Build and check a checkout with the workspace tools; see [developing tooling in Twill](https://github.com/swiftuijs/twill/blob/main/docs/contributing/dogfooding.md) for bootstrap and contribution instructions.
