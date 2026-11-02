@@ -8,7 +8,17 @@ import { join } from 'node:path';
 
 function normalize(value: any): any {
   if (Array.isArray(value))
-    return value.filter((node) => node?.type !== 'EmptyStatement').map(normalize);
+    return value
+      .filter(
+        (node) =>
+          node?.type !== 'EmptyStatement' &&
+          !(
+            node?.type === 'JSXText' &&
+            /[\r\n]/.test(node.value) &&
+            /^[ \t\r\n]*$/.test(node.value)
+          ),
+      )
+      .map(normalize);
   if (!value || typeof value !== 'object') return value;
   return Object.fromEntries(
     Object.entries(value)
@@ -40,6 +50,26 @@ it.each([
   );
   expect(result.map.sourcesContent).toEqual([source]);
   expect(pretty).toContain('\n');
+});
+
+it.each([
+  'const view=<div><span>A</span> <span>B</span></div>;',
+  'const view=<div> <span>A</span> </div>;',
+])('preserves meaningful JSX spaces in emitted JavaScript: %s', async (source) => {
+  const ts = await import('typescript');
+  const pretty = await formatGenerated(source, { filepath: 'spaces.tsx' });
+  const emitted = (text: string) =>
+    ts.transpileModule(text, {
+      fileName: 'spaces.tsx',
+      compilerOptions: {
+        target: ts.ScriptTarget.ES2022,
+        module: ts.ModuleKind.ESNext,
+        jsx: ts.JsxEmit.ReactJSX,
+      },
+    }).outputText;
+  expect(normalize(parseSyntax(emitted(pretty), { filename: 'spaces.js' }).ast)).toEqual(
+    normalize(parseSyntax(emitted(source), { filename: 'spaces.js' }).ast),
+  );
 });
 
 describe('Prettier Twill plugin', () => {
