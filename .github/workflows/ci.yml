@@ -68,8 +68,14 @@ jobs:
         if: needs.changes.outputs.core == 'true'
         run: pnpm build
       - name: Check types, lint and formatting
+        id: static
         if: needs.changes.outputs.core == 'true'
         run: pnpm typecheck && pnpm lint && pnpm format:check && pnpm verify:skills
+      - name: Show formatting differences after static validation fails
+        if: failure() && steps.static.outcome == 'failure'
+        run: |
+          pnpm format
+          git diff --exit-code
       - name: Unit coverage and grammar tests
         if: needs.changes.outputs.core == 'true'
         # Coverage runs the unit suites; do not repeat them through pnpm check.

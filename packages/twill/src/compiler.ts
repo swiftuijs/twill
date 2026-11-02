@@ -2,7 +2,7 @@ import MagicString from 'magic-string';
 import { Parser, tokTypes } from 'acorn';
 import { parse } from './parser.js';
 import { lowerDefers } from './defer.js';
-import { lowerSwitchExpressions } from './branches.js';
+import { canInlineSwitchExpression, lowerSwitchExpressions } from './branches.js';
 import { lowerEnums, mapEnumCopies } from './enums.js';
 import {
   originalPositionFor,
@@ -64,6 +64,17 @@ type ClosureMetadata = {
   async: boolean;
   implicitMembers: number[];
 };
+function conciseExpression(body: Node[]): boolean {
+  const expression =
+    body.length === 1 && body[0]!.type === 'ExpressionStatement' ? body[0]!.expression : undefined;
+  return (
+    !!expression &&
+    (expression.type !== 'TwillSwitchExpression' || !canInlineSwitchExpression(expression))
+  );
+}
+function expressionGrouping(expression: Node): string {
+  return ['ObjectExpression', 'SequenceExpression'].includes(expression.type) ? '(' : '';
+}
 function walk(node: Node, visit: (node: Node) => void): void {
   visit(node);
   for (const key of Object.keys(node)) {
@@ -229,7 +240,10 @@ export function transform(source: string, options: TransformOptions = {}) {
     do name = `__twillArg${implicitCounter++}`;
     while (usedNames.has(name));
     usedNames.add(name);
-    code.overwrite(metadata.node.start, metadata.node.start + 1, `(${name}) => {`);
+    const body = metadata.node.body.body as Node[];
+    const concise = options.implicitReturn !== false && conciseExpression(body);
+    const opening = concise ? expressionGrouping(body[0]!.expression) : '{';
+    code.overwrite(metadata.node.start, metadata.node.start + 1, `(${name}) => ${opening}`);
     for (const offset of metadata.implicitMembers) code.appendLeft(offset, name);
   }
   // TypeScript only reads file-level leading pragmas, and the last wins.
@@ -271,10 +285,12 @@ export function transform(source: string, options: TransformOptions = {}) {
     return edits.toString();
   };
   let counter = 0;
+  const directReturns: Node[] = [];
   for (const node of parsed.calls) {
     const { callEnd, hadParens, originalArgs, closures } = node.trailing;
     const component = componentCalls.has(node);
     let nativeChild = false;
+    let bareChild = false;
     if (component) {
       if (
         originalArgs.length > 1 ||
@@ -325,7 +341,13 @@ export function transform(source: string, options: TransformOptions = {}) {
         (!hadParens ||
           originalArgs.length > 0 ||
           /^\s*\(\s*\)$/.test(source.slice(tagEnd, callEnd)));
-      const opening = vue ? '>{({default: ' : nativeChild ? '>' : '>{(';
+      bareChild =
+        !vue &&
+        (!!metadataByNode.get(child)!.header ||
+          (child.body.body.length === 1 &&
+            expression !== undefined &&
+            expression.type !== 'SequenceExpression'));
+      const opening = vue ? '>{{default: ' : nativeChild ? '>' : bareChild ? '>{' : '>{(';
       code.appendLeft(node.callee.start, '(<');
       const props = originalArgs[0] as Node | undefined;
       const directAttributes =
@@ -450,7 +472,13 @@ export function transform(source: string, options: TransformOptions = {}) {
           ].includes(statement.type),
         ) &&
         body.filter((statement) => statement.type !== 'EmptyStatement').at(-1) === expressions[0];
-      const conciseSlot = vue && singleContent && body.length === 1;
+      const returnsValue =
+        singleContent ||
+        (options.implicitReturn !== false &&
+          body.length === 1 &&
+          body[0]!.type === 'ExpressionStatement');
+      const conciseBody = returnsValue && conciseExpression(body);
+      const grouping = conciseBody ? expressionGrouping(expressions[0]!.expression) : '{';
       if (singleContent && body.length === 1 && !vue) {
         // A single JSX child is a value, not an array or an eagerly invoked
         // callback. This also supports libraries requiring ReactElement children.
@@ -461,7 +489,7 @@ export function transform(source: string, options: TransformOptions = {}) {
           code.overwrite(statement.expression.end, closure.end, '', { contentOnly: true });
         } else {
           code.remove(closure.start, closure.start + 1);
-          code.remove(closure.end - 1, closure.end);
+          code.overwrite(closure.end - 1, closure.end, '', { contentOnly: true });
           if (source[statement.end - 1] === ';') code.remove(statement.end - 1, statement.end);
         }
         continue;
@@ -473,7 +501,9 @@ export function transform(source: string, options: TransformOptions = {}) {
         code.overwrite(
           metadata.label.start,
           closure.start,
-          component && vue ? `, [${JSON.stringify(label)}]: ` : ', ',
+          component && vue
+            ? `, ${label === '__proto__' ? `[${JSON.stringify(label)}]` : JSON.stringify(label)}: `
+            : ', ',
         );
       }
       if (metadata.header) {
@@ -489,14 +519,14 @@ export function transform(source: string, options: TransformOptions = {}) {
         code.overwrite(
           header.inStart,
           header.end,
-          `${header.parenthesized ? '' : ') '}=> ${conciseSlot ? '(' : '{'}`,
+          `${header.parenthesized ? '' : ') '}=> ${grouping}`,
         );
       } else if (!metadata.implicitMembers.length)
-        code.overwrite(closure.start, closure.start + 1, conciseSlot ? '() => (' : '() => {');
-      if (conciseSlot) {
+        code.overwrite(closure.start, closure.start + 1, `() => ${grouping}`);
+      if (conciseBody) {
         const statement = expressions[0]!;
         if (source[statement.end - 1] === ';') code.remove(statement.end - 1, statement.end);
-        code.overwrite(closure.end - 1, closure.end, ')', { contentOnly: true });
+        code.overwrite(closure.end - 1, closure.end, grouping ? ')' : '', { contentOnly: true });
         continue;
       }
       if (content && !singleContent) {
@@ -567,28 +597,32 @@ export function transform(source: string, options: TransformOptions = {}) {
             ? `;return ${collector};`
             : `;return ${collector}.length === 1 ? ${collector}[0] : ${collector};`,
         );
-      } else if (
-        singleContent ||
-        (options.implicitReturn !== false &&
-          body.length === 1 &&
-          body[0]!.type === 'ExpressionStatement')
-      ) {
-        // Parentheses prevent object literals / comma expressions from changing meaning.
+      } else if (returnsValue) {
         const statement = singleContent ? expressions[0]! : body[0]!;
-        code.prependLeft(statement.start, 'return (');
-        code.appendLeft(source[statement.end - 1] === ';' ? statement.end - 1 : statement.end, ')');
+        if (
+          statement.expression.type === 'TwillSwitchExpression' &&
+          canInlineSwitchExpression(statement.expression)
+        )
+          directReturns.push(statement.expression);
+        else {
+          // Parentheses retain object/comma expression meaning in block returns.
+          code.prependLeft(statement.start, 'return (');
+          code.appendLeft(source[statement.end - 1] === ';' ? statement.end - 1 : statement.end, ')');
+        }
       }
     }
     if (component)
       code.prependLeft(
         closures.at(-1).end,
         (vue
-          ? '})}'
+          ? '}}'
           : nativeChild
             ? ''
-            : directChild || metadataByNode.get(closures[0])!.header
-              ? ')}'
-              : ')()}') +
+            : bareChild
+              ? '}'
+              : directChild
+                ? ')}'
+                : ')()}') +
           `</${calleeName(node.callee)}>)`,
       );
     else code.appendLeft(closures.at(-1).end, ')');
@@ -611,6 +645,7 @@ export function transform(source: string, options: TransformOptions = {}) {
           loc: node.loc.start,
         });
       },
+      directReturns,
     );
   // Apply outer attribute braces after nested call suffixes at the same offset.
   for (const end of attributeClosings) code.appendLeft(end, '}');

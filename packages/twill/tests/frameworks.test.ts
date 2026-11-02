@@ -411,7 +411,7 @@ describe('readable native children and lazy slots', () => {
     'Slot { <button>Save</button> as React.ReactElement; }',
   ])('preserves a container when unwrapping would expose other syntax: %s', (source) => {
     const result = transform(source, { filename: 'child.twillx' });
-    expect(result.code).toContain('>{(');
+    expect(result.code).toContain('>{');
     for (const comment of source.match(/\/\*.*?\*\//g) ?? [])
       expect(result.code).toContain(comment);
     expect(renderToStaticMarkup(compile('return ' + source + ';', { Slot }))).toBe(
@@ -434,8 +434,7 @@ describe('readable native children and lazy slots', () => {
         filename: 'child.twillx',
       }).code,
     ).toContain('return (');
-    const Data = (props: { children: (value: number) => React.ReactElement }) =>
-      props.children(42);
+    const Data = (props: { children: (value: number) => React.ReactElement }) => props.children(42);
     expect(
       renderToStaticMarkup(compile('return Data { value in <button>{value}</button> };', { Data })),
     ).toBe('<button>42</button>');
@@ -461,7 +460,9 @@ describe('readable native children and lazy slots', () => {
     const source = 'return Panel { "before"; Item { <span>Save</span>; }; };';
     const tree = compile(source, { Panel, Item }, runtime);
     if (runtime === 'react') {
-      expect(renderToStaticMarkup(tree)).toBe('<section>before<button><span>Save</span></button></section>');
+      expect(renderToStaticMarkup(tree)).toBe(
+        '<section>before<button><span>Save</span></button></section>',
+      );
     } else {
       return renderToString(createSSRApp({ render: () => tree })).then((html) =>
         expect(html).toBe('<section>before<button><span>Save</span></button></section>'),
@@ -497,8 +498,8 @@ describe('readable native children and lazy slots', () => {
       filename: 'slot.twillx',
       jsxImportSource: 'vue',
     });
-    expect(result.code).toContain('default: () => (');
-    expect(result.code).toContain('["footer"]: () => (');
+    expect(result.code).toContain('default: () => ');
+    expect(result.code).toContain('"footer": () => ');
     expect(result.code).toContain('/* body */');
     expect(result.code).not.toContain('=> {');
     expect(result.code).not.toContain('__twillChildren');
@@ -524,7 +525,7 @@ describe('readable native children and lazy slots', () => {
         filename: 'slot.twillx',
         jsxImportSource: 'vue',
       });
-      expect(result.code).toContain('=> (');
+      expect(result.code).toMatch(/=>\s*<button/);
       expect(result.code).not.toContain('=> {');
       const html = await renderToString(
         createSSRApp({ render: () => compile(source, { Panel }, 'vue') }),
@@ -532,6 +533,18 @@ describe('readable native children and lazy slots', () => {
       expect(html).toBe('<section><button>42</button></section>');
     },
   );
+
+
+  it('preserves computed __proto__ slot keys as own properties', () => {
+    const Panel = defineComponent({ setup: () => () => h('section') });
+    const source = 'Panel {} __proto__: { <span>Own slot</span>; }';
+    expect(
+      transform(source, { filename: 'slot.twillx', jsxImportSource: 'vue' }).code,
+    ).toContain('["__proto__"]');
+    const tree = compile('return ' + source + ';', { Panel }, 'vue');
+    expect(Object.hasOwn(tree.children, '__proto__')).toBe(true);
+    expect(Object.getPrototypeOf(tree.children)).toBe(Object.prototype);
+  });
 
   it('keeps block-bodied Vue slots when declarations or cleanup need scope', async () => {
     const events: string[] = [];
