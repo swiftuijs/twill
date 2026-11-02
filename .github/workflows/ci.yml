@@ -59,8 +59,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Check release metadata
-        run: pnpm verify:release
+      - name: Check release metadata and dependencies
+        run: pnpm verify:release && pnpm deps:check
         env:
           RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
       - name: Build workspace
@@ -137,12 +137,6 @@ jobs:
           node packages/shell/tests/consumer.mjs
       # Keep the audit mandatory without hiding behavioral regressions behind
       # an inherited advisory. A failure still prevents validated uploads.
-      - name: Restore repository runtime for dependency checks
-        uses: actions/setup-node@v7.0.0
-        with:
-          node-version: 22
-      - name: Check dependency security and peers
-        run: pnpm deps:check
       - name: Upload validated distributions
         if: needs.changes.outputs.core == 'true'
         uses: actions/upload-artifact@v7.0.1
