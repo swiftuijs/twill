@@ -669,7 +669,7 @@ describe('Vue default-slot representation', () => {
     });
     const source = 'return Panel { ' + body + ' };';
     const options = { vueDefaultSlot: 'function' } as const;
-    const result = transform(source, {
+    const result = transform(`function example(){${source}}`, {
       ...options,
       filename: 'slot.twillx',
       jsxImportSource: 'vue',
@@ -697,7 +697,11 @@ describe('Vue default-slot representation', () => {
       const source = 'return Panel { <button>Save</button>; } footer: { <span>Tail</span>; };';
       const options = { vueDefaultSlot };
       expect(
-        transform(source, { ...options, filename: 'slots.twillx', jsxImportSource: 'vue' }).code,
+        transform(`function example(){${source}}`, {
+          ...options,
+          filename: 'slots.twillx',
+          jsxImportSource: 'vue',
+        }).code,
       ).toContain('{{default:');
       expect(
         await renderToString(
