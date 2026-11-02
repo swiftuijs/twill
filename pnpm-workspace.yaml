@@ -12,6 +12,12 @@ minimumReleaseAgeExclude:
 # validate this scoped upgrade (GHSA-fx2h-pf6j-xcff). Core builds stay on Vite 8.
 overrides:
   'vitepress@1.6.4>vite': '^6.4.4'
+  # Current ESLint/typescript-eslint, VSCE and test-exclude still request the
+  # vulnerable majors. Their used match/discovery APIs are covered by lint,
+  # independent consumers, VSIX packaging and real extension-host coverage.
+  # Scope the replacement to those old majors; remove as upstream adopts fixes.
+  'minimatch@10': '^11.0.3'
+  'glob@13': '^14.0.3'
 
 # The repository builds with Vite/Rolldown. esbuild is retained only for its
 # supported adapter and consumer tests; its native test binary needs setup.
