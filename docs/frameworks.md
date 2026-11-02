@@ -58,3 +58,45 @@ The compiler does not process `.vue` SFC syntax. Add the standard Vue Vite plugi
 Import components directly. [SwiftUI.js](https://swiftuijs.evecalm.com/) (`@swiftuijs/ui`) is Twill's sibling project, a SwiftUI-inspired React component library. It appears in the React example and uses ordinary component imports, props, React state and shared styles. Visit its website for installation and styles; its [repository](https://github.com/swiftuijs/ui) contains the component sources.
 
 Other libraries receive their normal JSX props/children/slot semantics. Follow each library's own SSR, styling and browser requirements.
+
+## Generated TSX readability (unreleased)
+
+The source compiler simplifies a lone JSX child to ordinary nested JSX:
+
+```tsx
+<Panel>
+  <button>Save</button>
+</Panel>
+```
+
+A one-expression Vue slot uses a concise lazy arrow:
+
+```tsx
+<Panel>{{ default: () => <button>Save</button> }}</Panel>
+```
+
+The Vue braces represent a JSX expression containing the slot object. The arrow preserves lazy evaluation and reactive reads. Dynamic React expressions and content requiring declarations, cleanup or control flow retain their necessary wrappers. Published 0.3.1 predates this output cleanup; no application syntax or configuration changes.
+
+The slot object also preserves the declared Vue 3.3 compatibility floor for variables that resolve to native tags. A known component may accept a function-only default slot, but the compiler does not assume every uppercase tag is a component object. Named slots also retain their object representation.
+
+### Choose the Vue default-slot representation (unreleased)
+
+The source compiler accepts `vueDefaultSlot: "object" | "function"`. Published 0.3.1 does not include this setting. The default `"object"` preserves existing behavior, including Vue 3.3 dynamic native tags.
+
+To opt in, create `twill.config.json` in your application's root beside `tsconfig.json`:
+
+```json
+{ "vueDefaultSlot": "function" }
+```
+
+With `jsxImportSource: "vue"`, `Panel { <button>Save</button>; }` then emits:
+
+```tsx
+<Panel>{() => <button>Save</button>}</Panel>
+```
+
+Use this mode for actual Vue components, or when your Vue runtime supports function children for every native tag a component variable may resolve. Vue 3.3 native tags do not support that replacement. Twill does not add runtime type/version checks. Scoped parameters, reactive reads, cleanup and collector bodies keep the same lazy callback behavior.
+
+If any named slot is supplied, Twill retains the complete object, including `default`, in either mode. Set `"vueDefaultSlot": "object"` or remove the setting to restore the default.
+
+All [build adapters](./build-tools.md) also accept `twill({ vueDefaultSlot: 'function' })`; explicit adapter options override project settings. Prefer the shared configuration file so the editor, checker, declarations/export, CLI compilation and script loader inspect the same representation. This setting does not alter React, ordinary callbacks or authored native JSX.

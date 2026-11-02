@@ -9,7 +9,10 @@ import {
   type ConfigurationObservation,
 } from './compilation-cache.js';
 
-type Config = Pick<TransformOptions, 'implicitReturn' | 'jsxImportSource' | 'runtime'>;
+type Config = Pick<
+  TransformOptions,
+  'implicitReturn' | 'jsxImportSource' | 'runtime' | 'vueDefaultSlot'
+>;
 type Observations = Map<string, ConfigurationObservation>;
 const jsxConfigs = new Map<string, { files: Map<string, number>; source?: string }>();
 const loaderConfigs = new Map<
@@ -112,13 +115,16 @@ function readConfig(root: string, configFile?: string, observations?: Observatio
     throw new Error(`${filename}: implicitReturn must be a boolean`);
   if (value.runtime !== undefined && !['inline', 'external'].includes(value.runtime))
     throw new Error(`${filename}: runtime must be inline or external`);
+  if (value.vueDefaultSlot !== undefined && !['object', 'function'].includes(value.vueDefaultSlot))
+    throw new Error(`${filename}: vueDefaultSlot must be object or function`);
   for (const key of Object.keys(value))
-    if (!['implicitReturn', 'runtime', '$schema'].includes(key))
+    if (!['implicitReturn', 'runtime', 'vueDefaultSlot', '$schema'].includes(key))
       throw new Error(`${filename}: unknown option ${key}`);
   return {
     implicitReturn: value.implicitReturn,
     jsxImportSource,
     ...(value.runtime === undefined ? {} : { runtime: value.runtime }),
+    ...(value.vueDefaultSlot === undefined ? {} : { vueDefaultSlot: value.vueDefaultSlot }),
   };
 }
 

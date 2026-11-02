@@ -98,7 +98,7 @@ it('emits typed and runnable output with original source maps without changing t
 it('prints code and never writes output for malformed source or missing input', async () => {
   const { root, input, config, stdout } = fixture();
   expect(await main(['compile', input, '-p', config])).toBe(0);
-  expect(stdout).toHaveBeenCalledWith(expect.stringContaining('return (value * 2)'));
+  expect(stdout).toHaveBeenCalledWith(expect.stringMatching(/=>\s*value \* 2/));
   writeFileSync(input, 'users.map { .');
   const output = join(root, 'output.js');
   await expect(main(['compile', input, '-p', config, '-o', output])).rejects.toThrow();
@@ -147,7 +147,7 @@ it('declarations builds a reference-only solution and compile honors the selecte
   writeFileSync(join(root, 'twill.config.json'), '{"implicitReturn":false}');
   const stdout = vi.mocked(process.stdout.write);
   await main(['compile', input, '-p', config]);
-  expect(stdout.mock.calls.flat().join('')).not.toContain('return (');
+  expect(stdout.mock.calls.flat().join('')).toContain('=> {');
   const child = join(root, 'child');
   mkdirSync(child);
   writeFileSync(

@@ -18,6 +18,28 @@ function suspension(node: Node): Node | undefined {
   }
 }
 
+function directEval(node: Node): boolean {
+  if (['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression'].includes(node.type))
+    return false;
+  if (
+    node.type === 'CallExpression' &&
+    node.callee.type === 'Identifier' &&
+    node.callee.name === 'eval' &&
+    !node.optional
+  )
+    return true;
+  return Object.entries(node).some(
+    ([key, value]) =>
+      !['loc', 'trailing', 'tag'].includes(key) &&
+      (Array.isArray(value) ? value : [value]).some((child) => child?.type && directEval(child)),
+  );
+}
+
+/** Preserve the existing expression boundary for direct eval and suspension. */
+export function canInlineSwitchExpression(node: Node): boolean {
+  return !directEval(node) && !suspension(node);
+}
+
 /** Native switches with per-arm scopes. Direct returns and standalone variable
  * initializers need no extra function; other expressions keep a lexical IIFE. */
 export function lowerSwitchExpressions(
@@ -29,8 +51,11 @@ export function lowerSwitchExpressions(
   usedNames: Set<string>,
   comments: { start: number; end: number }[],
   fail: (node: Node, message: string) => never,
+  implicitReturns: Node[] = [],
 ) {
   const returns = new Set<Node>();
+  const implicit = new Set(implicitReturns);
+  const sharedScopes = new Set<Node>();
   const initializers = new Map<Node, { declaration: Node; statement: Node; prefixStart: number }>();
   const leadingDoc = (start: number) => {
     let low = 0,
@@ -42,24 +67,6 @@ export function lowerSwitchExpressions(
     }
     const comment = comments[low - 1];
     return comment && /^\s*$/.test(source.slice(comment.end, start)) ? comment : undefined;
-  };
-  const directEval = (node: Node): boolean => {
-    if (
-      ['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression'].includes(node.type)
-    )
-      return false;
-    if (
-      node.type === 'CallExpression' &&
-      node.callee.type === 'Identifier' &&
-      node.callee.name === 'eval' &&
-      !node.optional
-    )
-      return true;
-    return Object.entries(node).some(
-      ([key, value]) =>
-        !['loc', 'trailing', 'tag'].includes(key) &&
-        (Array.isArray(value) ? value : [value]).some((child) => child?.type && directEval(child)),
-    );
   };
   const grouping = (start: number, end: number, initializer = false) => {
     const parentheses: { start: number; end: number }[] = [];
@@ -75,6 +82,21 @@ export function lowerSwitchExpressions(
     }
   };
   const visit = (node: Node, parent?: Node) => {
+    if (node.type === 'BlockStatement' && node.body.length === 1) {
+      const statement = node.body[0];
+      const value =
+        statement.type === 'ReturnStatement' ? statement.argument : statement.expression;
+      if (
+        value?.type === 'TwillSwitchExpression' &&
+        (statement.type === 'ReturnStatement' || implicit.has(value))
+      )
+        sharedScopes.add(value);
+    }
+    if (node.type === 'ExpressionStatement' && implicit.has(node.expression)) {
+      grouping(node.start, node.expression.start);
+      grouping(node.expression.end, node.end);
+      if (source[node.end - 1] === ';') code.remove(node.end - 1, node.end);
+    }
     if (node.type === 'VariableDeclaration' && node.declarations.length === 1) {
       const declaration = node.declarations[0];
       if (
@@ -106,6 +128,7 @@ export function lowerSwitchExpressions(
     if (node.type === 'ReturnStatement' && node.argument?.type === 'TwillSwitchExpression') {
       returns.add(node.argument);
       code.remove(node.start, node.start + 6);
+      if (source[node.end - 1] === ';') code.remove(node.end - 1, node.end);
       // Acorn omits grouping parentheses from expression node ranges.
       // Preserve comments while removing only the return's outer grouping.
       for (const [start, end] of [
@@ -131,8 +154,8 @@ export function lowerSwitchExpressions(
     return name;
   };
   for (const node of switches) {
-    const direct = returns.has(node);
-    const suspended = !direct && suspension(node);
+    const direct = returns.has(node) || implicit.has(node);
+    const suspended = !returns.has(node) && suspension(node);
     if (suspended)
       fail(
         suspended,
@@ -161,8 +184,10 @@ export function lowerSwitchExpressions(
     const valuePrefix = result ? `${result} = (` : 'return ';
     const valueSuffix = result ? `); break ${exit};` : ';';
     const kind = node.cases.some((branch: Node) => branch.enumPattern) ? fresh('Kind') : undefined;
-    if (!initializer)
-      code.appendLeft(node.start, `${direct ? '{' : '(() => {'}const ${subject} = `);
+    if (!initializer) {
+      const opening = direct ? (sharedScopes.has(node) ? '' : '{') : '(() => {';
+      code.appendLeft(node.start, `${opening}const ${subject} = `);
+    }
     code.remove(node.parenStart, node.parenStart + 1);
     if (node.keyword === 'match') {
       // The native call parser permits a trailing comma. It is not part of the
@@ -260,7 +285,8 @@ export function lowerSwitchExpressions(
     const failure = hasDefault
       ? ''
       : `${check} throw new TypeError('Non-exhaustive switch expression');`;
-    code.overwrite(node.end - 1, node.end, `}${failure}${direct || initializer ? '}' : '})()'}`, {
+    const closing = initializer || (direct && !sharedScopes.has(node)) ? '}' : direct ? '' : '})()';
+    code.overwrite(node.end - 1, node.end, `}${failure}${closing}`, {
       contentOnly: true,
     });
   }

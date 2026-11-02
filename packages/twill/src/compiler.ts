@@ -2,7 +2,7 @@ import MagicString from 'magic-string';
 import { Parser, tokTypes } from 'acorn';
 import { parse } from './parser.js';
 import { lowerDefers } from './defer.js';
-import { lowerSwitchExpressions } from './branches.js';
+import { canInlineSwitchExpression, lowerSwitchExpressions } from './branches.js';
 import { lowerEnums, mapEnumCopies } from './enums.js';
 import {
   originalPositionFor,
@@ -18,6 +18,8 @@ export interface TransformOptions {
   sourceType?: 'module' | 'script';
   /** Standard JSX runtime source; normally inherited from tsconfig.json. */
   jsxImportSource?: string;
+  /** Vue default-slot representation; named slots always use an object. Defaults to object. */
+  vueDefaultSlot?: 'object' | 'function';
   /** Swift's single-expression implicit return. Defaults to true. */
   implicitReturn?: boolean;
   /** Share dynamic synchronous cleanup through the optional runtime. Defaults to inline. */
@@ -64,6 +66,17 @@ type ClosureMetadata = {
   async: boolean;
   implicitMembers: number[];
 };
+function conciseExpression(body: Node[]): boolean {
+  const expression =
+    body.length === 1 && body[0]!.type === 'ExpressionStatement' ? body[0]!.expression : undefined;
+  return (
+    !!expression &&
+    (expression.type !== 'TwillSwitchExpression' || !canInlineSwitchExpression(expression))
+  );
+}
+function expressionGrouping(expression: Node): string {
+  return ['ObjectExpression', 'SequenceExpression'].includes(expression.type) ? '(' : '';
+}
 function walk(node: Node, visit: (node: Node) => void): void {
   visit(node);
   for (const key of Object.keys(node)) {
@@ -229,7 +242,10 @@ export function transform(source: string, options: TransformOptions = {}) {
     do name = `__twillArg${implicitCounter++}`;
     while (usedNames.has(name));
     usedNames.add(name);
-    code.overwrite(metadata.node.start, metadata.node.start + 1, `(${name}) => {`);
+    const body = metadata.node.body.body as Node[];
+    const concise = options.implicitReturn !== false && conciseExpression(body);
+    const opening = concise ? expressionGrouping(body[0]!.expression) : '{';
+    code.overwrite(metadata.node.start, metadata.node.start + 1, `(${name}) => ${opening}`);
     for (const offset of metadata.implicitMembers) code.appendLeft(offset, name);
   }
   // TypeScript only reads file-level leading pragmas, and the last wins.
@@ -271,9 +287,13 @@ export function transform(source: string, options: TransformOptions = {}) {
     return edits.toString();
   };
   let counter = 0;
+  const directReturns: Node[] = [];
   for (const node of parsed.calls) {
     const { callEnd, hadParens, originalArgs, closures } = node.trailing;
     const component = componentCalls.has(node);
+    const slotObject = vue && (options.vueDefaultSlot !== 'function' || closures.length > 1);
+    let nativeChild = false;
+    let bareChild = false;
     if (component) {
       if (
         originalArgs.length > 1 ||
@@ -308,8 +328,30 @@ export function transform(source: string, options: TransformOptions = {}) {
           labels.add(name);
         }
       }
-      const opening = vue ? '>{({default: ' : '>{(';
       const tagEnd = node.typeParameters?.end ?? node.callee.end;
+      const child = closures[0];
+      const expression = child.body.body[0]?.expression;
+      // JSX text whitespace is observable. Only unwrap a lone native JSX node
+      // when all surrounding text is whitespace or its optional semicolon.
+      nativeChild =
+        !vue &&
+        !metadataByNode.get(child)!.header &&
+        child.body.body.length === 1 &&
+        (expression?.type === 'JSXElement' || expression?.type === 'JSXFragment') &&
+        source.slice(child.start + 1, expression.start).trim() === '' &&
+        /^\s*;?\s*$/.test(source.slice(expression.end, child.end - 1)) &&
+        source.slice(callEnd, child.start).trim() === '' &&
+        (!hadParens ||
+          originalArgs.length > 0 ||
+          /^\s*\(\s*\)$/.test(source.slice(tagEnd, callEnd)));
+      bareChild =
+        !vue &&
+        (!!metadataByNode.get(child)!.header ||
+          (child.body.body.length === 1 &&
+            expression !== undefined &&
+            expression.type !== 'SequenceExpression'));
+      let opening = nativeChild ? '>' : bareChild ? '>{' : '>{(';
+      if (vue) opening = slotObject ? '>{{default: ' : '>{';
       code.appendLeft(node.callee.start, '(<');
       const props = originalArgs[0] as Node | undefined;
       const directAttributes =
@@ -398,7 +440,11 @@ export function transform(source: string, options: TransformOptions = {}) {
         const tokens = Parser.tokenizer(gap, { ecmaVersion: 'latest' });
         const first = tokens.getToken();
         const last = tokens.getToken();
-        code.overwrite(tagEnd, callEnd, opening + gap.slice(first.end, last.start));
+        code.overwrite(
+          tagEnd,
+          callEnd,
+          opening + (nativeChild ? '' : gap.slice(first.end, last.start)),
+        );
       } else code.appendLeft(callEnd, opening);
     } else if (hadParens) {
       // Keep comments and trailing commas intact. The closing parenthesis is
@@ -430,14 +476,26 @@ export function transform(source: string, options: TransformOptions = {}) {
           ].includes(statement.type),
         ) &&
         body.filter((statement) => statement.type !== 'EmptyStatement').at(-1) === expressions[0];
+      const returnsValue =
+        singleContent ||
+        (options.implicitReturn !== false &&
+          body.length === 1 &&
+          body[0]!.type === 'ExpressionStatement');
+      const conciseBody = returnsValue && conciseExpression(body);
+      const grouping = conciseBody ? expressionGrouping(expressions[0]!.expression) : '{';
       if (singleContent && body.length === 1 && !vue) {
         // A single JSX child is a value, not an array or an eagerly invoked
         // callback. This also supports libraries requiring ReactElement children.
         directChild = true;
-        code.remove(closure.start, closure.start + 1);
-        code.remove(closure.end - 1, closure.end);
         const statement = expressions[0]!;
-        if (source[statement.end - 1] === ';') code.remove(statement.end - 1, statement.end);
+        if (nativeChild) {
+          code.remove(callEnd, statement.expression.start);
+          code.overwrite(statement.expression.end, closure.end, '', { contentOnly: true });
+        } else {
+          code.remove(closure.start, closure.start + 1);
+          code.overwrite(closure.end - 1, closure.end, '', { contentOnly: true });
+          if (source[statement.end - 1] === ';') code.remove(statement.end - 1, statement.end);
+        }
         continue;
       }
       if (metadata.label) {
@@ -447,7 +505,9 @@ export function transform(source: string, options: TransformOptions = {}) {
         code.overwrite(
           metadata.label.start,
           closure.start,
-          component && vue ? `, [${JSON.stringify(label)}]: ` : ', ',
+          component && vue
+            ? `, ${label === '__proto__' ? `[${JSON.stringify(label)}]` : JSON.stringify(label)}: `
+            : ', ',
         );
       }
       if (metadata.header) {
@@ -460,9 +520,19 @@ export function transform(source: string, options: TransformOptions = {}) {
           header.parenthesized || metadata.async ? '' : '(',
         );
         if (metadata.async && !header.parenthesized) code.appendLeft(header.asyncEnd!, ' (');
-        code.overwrite(header.inStart, header.end, `${header.parenthesized ? '' : ') '}=> {`);
+        code.overwrite(
+          header.inStart,
+          header.end,
+          `${header.parenthesized ? '' : ') '}=> ${grouping}`,
+        );
       } else if (!metadata.implicitMembers.length)
-        code.overwrite(closure.start, closure.start + 1, '() => {');
+        code.overwrite(closure.start, closure.start + 1, `() => ${grouping}`);
+      if (conciseBody) {
+        const statement = expressions[0]!;
+        if (source[statement.end - 1] === ';') code.remove(statement.end - 1, statement.end);
+        code.overwrite(closure.end - 1, closure.end, grouping ? ')' : '', { contentOnly: true });
+        continue;
+      }
       if (content && !singleContent) {
         let collector: string;
         do collector = `__twillChildren${counter++}`;
@@ -531,23 +601,37 @@ export function transform(source: string, options: TransformOptions = {}) {
             ? `;return ${collector};`
             : `;return ${collector}.length === 1 ? ${collector}[0] : ${collector};`,
         );
-      } else if (
-        singleContent ||
-        (options.implicitReturn !== false &&
-          body.length === 1 &&
-          body[0]!.type === 'ExpressionStatement')
-      ) {
-        // Parentheses prevent object literals / comma expressions from changing meaning.
+      } else if (returnsValue) {
         const statement = singleContent ? expressions[0]! : body[0]!;
-        code.prependLeft(statement.start, 'return (');
-        code.appendLeft(source[statement.end - 1] === ';' ? statement.end - 1 : statement.end, ')');
+        if (
+          statement.expression.type === 'TwillSwitchExpression' &&
+          canInlineSwitchExpression(statement.expression)
+        )
+          directReturns.push(statement.expression);
+        else {
+          // Parentheses retain object/comma expression meaning in block returns.
+          code.prependLeft(statement.start, 'return (');
+          code.appendLeft(
+            source[statement.end - 1] === ';' ? statement.end - 1 : statement.end,
+            ')',
+          );
+        }
       }
     }
     if (component)
       code.prependLeft(
         closures.at(-1).end,
-        (vue ? '})}' : directChild || metadataByNode.get(closures[0])!.header ? ')}' : ')()}') +
-          `</${calleeName(node.callee)}>)`,
+        (vue
+          ? slotObject
+            ? '}}'
+            : '}'
+          : nativeChild
+            ? ''
+            : bareChild
+              ? '}'
+              : directChild
+                ? ')}'
+                : ')()}') + `</${calleeName(node.callee)}>)`,
       );
     else code.appendLeft(closures.at(-1).end, ')');
     // The parser may visit nested trailing calls after this one. Edits use
@@ -569,6 +653,7 @@ export function transform(source: string, options: TransformOptions = {}) {
           loc: node.loc.start,
         });
       },
+      directReturns,
     );
   // Apply outer attribute braces after nested call suffixes at the same offset.
   for (const end of attributeClosings) code.appendLeft(end, '}');

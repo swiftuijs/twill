@@ -140,6 +140,12 @@ Relative extensionless imports are resolved by default. `resolveExtensions: fals
 
 Use normal tsconfig or file-level `@jsxImportSource` settings to choose the JSX runtime. Keep language settings consistent between the build and checker; ad hoc build-only overrides can otherwise make editor types differ from emitted code.
 
+## Vue default-slot output (unreleased)
+
+The source compiler's `vueDefaultSlot: "object" | "function"` setting selects the default-slot representation for Vue component closures. Published 0.3.1 predates it. Prefer `{ "vueDefaultSlot": "function" }` in your application's `twill.config.json` so builds, checking, editor inspection and scripts share the setting.
+
+Each adapter also accepts `twill({ vueDefaultSlot: 'function' })`. Explicit adapter options override project configuration; omit an override to inherit it. The default is `"object"`. Named slots always retain the complete object. Function mode requires actual components or compatible Vue native-tag handling; Vue 3.3 native tags are incompatible with that shorthand. See [Vue representation and examples](./frameworks.md#choose-the-vue-default-slot-representation-unreleased).
+
 ## Node ESM
 
 For source execution without a bundler:

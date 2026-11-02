@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add the opt-in Vue `vueDefaultSlot: "function"` representation across compiler/project and build-adapter options. Preserve compatible object output by default and whenever named slots are present; synchronize configuration schemas, editor inspection, script cache invalidation and guidance.
+
+- Unify lean emission for eligible direct JSX children, callbacks/render props/Vue slots and match/switch returns. Preserve native execution, lexical scopes, one-time evaluation, type checks, lazy timing and original-source mappings; validate every canonical playground example.
 - Skip unrelated compiler/platform validation for trustworthy documentation-only main pushes; preserve independent Linux Pages deployment and full code/dependency/release checks.
 
 - Build CI candidates once and validate coverage, browser/editor integration and installed consumers in parallel. Keep the required aggregate, original coverage/size/security gates and exact-artifact promotion; isolate repository and minimum-consumer Node runtimes.

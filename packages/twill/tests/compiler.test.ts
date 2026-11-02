@@ -16,8 +16,8 @@ function evaluate(source: string, bindings: Record<string, unknown> = {}) {
 
 describe('trailing closures', () => {
   it.each([
-    ['fn() { 42 }', 'fn( () => { return (42) })'],
-    ['fn { x in x + 1 }', 'fn( ( x ) => { return (x + 1) })'],
+    ['fn() { 42 }', 'fn( () => 42 )'],
+    ['fn { x in x + 1 }', 'fn( ( x ) => x + 1 )'],
   ])('transforms %s', (source, expected) => {
     expect(transform(source, { filename: 'test.twill' }).code.replace(/\s+/g, ' ')).toBe(expected);
   });

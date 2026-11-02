@@ -693,6 +693,36 @@ export async function run() {
     'PASS: configuration saves refresh native TS hover and diagnostics with unsaved overlays',
   );
 
+  await vscode.workspace.fs.writeFile(
+    vscode.Uri.file(join(root, 'vue-slot-option.twillx')),
+    Buffer.from(
+      '/** @jsxImportSource vue */\ndeclare const Panel:any; export const view=Panel { <button>Save</button>; };',
+    ),
+  );
+  const slotDocument = await open('vue-slot-option.twillx');
+  try {
+    for (const vueDefaultSlot of ['function', 'object']) {
+      await vscode.workspace.fs.writeFile(
+        settingsUri,
+        Buffer.from(JSON.stringify({ vueDefaultSlot })),
+      );
+      await eventually(
+        async () => {
+          await vscode.window.showTextDocument(slotDocument);
+          await vscode.commands.executeCommand('twill.showGenerated');
+          return vscode.window.activeTextEditor?.document.getText() ?? '';
+        },
+        (text) =>
+          vueDefaultSlot === 'object'
+            ? /default:\s*\(\)\s*=>/.test(text)
+            : /<Panel>\s*\{\s*\(\)\s*=>/.test(text),
+      );
+    }
+  } finally {
+    await vscode.workspace.fs.delete(settingsUri);
+  }
+  console.log('PASS: shared Vue slot configuration refreshes packaged editor generated output');
+
   const runtimeDocument = await open('runtime.twill');
   try {
     await vscode.workspace.fs.writeFile(settingsUri, Buffer.from('{"runtime":"external"}'));
@@ -736,7 +766,7 @@ export async function run() {
   assert.equal(vscode.window.activeTextEditor?.document.languageId, 'typescript');
   const generated = vscode.window.activeTextEditor!.document.getText();
   assert(generated.includes('=>'));
-  assert.match(generated, /=>\s*\{\n\s+return/);
+  assert.match(generated, /=>\s*timesTwo\(item\)/);
   assert.equal(api.getText(), originalSource, 'Generated display must not edit source');
   const invalidView = new vscode.WorkspaceEdit();
   invalidView.replace(
