@@ -43,8 +43,8 @@ jobs:
 
   verify:
     needs: changes
-    # Keep the required check name and fail it if scope analysis failed.
-    if: always()
+    # Fail scope errors in the required check, but let superseded runs be cancelled.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:

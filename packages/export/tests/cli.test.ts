@@ -51,7 +51,7 @@ it('plans JSON output without writing, then exports checked formatted native cod
   expect(log).toHaveBeenCalledWith(expect.stringContaining('Planned'));
   expect(await main(['-p', config, '-o', out])).toBe(0);
   expect(log).toHaveBeenCalledWith(expect.stringContaining('Exported'));
-  expect(readFileSync(join(out, 'main.ts'), 'utf8')).toContain('return n * 2');
+  expect(readFileSync(join(out, 'main.ts'), 'utf8')).toContain('map((n) => n * 2)');
   expect(readFileSync(file, 'utf8')).toContain('map {');
 });
 it('returns failure and original diagnostics without creating output', async () => {
