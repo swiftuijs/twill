@@ -58,6 +58,12 @@ Review onboarding from an empty application directory and from an existing proje
 
 ## Validation and delivery
 
+Before pushing CI changes, run `pnpm test:ci`, validate the workflow with `actionlint`, and exercise changed commands locally. Diagnose the failing command and related runtime/output assumptions before submitting a correction; do not use repeated full remote runs as the edit/test loop. If local execution is unavailable, record that limitation and check related assertions and runtime transitions together before pushing.
+
+For emission changes, audit generated-output assertions across the compiler, CLI/loader, playground worker, formatter/export and packaged editor together, then run their affected tests locally before a full remote check.
+
+CI builds one candidate per run and restores the same outputs in parallel Linux validators. A candidate is unvalidated; only the required `verify` aggregate may promote it to `twill-packages`, after every scope-selected check and the independent dependency audit succeeds. An unexpected skipped job is a failure. Keep repository pnpm commands on Node 22 and isolate minimum-runtime consumers in their own validator. Never restore `node_modules` or script caches as build outputs, and never reuse test results across commits.
+
 Run focused owning-package tests while iterating, then the checks appropriate to the final change. Language/mapping changes need execution and negative cases, adjacent native syntax/nesting, real original-source editor positions, and relevant independent package/browser/VSIX validation. Follow the existing CI and [testing guide](docs/contributing/testing.md); never replace an actual adapter, browser or packaged editor with a mocked check of the changed implementation.
 
 For skill/docs changes run `pnpm verify:skills`, `pnpm format:check`, docs build/typecheck and relevant browser tests, including raw download/discovery and subpath hosting. Keep package manifests and the lockfile synchronized when changing dependencies. Release validation and skill checks run in CI; update contribution/release instructions when their workflow changes.

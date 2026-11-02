@@ -4,7 +4,7 @@ Coding agents should read [AGENTS.md](AGENTS.md) for repository conventions. Pub
 
 These guides describe development of Twill itself. Application users should start with the [user documentation](https://twill.evecalm.com/). Repository references: [development and workspace commands](docs/contributing/tooling.md), [compiler architecture](docs/contributing/architecture.md), [release process](docs/contributing/releasing.md), [GitHub language registration](docs/contributing/github.md) and [language proposals and RFC process](docs/rfcs/README.md).
 
-Use Node 22.13+ or Node 24+ and the pnpm version pinned in `packageManager`. The optional native shell workspace also requires pinned Rust 1.90.0 with rustfmt/clippy for source builds; installed archives use prebuilt binaries. Install with `pnpm install --frozen-lockfile`. Run `pnpm check` before submitting changes; it includes formatting checks. `pnpm test:watch` supports compiler development; `pnpm dev:react` and `pnpm dev:vue` run the examples after a build.
+Use Node 22.13+ or Node 24+ and the pnpm version pinned in `packageManager`. Install with `pnpm install --frozen-lockfile`. Run `pnpm check` before submitting changes; it includes formatting checks. `pnpm test:watch` supports compiler development; `pnpm dev:react` and `pnpm dev:vue` run the examples after a build.
 
 For a syntax change, add execution or negative-diagnostic tests covering the new behavior, nearby ordinary JS/TS syntax, and nesting. For mapping changes, check real diagnostic/editor positions. Build integrations must be exercised with their actual tool. Avoid replacing parser behavior with broad string rewrites.
 
@@ -26,22 +26,21 @@ For editor changes, run `pnpm editor:package` then `pnpm editor:test` (headless 
 
 Keep test sources, fixtures, configuration and test dependencies with the package they exercise. The root provides aggregate commands; it does not own a test suite. Build workspace dependencies before running an individual package's tests.
 
-| Package                 | Test command                                                               | Coverage                                                                          |
-| ----------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `packages/twill`        | `pnpm --filter @swiftuijs/twill test:unit`                                 | Compiler, type checker, declarations, language-service API and five bundlers      |
-| `packages/formatter`    | `pnpm --filter @swiftuijs/twill-formatter test:unit`                       | Formatting, syntax preservation and idempotence                                   |
-| `packages/linter`       | `pnpm --filter @swiftuijs/twill-linter test:unit`                          | ESLint processor, rules and typed checks                                          |
-| `packages/highlight`    | `pnpm --filter @swiftuijs/twill-highlight test:unit`                       | Browser/SSR highlighting and portable TextMate registrations                      |
-| `packages/export`       | `pnpm --filter @swiftuijs/twill-export test:unit`                          | Checked native export, imports, configuration, collisions and input preservation  |
-| `editors/vscode`        | `pnpm --filter twill test:unit`, `pnpm editor:test`                        | TextMate grammar and real packaged extension host                                 |
-| `packages/shell`        | `pnpm --filter @swiftuijs/twill-shell test:coverage`                       | Real Node subprocess contracts, Twill/export integration and shared backend tests |
-| `packages/shell-native` | `pnpm --filter @swiftuijs/twill-shell-native test:coverage`, `test:native` | Compiled Rust subprocess/lifecycle/platform contracts and JS adapter coverage     |
-| `apps/docs`             | `pnpm --filter @swiftuijs/twill-docs test:browser`                         | Desktop/mobile documentation and playground                                       |
-| `examples/*`            | `pnpm test:examples`                                                       | Example execution, production bundles and SSR rendering                           |
+| Package              | Test command                                         | Coverage                                                                             |
+| -------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `packages/twill`     | `pnpm --filter @swiftuijs/twill test:unit`           | Compiler, type checker, declarations, language-service API and five bundlers         |
+| `packages/formatter` | `pnpm --filter @swiftuijs/twill-formatter test:unit` | Formatting, syntax preservation and idempotence                                      |
+| `packages/linter`    | `pnpm --filter @swiftuijs/twill-linter test:unit`    | ESLint processor, rules and typed checks                                             |
+| `packages/highlight` | `pnpm --filter @swiftuijs/twill-highlight test:unit` | Browser/SSR highlighting and portable TextMate registrations                         |
+| `packages/export`    | `pnpm --filter @swiftuijs/twill-export test:unit`    | Checked native export, imports, configuration, collisions and input preservation     |
+| `editors/vscode`     | `pnpm --filter twill test:unit`, `pnpm editor:test`  | TextMate grammar and real packaged extension host                                    |
+| `packages/shell`     | `pnpm --filter @swiftuijs/twill-shell test:coverage` | Real Node subprocess contracts, Twill/export integration and process ownership tests |
+| `apps/docs`          | `pnpm --filter @swiftuijs/twill-docs test:browser`   | Desktop/mobile documentation and playground                                          |
+| `examples/*`         | `pnpm test:examples`                                 | Example execution, production bundles and SSR rendering                              |
 
 `pnpm test` aggregates unit suites; `pnpm test:coverage` writes reports under each public package's `coverage/`. `pnpm test:browser` runs browser highlighting, compiler React refresh, documentation and the React framework renderer suites sequentially. Install Chromium with `pnpm --filter @swiftuijs/twill-docs exec playwright install --with-deps chromium` first. To use an existing browser, set `TWILL_CHROMIUM_PATH`. Browser artifacts stay outside the checkout, or under `TWILL_BROWSER_OUTPUT`, with separate directories for each package.
 
-Each public package owns `test:package` and its independent npm consumer. After `pnpm package:core && pnpm package:tooling`, `pnpm test:packed` verifies the seven standard archives; native assembly independently validates the eighth archive. These checks run outside the workspace and must not depend on hoisted development dependencies. The compiler owns shared TS-server protocol helpers and the TypeScript syntax corpus, reused by the editor and formatter without a cyclic workspace dependency. The highlight package owns browser/Shiki integration tests and the shared TextMate grammar source. The React framework example owns its pinned source snapshot, rewrite, runtime/renderer contracts and comparison benchmark. Compiler benchmarks live in `packages/twill/benchmarks`; the combined checker/formatter benchmark lives in `packages/formatter/benchmarks`.
+Each public package owns `test:package` and its independent npm consumer. After `pnpm package:core && pnpm package:tooling`, `pnpm test:packed` verifies the seven archives, including the Node shell SDK. These checks run outside the workspace and must not depend on hoisted development dependencies. The compiler owns shared TS-server protocol helpers and the TypeScript syntax corpus, reused by the editor and formatter without a cyclic workspace dependency. The highlight package owns browser/Shiki integration tests and the shared TextMate grammar source. The React framework example owns its pinned source snapshot, rewrite, runtime/renderer contracts and comparison benchmark. Compiler benchmarks live in `packages/twill/benchmarks`; the combined checker/formatter benchmark lives in `packages/formatter/benchmarks`.
 
 ## Dependency updates
 

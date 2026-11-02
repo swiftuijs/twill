@@ -18,7 +18,8 @@
     "eslint": "catalog:",
     "@swiftuijs/twill-formatter": "workspace:*",
     "@swiftuijs/twill-export": "workspace:*",
-    "@swiftuijs/twill-linter": "workspace:*"
+    "@swiftuijs/twill-linter": "workspace:*",
+    "yaml": "^2.9.1"
   },
   "scripts": {
     "build": "pnpm -r --workspace-concurrency=1 run build",
@@ -26,7 +27,7 @@
     "test": "pnpm -r --workspace-concurrency=1 --if-present run test:unit",
     "test:watch": "pnpm -r --parallel --if-present run test:watch",
     "test:coverage": "pnpm -r --workspace-concurrency=1 --if-present run test:coverage",
-    "check": "pnpm verify:release && pnpm build && pnpm verify:skills && pnpm typecheck && pnpm test && pnpm test:examples && pnpm lint && pnpm format:check && pnpm test:package && pnpm --filter @swiftuijs/twill test:size && pnpm editor:package",
+    "check": "pnpm verify:release && pnpm test:ci && pnpm build && pnpm verify:skills && pnpm typecheck && pnpm test && pnpm test:examples && pnpm lint && pnpm format:check && pnpm test:package && pnpm --filter @swiftuijs/twill test:size && pnpm editor:package",
     "verify:skills": "node skills/verify.mjs",
     "test:package": "pnpm --filter @swiftuijs/twill run test:package",
     "editor:build": "pnpm --filter twill... run build && pnpm --filter twill verify",
@@ -66,7 +67,8 @@
     "benchmark:shell": "pnpm --filter @swiftuijs/twill-shell run benchmark",
     "verify:dogfood": "node scripts/verify-dogfood.mjs",
     "package:shell": "pnpm --filter @swiftuijs/twill-shell pack --out swiftuijs-twill-shell-%v.tgz",
-    "benchmark:shell:complete": "pnpm --filter @swiftuijs/twill-shell run benchmark:complete"
+    "benchmark:shell:complete": "pnpm --filter @swiftuijs/twill-shell run benchmark:complete",
+    "test:ci": "node --test scripts/tests/ci-*.test.mjs"
   },
   "author": {
     "name": "forth.ink",

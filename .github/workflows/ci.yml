@@ -30,97 +30,130 @@ jobs:
       - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v7.0.0
-        with:
-          node-version: 22
-      - name: Test conservative CI scope selection
-        run: node --test scripts/tests/ci-scope.test.mjs
+      - uses: ./.github/actions/setup-workspace
+      - name: Validate CI routing, gates and workflow contracts before builds
+        run: pnpm test:ci
       - name: Select checks from the complete PR diff
         id: scope
         run: node scripts/ci-scope.mjs
         env:
           TWILL_CI_FULL: ${{ inputs.full-validation == true }}
 
-  verify:
+  dependencies:
     needs: changes
-    # Keep the required check name and fail it if scope analysis failed.
-    if: always()
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 5
     steps:
-      - name: Require successful scope analysis
-        run: test "$SCOPE_RESULT" = success
-        env:
-          SCOPE_RESULT: ${{ needs.changes.result }}
       - uses: actions/checkout@v7.0.1
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7.0.0
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Check release metadata and dependencies
-        run: pnpm verify:release && pnpm deps:check
+      - uses: ./.github/actions/setup-workspace
+      - run: pnpm deps:check
+
+  build:
+    needs: changes
+    if: needs.changes.outputs.core == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/setup-workspace
+      - name: Check release metadata
+        run: pnpm verify:release
         env:
           RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || '' }}
-      - name: Build workspace
-        # Cache compilation inputs only; all selected tests still execute.
-        if: needs.changes.outputs.core == 'true'
+      - name: Build once for all Linux validators
         run: pnpm build
-      - name: Check types, lint and formatting
-        if: needs.changes.outputs.core == 'true'
+      - name: Check types, lint, formatting and official skills
         run: pnpm typecheck && pnpm lint && pnpm format:check && pnpm verify:skills
-      - name: Unit coverage and grammar tests
-        if: needs.changes.outputs.core == 'true'
-        # Coverage runs the unit suites; do not repeat them through pnpm check.
-        run: pnpm test:coverage && pnpm --filter twill test:unit
-      - name: Validate example behavior and bundle budgets
-        if: needs.changes.outputs.core == 'true'
+      - name: Validate examples and generated-code budgets
         run: pnpm test:examples && pnpm --filter @swiftuijs/twill test:size --output ../../bundle-results.json
-      - name: Pack the validated build
-        if: needs.changes.outputs.core == 'true'
-        run: pnpm package:core && pnpm package:tooling && pnpm --filter twill package:built && pnpm release:manifest
-      - name: Packaged editor coverage
-        if: needs.changes.outputs.core == 'true'
-        run: xvfb-run -a pnpm editor:coverage
-        env:
-          TWILL_TEST_VSCODE_VERSION: stable
-      - name: Minimum supported editor
-        if: inputs.minimum-editor == true && needs.changes.outputs.core == 'true'
-        run: xvfb-run -a pnpm editor:test
-        env:
-          TWILL_TEST_VSCODE_VERSION: '1.95.3'
-      - name: Browser integration tests
-        if: needs.changes.outputs.core == 'true'
+      - name: Assemble candidate distributions without rebuilding
+        run: |
+          pnpm -r --config.ignore-scripts=true --filter './packages/*' pack --pack-destination "$GITHUB_WORKSPACE"
+          pnpm --filter twill package:built
+          pnpm release:manifest
+      - name: Archive this run's build outputs
+        run: |
+          tar -cf "$RUNNER_TEMP/build.tar" \
+            packages/*/dist examples/*/dist apps/docs/dist \
+            examples/react-framework/src/packages \
+            editors/vscode/dist editors/vscode/licenses \
+            packages/twill/README.md packages/twill/LICENSE \
+            *.tgz dist/twill.vsix release-manifest.json bundle-results.json
+      # This is a candidate, never the release workflow's validated artifact.
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: candidate-build
+          path: ${{ runner.temp }}/build.tar
+          if-no-files-found: error
+          compression-level: 1
+          retention-days: 1
+
+  unit:
+    needs: [changes, build]
+    if: needs.changes.outputs.core == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [compiler, tooling]
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/setup-workspace
+      - uses: ./.github/actions/restore-build
+      - name: Compiler coverage
+        if: matrix.suite == 'compiler'
+        run: pnpm --filter @swiftuijs/twill test:coverage
+      - name: Remaining package coverage and editor grammars
+        if: matrix.suite == 'tooling'
+        run: |
+          pnpm -r --workspace-concurrency=1 --filter '!@swiftuijs/twill' --filter '!twill-workspace' --if-present run test:coverage
+          pnpm --filter twill test:unit
+      - uses: actions/upload-artifact@v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: unit-${{ matrix.suite }}-coverage
+          path: |
+            packages/*/coverage/
+            apps/docs/coverage/
+
+  integration:
+    needs: [changes, build]
+    if: needs.changes.outputs.core == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [browser, editor, consumers]
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/setup-workspace
+      - uses: ./.github/actions/restore-build
+      - name: Browser integration at root and subpath
+        if: matrix.suite == 'browser'
         run: |
           pnpm --filter @swiftuijs/twill-docs exec playwright install --with-deps chromium
           pnpm test:browser
         env:
           TWILL_BROWSER_OUTPUT: ${{ runner.temp }}/twill-browser-results
-      - name: Documentation and official skill checks
-        if: needs.changes.outputs.core != 'true'
-        run: |
-          pnpm docs:build
-          pnpm --filter @swiftuijs/twill-docs typecheck
-          pnpm --filter @swiftuijs/twill-docs test:coverage
-          pnpm verify:skills
-          pnpm format:check
-      - name: Documentation browsers at root and subpath
-        if: needs.changes.outputs.core != 'true'
-        run: |
-          pnpm --filter @swiftuijs/twill-docs exec playwright install --with-deps chromium
-          pnpm --filter @swiftuijs/twill-docs test:browser
-          TWILL_DOCS_BASE=/twill/ pnpm docs:build
-          TWILL_DOCS_BASE=/twill/ pnpm --filter @swiftuijs/twill-docs test:browser --grep 'official AI guide|shell scripting guide|English documentation navigation'
+      - name: Packaged editor coverage
+        if: matrix.suite == 'editor'
+        run: xvfb-run -a pnpm editor:coverage
         env:
-          TWILL_BROWSER_OUTPUT: ${{ runner.temp }}/twill-browser-results
+          TWILL_TEST_VSCODE_VERSION: stable
+      - name: Minimum supported editor
+        if: matrix.suite == 'editor' && inputs.minimum-editor == true
+        run: xvfb-run -a pnpm editor:test
+        env:
+          TWILL_TEST_VSCODE_VERSION: '1.95.3'
+      # Switch only this isolated validator; no repository pnpm command follows.
       - uses: actions/setup-node@v7.0.0
-        if: needs.changes.outputs.core == 'true'
+        if: matrix.suite == 'consumers'
         with:
-          node-version: 20
-      - name: Independently installed packages on the minimum consumer runtime
-        if: needs.changes.outputs.core == 'true'
-        # Repository tools require Node 22; the shipped packages support Node 20.
+          node-version: 20.19.0
+      - name: Independently installed archives on the minimum runtime
+        if: matrix.suite == 'consumers'
         run: |
           node packages/twill/tests/consumer.mjs --packed
           node packages/formatter/tests/consumer.mjs
@@ -129,27 +162,44 @@ jobs:
           node packages/highlight/tests/consumer.mjs
           node packages/runtime/tests/consumer.mjs
           node packages/shell/tests/consumer.mjs
-      - name: Upload validated distributions
-        if: needs.changes.outputs.core == 'true'
-        uses: actions/upload-artifact@v7.0.1
+      - uses: actions/upload-artifact@v7.0.1
+        if: ${{ !cancelled() && matrix.suite != 'consumers' }}
         with:
-          name: twill-packages
-          if-no-files-found: error
+          name: integration-${{ matrix.suite }}-reports
           path: |
-            *.tgz
-            dist/twill.vsix
-            release-manifest.json
-            bundle-results.json
-      - name: Upload test reports
-        if: always()
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: test-reports
-          path: |
-            packages/*/coverage/
-            apps/docs/coverage/
             editors/vscode/coverage/
             !editors/vscode/coverage/tmp/**
+            ${{ runner.temp }}/twill-browser-results/
+
+  docs:
+    needs: changes
+    if: needs.changes.outputs.core == 'false'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/setup-workspace
+      - name: Documentation and official skill checks
+        run: |
+          pnpm docs:build
+          pnpm --filter @swiftuijs/twill-docs typecheck
+          pnpm --filter @swiftuijs/twill-docs test:coverage
+          pnpm verify:skills
+          pnpm format:check
+      - name: Documentation browsers at root and subpath
+        run: |
+          pnpm --filter @swiftuijs/twill-docs exec playwright install --with-deps chromium
+          pnpm --filter @swiftuijs/twill-docs test:browser
+          TWILL_DOCS_BASE=/twill/ pnpm docs:build
+          TWILL_DOCS_BASE=/twill/ pnpm --filter @swiftuijs/twill-docs test:browser --grep 'official AI guide|shell scripting guide|English documentation navigation'
+        env:
+          TWILL_BROWSER_OUTPUT: ${{ runner.temp }}/twill-browser-results
+      - uses: actions/upload-artifact@v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: documentation-reports
+          path: |
+            apps/docs/coverage/
             ${{ runner.temp }}/twill-browser-results/
 
   shell-platforms:
@@ -181,7 +231,7 @@ jobs:
       # Types and coverage run once in verify; these suites keep real OS contracts.
       - run: pnpm --filter @swiftuijs/twill-shell test:unit
       - run: pnpm --filter @swiftuijs/twill --config.ignore-scripts=true pack --out swiftuijs-twill-%v.tgz
-      - run: pnpm package:shell
+      - run: pnpm --filter @swiftuijs/twill-shell --config.ignore-scripts=true pack --out swiftuijs-twill-shell-%v.tgz
       - uses: actions/setup-node@v7.0.0
         with:
           node-version: 20.19.0
@@ -190,7 +240,7 @@ jobs:
       - run: node packages/twill/tests/runner-consumer.mjs
 
   loader-node:
-    needs: [changes, verify]
+    needs: [changes, build]
     if: needs.changes.outputs.core == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -202,33 +252,51 @@ jobs:
       - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7.0.0
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - uses: actions/download-artifact@v7.0.0
-        with:
-          name: twill-packages
-          path: downloaded
-      - name: Use the exact validated compiler build
-        run: |
-          mkdir -p extracted
-          twill_archive=$(node -p '"downloaded/swiftuijs-twill-" + JSON.parse(require("fs").readFileSync("packages/twill/package.json", "utf8")).version + ".tgz"')
-          tar -xzf "$twill_archive" -C extracted
-          cp -R extracted/package/dist packages/twill/dist
+      - uses: ./.github/actions/setup-workspace
+      - uses: ./.github/actions/restore-build
       - uses: actions/setup-node@v7.0.0
         with:
           node-version: ${{ matrix.node }}
       - name: Verify actual loader API boundaries and Workers
         run: node packages/twill/tests/loader-consumer.mjs
       - name: Compare old and new fresh-process startup
-        if: matrix.node == '26'
+        if: matrix.node == '26' && github.event_name != 'pull_request'
         run: node packages/twill/benchmarks/loader-startup.mjs 5a258030ef3876bfaec3a858134e8535d019dede loader-startup.json
       - uses: actions/upload-artifact@v7.0.1
-        if: matrix.node == '26' && success()
+        if: matrix.node == '26' && github.event_name != 'pull_request' && success()
         with:
           name: loader-startup
           path: loader-startup.json
           if-no-files-found: error
+
+  verify:
+    needs: [changes, dependencies, build, unit, integration, docs, shell-platforms, loader-node]
+    # Run the required aggregate after failures, while allowing superseded runs to stop.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 22
+      - name: Require every check selected by the complete change scope
+        run: node scripts/ci-result.mjs
+        env:
+          TWILL_CI_NEEDS: ${{ toJSON(needs) }}
+      - uses: ./.github/actions/restore-build
+        if: success() && needs.changes.outputs.core == 'true'
+      - name: Recheck the exact candidate distributions before promotion
+        if: success() && needs.changes.outputs.core == 'true'
+        run: node scripts/verify-release.mjs --artifacts
+      - name: Upload validated distributions
+        if: success() && needs.changes.outputs.core == 'true'
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: twill-packages
+          if-no-files-found: error
+          path: |
+            *.tgz
+            dist/twill.vsix
+            release-manifest.json
+            bundle-results.json
