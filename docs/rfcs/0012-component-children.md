@@ -28,3 +28,11 @@ Ordinary JSX remains available and can mix with closures. Uppercase lexical reco
 ## Decision history
 
 Retrospective native JSX contract; globally configured result builders are excluded.
+
+## Emission readability amendment (unreleased)
+
+Emit an eligible lone native JSX element or fragment directly inside its React parent, without an extra JSX expression container. Remove only the surrounding closure whitespace and optional semicolon; keep the JSX node's internal text and original token mappings. Retain a container when comments, parenthesized expressions or other syntax would otherwise become JSX text. Dynamic values, render callbacks, declaration/cleanup scopes and general collectors keep their existing ownership.
+
+A Vue slot containing one expression and no other statements becomes a concise arrow. Preserve default/named slot objects, scoped parameter tokens and lazy invocation; reads, allocations and cleanup still occur when the slot is called. Slots requiring declarations, defer or control flow keep block bodies. JSX expression braces enclosing the slot object remain necessary.
+
+Compare real React/Vue rendering and single-child identity with ordinary JSX, including same-line whitespace, fragments, nested closures, props, comments and source-mapped type errors. Validate the actual playground worker/browser output and retain the existing generated-JavaScript byte gates. This is a source emission cleanup, not a new syntax, runtime optimization claim or published 0.3.1 capability.

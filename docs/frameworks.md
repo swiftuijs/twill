@@ -58,3 +58,21 @@ The compiler does not process `.vue` SFC syntax. Add the standard Vue Vite plugi
 Import components directly. [SwiftUI.js](https://swiftuijs.evecalm.com/) (`@swiftuijs/ui`) is Twill's sibling project, a SwiftUI-inspired React component library. It appears in the React example and uses ordinary component imports, props, React state and shared styles. Visit its website for installation and styles; its [repository](https://github.com/swiftuijs/ui) contains the component sources.
 
 Other libraries receive their normal JSX props/children/slot semantics. Follow each library's own SSR, styling and browser requirements.
+
+## Generated TSX readability (unreleased)
+
+The source compiler simplifies a lone JSX child to ordinary nested JSX:
+
+```tsx
+<Panel>
+  <button>Save</button>
+</Panel>
+```
+
+A one-expression Vue slot uses a concise lazy arrow:
+
+```tsx
+<Panel>{{ default: () => <button>Save</button> }}</Panel>
+```
+
+The Vue braces represent a JSX expression containing the slot object. The arrow preserves lazy evaluation and reactive reads. Dynamic React expressions and content requiring declarations, cleanup or control flow retain their necessary wrappers. Published 0.3.1 predates this output cleanup; no application syntax or configuration changes.

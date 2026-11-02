@@ -360,6 +360,7 @@ test('live compilation, highlighted examples, located errors and recovery', asyn
   await expect(generated(page)).not.toContainText('match (');
   await page.getByLabel('Example', { exact: true }).selectOption('react');
   await expect(generated(page)).toContainText('<Panel>');
+  await expect(generated(page)).toContainText(/<Panel>\s*<button/);
   await expect(page.getByRole('status')).toContainText('Compiled in');
   if (info.project.name === 'docs-mobile')
     await page.getByRole('button', { name: 'mobile navigation' }).click();
@@ -369,6 +370,7 @@ test('live compilation, highlighted examples, located errors and recovery', asyn
   await screenshot(page, info, 'playground-dark-react');
   await page.getByLabel('Example', { exact: true }).selectOption('vue');
   await expect(generated(page)).toContainText(/default\s*:\s*\(/);
+  await expect(generated(page)).toContainText(/default:\s*\(\)\s*=>\s*(?:\(\s*)?<button/);
   await source.fill('fn {');
   await expect(page.getByRole('alert')).toContainText('Unable to compile');
   await expect(page.getByRole('button', { name: 'Copy output' })).toBeDisabled();

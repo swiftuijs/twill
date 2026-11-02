@@ -274,6 +274,7 @@ export function transform(source: string, options: TransformOptions = {}) {
   for (const node of parsed.calls) {
     const { callEnd, hadParens, originalArgs, closures } = node.trailing;
     const component = componentCalls.has(node);
+    let nativeChild = false;
     if (component) {
       if (
         originalArgs.length > 1 ||
@@ -308,8 +309,23 @@ export function transform(source: string, options: TransformOptions = {}) {
           labels.add(name);
         }
       }
-      const opening = vue ? '>{({default: ' : '>{(';
       const tagEnd = node.typeParameters?.end ?? node.callee.end;
+      const child = closures[0];
+      const expression = child.body.body[0]?.expression;
+      // JSX text whitespace is observable. Only unwrap a lone native JSX node
+      // when all surrounding text is whitespace or its optional semicolon.
+      nativeChild =
+        !vue &&
+        !metadataByNode.get(child)!.header &&
+        child.body.body.length === 1 &&
+        (expression?.type === 'JSXElement' || expression?.type === 'JSXFragment') &&
+        source.slice(child.start + 1, expression.start).trim() === '' &&
+        /^\s*;?\s*$/.test(source.slice(expression.end, child.end - 1)) &&
+        source.slice(callEnd, child.start).trim() === '' &&
+        (!hadParens ||
+          originalArgs.length > 0 ||
+          /^\s*\(\s*\)$/.test(source.slice(tagEnd, callEnd)));
+      const opening = vue ? '>{({default: ' : nativeChild ? '>' : '>{(';
       code.appendLeft(node.callee.start, '(<');
       const props = originalArgs[0] as Node | undefined;
       const directAttributes =
@@ -430,14 +446,20 @@ export function transform(source: string, options: TransformOptions = {}) {
           ].includes(statement.type),
         ) &&
         body.filter((statement) => statement.type !== 'EmptyStatement').at(-1) === expressions[0];
+      const conciseSlot = vue && singleContent && body.length === 1;
       if (singleContent && body.length === 1 && !vue) {
         // A single JSX child is a value, not an array or an eagerly invoked
         // callback. This also supports libraries requiring ReactElement children.
         directChild = true;
-        code.remove(closure.start, closure.start + 1);
-        code.remove(closure.end - 1, closure.end);
         const statement = expressions[0]!;
-        if (source[statement.end - 1] === ';') code.remove(statement.end - 1, statement.end);
+        if (nativeChild) {
+          code.remove(callEnd, statement.expression.start);
+          code.remove(statement.expression.end, closure.end);
+        } else {
+          code.remove(closure.start, closure.start + 1);
+          code.remove(closure.end - 1, closure.end);
+          if (source[statement.end - 1] === ';') code.remove(statement.end - 1, statement.end);
+        }
         continue;
       }
       if (metadata.label) {
@@ -460,9 +482,19 @@ export function transform(source: string, options: TransformOptions = {}) {
           header.parenthesized || metadata.async ? '' : '(',
         );
         if (metadata.async && !header.parenthesized) code.appendLeft(header.asyncEnd!, ' (');
-        code.overwrite(header.inStart, header.end, `${header.parenthesized ? '' : ') '}=> {`);
+        code.overwrite(
+          header.inStart,
+          header.end,
+          `${header.parenthesized ? '' : ') '}=> ${conciseSlot ? '(' : '{'}`,
+        );
       } else if (!metadata.implicitMembers.length)
-        code.overwrite(closure.start, closure.start + 1, '() => {');
+        code.overwrite(closure.start, closure.start + 1, conciseSlot ? '() => (' : '() => {');
+      if (conciseSlot) {
+        const statement = expressions[0]!;
+        if (source[statement.end - 1] === ';') code.remove(statement.end - 1, statement.end);
+        code.overwrite(closure.end - 1, closure.end, ')');
+        continue;
+      }
       if (content && !singleContent) {
         let collector: string;
         do collector = `__twillChildren${counter++}`;
@@ -546,7 +578,13 @@ export function transform(source: string, options: TransformOptions = {}) {
     if (component)
       code.prependLeft(
         closures.at(-1).end,
-        (vue ? '})}' : directChild || metadataByNode.get(closures[0])!.header ? ')}' : ')()}') +
+        (vue
+          ? '})}'
+          : nativeChild
+            ? ''
+            : directChild || metadataByNode.get(closures[0])!.header
+              ? ')}'
+              : ')()}') +
           `</${calleeName(node.callee)}>)`,
       );
     else code.appendLeft(closures.at(-1).end, ')');

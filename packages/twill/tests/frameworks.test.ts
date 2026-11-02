@@ -5,10 +5,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createSSRApp, defineComponent, h, ref } from 'vue';
 import { renderToString } from '@vue/server-renderer';
 import ts from 'typescript';
+import { transformSync } from 'esbuild';
 import { createRequire } from 'node:module';
 import { writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { transform, isTwillFile } from '../src/compiler';
+import { transform, isTwillFile, originalPosition } from '../src/compiler';
 import { TwillProject } from '../src/project';
 import { loadConfig } from '../src/config';
 
@@ -361,4 +362,186 @@ it.each([
   ['Card {} done: {};', /one children closure/i],
 ])('rejects component call shape without silently discarding arguments: %s', (source, message) => {
   expect(() => transform(source as string, { filename: 'view.twillx' })).toThrow(message as RegExp);
+});
+
+describe('readable native children and lazy slots', () => {
+  const Slot = (props: { children: React.ReactElement }) => Children.only(props.children);
+
+  it.each([
+    'Slot { <button>Save</button>; }',
+    'Slot{<button>Save</button>}',
+    'Slot {\n  <button>Save</button>;\n}',
+    'Slot() { <button>Save</button>; }',
+    'Slot( ) { <button>Save</button> }',
+    'Slot({}) { <button>Save</button>; }',
+    'Slot(properties) { <button>Save</button>; }',
+    'Slot((properties), /* tail */) { <button>Save</button>; }',
+    'Slot({ ...properties }) { <button>Save</button>; }',
+    'Slot({ key: "stable" }) { <button>Save</button>; }',
+    'UI.Slot { <button>Save</button>; }',
+    'Slot<unknown> { <button>Save</button>; }',
+  ])('emits one native JSX child without adding text nodes: %s', (source) => {
+    const result = transform(source, { filename: 'child.twillx' });
+    expect(result.code).toContain('><button>Save</button></');
+    const tree = compile('return ' + source + ';', { Slot, UI: { Slot }, properties: {} });
+    expect(tree.props.children.type).toBe('button');
+    expect(renderToStaticMarkup(tree)).toBe('<button>Save</button>');
+  });
+
+  it('retains fragment identity and composes nested closures inside JSX', () => {
+    const fragment = compile('return Slot { <><button>Save</button></>; };', { Slot });
+    expect(fragment.props.children.type).toBe(Symbol.for('react.fragment'));
+    expect(renderToStaticMarkup(fragment)).toBe('<button>Save</button>');
+    expect(transform('Slot { <></>; }', { filename: 'child.twillx' }).code).toContain(
+      '<Slot><></></Slot>',
+    );
+    const tree = compile('return Slot { <div>{Slot { <button>Save</button>; }}</div>; };', {
+      Slot,
+    });
+    expect(renderToStaticMarkup(tree)).toBe('<div><button>Save</button></div>');
+  });
+
+  it.each([
+    'Slot { /* before */ <button>Save</button>; }',
+    'Slot { <button>Save</button> /* after */; }',
+    'Slot { <button>Save</button>; /* after */ }',
+    'Slot /* between */ { <button>Save</button>; }',
+    'Slot(/* empty */) { <button>Save</button>; }',
+    'Slot { (<button>Save</button>); }',
+    'Slot { <button>Save</button> as React.ReactElement; }',
+  ])('preserves a container when unwrapping would expose other syntax: %s', (source) => {
+    const result = transform(source, { filename: 'child.twillx' });
+    expect(result.code).toContain('>{(');
+    for (const comment of source.match(/\/\*.*?\*\//g) ?? [])
+      expect(result.code).toContain(comment);
+    expect(renderToStaticMarkup(compile('return ' + source + ';', { Slot }))).toBe(
+      '<button>Save</button>',
+    );
+  });
+
+  it('keeps dynamic child values, local declarations and render callbacks', () => {
+    const Label = (props: { children: string }) => createElement('span', null, props.children);
+    expect(renderToStaticMarkup(compile('return Label { "<&"; };', { Label }))).toBe(
+      '<span>&lt;&amp;</span>',
+    );
+    expect(
+      renderToStaticMarkup(
+        compile('return Slot { const text="Save"; <button>{text}</button>; };', { Slot }),
+      ),
+    ).toBe('<button>Save</button>');
+    expect(
+      transform('Slot { const text="Save"; <button>{text}</button>; }', {
+        filename: 'child.twillx',
+      }).code,
+    ).toContain('return (');
+    const Data = (props: { children: (value: number) => React.ReactElement }) =>
+      props.children(42);
+    expect(
+      renderToStaticMarkup(compile('return Data { value in <button>{value}</button> };', { Data })),
+    ).toBe('<button>42</button>');
+  });
+
+  it('emits the same minified JavaScript as handwritten JSX', () => {
+    const generated = transform('export const view = Slot { <button>Save</button>; };', {
+      filename: 'child.twillx',
+    }).code;
+    const emit = (source: string) =>
+      transformSync(source, { loader: 'tsx', jsx: 'automatic', minify: true }).code;
+    expect(emit(generated)).toBe(emit('export const view = <Slot><button>Save</button></Slot>;'));
+  });
+
+  it('keeps concise default and named Vue slots lazy and observes current reactive values', async () => {
+    const count = ref(1);
+    let reads = 0;
+    const read = () => {
+      reads++;
+      return count.value;
+    };
+    const Panel = defineComponent({
+      setup(_, { slots }) {
+        return () =>
+          h('section', null, [...(slots.default?.() ?? []), ...(slots.footer?.() ?? [])]);
+      },
+    });
+    const source =
+      'return Panel { /* body */ <button>{read()}</button>; } footer: { <span>tail</span>; };';
+    const result = transform(`function example(){${source}}`, {
+      filename: 'slot.twillx',
+      jsxImportSource: 'vue',
+    });
+    expect(result.code).toContain('default: () => (');
+    expect(result.code).toContain('["footer"]: () => (');
+    expect(result.code).toContain('/* body */');
+    expect(result.code).not.toContain('=> {');
+    expect(result.code).not.toContain('__twillChildren');
+    const tree = compile(source, { Panel, read }, 'vue');
+    expect(reads).toBe(0);
+    count.value = 2;
+    expect(await renderToString(createSSRApp({ render: () => tree }))).toBe(
+      '<section><button>2</button><span>tail</span></section>',
+    );
+    expect(reads).toBe(1);
+  });
+
+  it.each(['value in', '(value: number) in'])(
+    'preserves scoped-slot parameters with concise Vue arrows: %s',
+    async (header) => {
+      const Panel = defineComponent({
+        setup(_, { slots }) {
+          return () => h('section', null, slots.default?.(42));
+        },
+      });
+      const source = 'return Panel { ' + header + ' <button>{value}</button>; };';
+      const result = transform(`function example(){${source}}`, {
+        filename: 'slot.twillx',
+        jsxImportSource: 'vue',
+      });
+      expect(result.code).toContain('=> (');
+      expect(result.code).not.toContain('=> {');
+      const html = await renderToString(
+        createSSRApp({ render: () => compile(source, { Panel }, 'vue') }),
+      );
+      expect(html).toBe('<section><button>42</button></section>');
+    },
+  );
+
+  it('keeps block-bodied Vue slots when declarations or cleanup need scope', async () => {
+    const events: string[] = [];
+    const Panel = defineComponent({
+      setup(_, { slots }) {
+        return () => h('section', null, slots.default?.());
+      },
+    });
+    const source =
+      'return Panel { const text="Save"; defer { events.push("cleanup"); } <button>{text}</button>; };';
+    const result = transform(`function example(){${source}}`, {
+      filename: 'slot.twillx',
+      jsxImportSource: 'vue',
+    });
+    expect(result.code).toContain('default: () => {');
+    const tree = compile(source, { Panel, events }, 'vue');
+    expect(events).toEqual([]);
+    expect(await renderToString(createSSRApp({ render: () => tree }))).toBe(
+      '<section><button>Save</button></section>',
+    );
+    expect(events).toEqual(['cleanup']);
+  });
+
+  it.each(['react', 'vue'])('retains original JSX token mappings and diagnostics for %s', (runtime) => {
+    const source =
+      'declare const Slot: any;\nexport const view = Slot {\n  <button>{(1).toUpperCase()}</button>;\n};';
+    const result = transform(source, { filename: 'mapped.twillx', jsxImportSource: runtime });
+    const generated = result.code.slice(0, result.code.indexOf('toUpperCase')).split('\n');
+    expect(originalPosition(result, generated.length, generated.at(-1)!.length)).toMatchObject({
+      source: 'mapped.twillx',
+      line: 3,
+      column: '  <button>{(1).'.length,
+    });
+    expect(result.map.sourcesContent).toEqual([source]);
+    expect(diagnostics(source, runtime)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 2339, line: 3, column: '  <button>{(1).'.length }),
+      ]),
+    );
+  });
 });

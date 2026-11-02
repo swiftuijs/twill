@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Simplify eligible lone React JSX children and one-expression Vue lazy slots in generated TSX, preserving child identity, whitespace, comments, slot timing and original-source mappings.
+
 - Build the VS Code tsserver bridge as an internal extension module instead of a separate workspace package. Preserve the shared compiler plugin, automatic native TS/JS integration and the private loader identity in packaged extensions.
 
 ## 0.3.1

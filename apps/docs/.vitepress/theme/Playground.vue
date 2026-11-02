@@ -95,7 +95,7 @@ export function describe(state: LoadState<number>) {
   react: {
     filename: 'example.twillx',
     jsxImportSource: 'react',
-    note: 'Component closures become ordinary JSX children. Hooks and component libraries keep their usual behavior.',
+    note: 'Component closures become ordinary JSX children. A lone JSX element stays directly inside its parent; hooks and component libraries keep their usual behavior.',
     source: `import { useState } from 'react';
 
 function Panel(props: { children?: import('react').ReactNode }) {
@@ -112,7 +112,7 @@ export default function App() {
   vue: {
     filename: 'example.twillx',
     jsxImportSource: 'vue',
-    note: 'Vue closures become lazy slots, so the slot renderer owns reactive reads.',
+    note: 'Vue closures become lazy slots. A single expression uses a concise arrow; the slot renderer still owns reactive reads.',
     source: `import { defineComponent, ref } from 'vue';
 
 declare const Panel: any;

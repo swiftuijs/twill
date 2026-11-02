@@ -163,6 +163,8 @@ export default function App() {
 }
 ```
 
+The unreleased source compiler prints eligible lone React JSX children directly and single-expression Vue slots as concise arrows. Vue slot objects and lazy invocation remain required; published 0.3.1 predates this output cleanup. Application syntax and runtime ownership are unchanged.
+
 For Vue JSX use the normal Twill adapter and `jsxImportSource: "vue"`. Component closures become lazy slots. Vue SFCs and framework SSR/HMR need their standard host integrations. Import component libraries normally; [SwiftUI.js](https://swiftuijs.evecalm.com/) is a sibling React library with its own setup, not a compiler dependency. See [frameworks](https://twill.evecalm.com/frameworks) and [build tools](https://twill.evecalm.com/build-tools).
 
 Install `@swiftuijs/twill-formatter` with Prettier and configure its plugin. Install `@swiftuijs/twill-linter` with ESLint and use `recommended` or `recommendedTypeChecked` as appropriate; keep application globals and other config. Do not format dialect source as raw TypeScript. Native `tsc` cannot parse Twill: use the virtual checker, generated declarations for consumers, or checked native source export. See [tooling](https://twill.evecalm.com/tooling) and [libraries](https://twill.evecalm.com/libraries).
