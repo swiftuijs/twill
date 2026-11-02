@@ -33,7 +33,7 @@ it('marks only the explicit non-native entry as Twill and resets on ordinary reg
   const next = vi.fn(async () => ({ format: 'module', source: 'host' }));
   const host = { format: 'module', importAttributes: {}, conditions: ['node'] };
   initialize({ entries: [url] });
-  expect(String((await load(url, host, next)).source)).toContain('return (');
+  expect(String((await load(url, host, next)).source)).toMatch(/=>\s*__twillArg\d+\.toFixed\(\)/);
   expect(next).not.toHaveBeenCalled();
   expect(await load(pathToFileURL(join(root, 'other')).href, host, next)).toEqual({
     format: 'module',
@@ -139,7 +139,7 @@ it('loads native sources without configuration and preserves host handling for J
   writeFileSync(join(root, 'twill.config.json'), '{"implicitReturn":false}');
   writeFileSync(join(root, 'configured.twill'), 'export const value = [1].map { n in n * 2 };');
   const result = await load(pathToFileURL(join(root, 'configured.twill')).href, host, next);
-  expect(String(result.source)).not.toContain('return (');
+  expect(String(result.source)).toContain('=> {');
 });
 it('native JS is byte-preserved and invalid TS is rejected before host emission', () => {
   const source = '/* unchanged */ export const value = 1;';

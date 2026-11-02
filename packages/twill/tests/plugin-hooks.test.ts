@@ -62,7 +62,7 @@ it('watches inherited and absent configuration, reports invalid saves and recove
       '[1].map { n in n + 1 };',
       join(root, 'main.twill'),
     ).code,
-  ).toContain('return (n + 1)');
+  ).toContain('=> n + 1');
   expect(watch).not.toHaveBeenCalled();
   watcher.emit('unlink', config);
   httpServer.emit('close');

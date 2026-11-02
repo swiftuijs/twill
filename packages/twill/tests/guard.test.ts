@@ -119,7 +119,7 @@ describe('general-purpose guards', () => {
     const source =
       'export function run(value) { guard value != null else { return []; } return value.map() { x in x * 2 }; }';
     const equivalent =
-      'export function run(value) { if (!(value != null)) { return []; } return value.map(x => { return x * 2; }); }';
+      'export function run(value) { if (!(value != null)) { return []; } return value.map(x => x * 2); }';
     const result = transform(source, { filename: 'source.twill' });
     expect(result).toMatchObject({ changed: true, guards: 1, closures: 1 });
     expect(originalPosition(result, 1, result.code.indexOf('value !='))).toMatchObject({

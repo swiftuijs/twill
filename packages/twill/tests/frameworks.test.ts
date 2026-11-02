@@ -502,8 +502,8 @@ describe('readable native children and lazy slots', () => {
       filename: 'slot.twillx',
       jsxImportSource: 'vue',
     });
-    expect(result.code).toContain('default: () => ');
-    expect(result.code).toContain('"footer": () => ');
+    expect(result.code).toMatch(/default:\s*\(\)\s*=>/);
+    expect(result.code).toMatch(/"footer":\s*\(\)\s*=>/);
     expect(result.code).toContain('/* body */');
     expect(result.code).not.toContain('=> {');
     expect(result.code).not.toContain('__twillChildren');
@@ -539,14 +539,21 @@ describe('readable native children and lazy slots', () => {
   );
 
   it('preserves computed __proto__ slot keys as own properties', () => {
-    const Panel = defineComponent({ setup: () => () => h('section') });
-    const source = 'Panel {} __proto__: { <span>Own slot</span>; }';
-    expect(transform(source, { filename: 'slot.twillx', jsxImportSource: 'vue' }).code).toContain(
-      '["__proto__"]',
-    );
-    const tree = compile('return ' + source + ';', { Panel }, 'vue');
-    expect(Object.hasOwn(tree.children, '__proto__')).toBe(true);
-    expect(Object.getPrototypeOf(tree.children)).toBe(Object.prototype);
+    const source = 'Panel {} __proto__: { "Own slot"; }';
+    const result = transform(source, { filename: 'slot.twillx', jsxImportSource: 'vue' });
+    const ast = ts.createSourceFile('slot.tsx', result.code, ts.ScriptTarget.Latest, true);
+    let record: ts.ObjectLiteralExpression | undefined;
+    const find = (node: ts.Node) => {
+      if (ts.isJsxExpression(node) && node.expression && ts.isObjectLiteralExpression(node.expression))
+        record = node.expression;
+      ts.forEachChild(node, find);
+    };
+    find(ast);
+    expect(record).toBeDefined();
+    const slots = Function('return (' + record!.getText(ast) + ');')();
+    expect(Object.hasOwn(slots, '__proto__')).toBe(true);
+    expect(Object.getPrototypeOf(slots)).toBe(Object.prototype);
+    expect(slots.__proto__()).toBe('Own slot');
   });
 
   it('keeps block-bodied Vue slots when declarations or cleanup need scope', async () => {
@@ -557,12 +564,12 @@ describe('readable native children and lazy slots', () => {
       },
     });
     const source =
-      'return Panel { const text="Save"; defer { events.push("cleanup"); } <button>{text}</button>; };';
+      'return Panel { const text="Save"; defer { events.push("cleanup"); }; <button>{text}</button>; };';
     const result = transform(`function example(){${source}}`, {
       filename: 'slot.twillx',
       jsxImportSource: 'vue',
     });
-    expect(result.code).toContain('default: () => {');
+    expect(result.code).toMatch(/default:\s*\(\)\s*=>\s*\{/);
     const tree = compile(source, { Panel, events }, 'vue');
     expect(events).toEqual([]);
     expect(await renderToString(createSSRApp({ render: () => tree }))).toBe(
