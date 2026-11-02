@@ -1,4 +1,4 @@
-name: Documentation
+name: Documentation deployment
 on:
   push:
     branches: [main]
@@ -26,6 +26,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
+    name: Build documentation (Linux)
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -75,6 +76,7 @@ jobs:
           path: apps/docs/dist
           include-hidden-files: true
   deploy:
+    name: Deploy GitHub Pages
     needs: build
     if: needs.build.outputs.pages-enabled == 'true'
     runs-on: ubuntu-24.04

@@ -1,0 +1,11 @@
+name: Restore this run's candidate build
+description: Restore immutable build outputs without rebuilding or sharing dependency directories.
+runs:
+  using: composite
+  steps:
+    - uses: actions/download-artifact@v7.0.0
+      with:
+        name: candidate-build
+        path: ${{ runner.temp }}/candidate-build
+    - shell: bash
+      run: tar -xf "$RUNNER_TEMP/candidate-build/build.tar" -C "$GITHUB_WORKSPACE"

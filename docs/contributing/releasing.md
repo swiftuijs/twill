@@ -14,6 +14,8 @@ Install the downloaded VSIX through VS Code's **Install from VSIX** command. The
 
 `release-manifest.json` records the release version, artifact byte sizes and SHA-256 checksums. Compare a downloaded file's checksum with its manifest entry (`sha256sum <file>` on Linux, or `Get-FileHash <file> -Algorithm SHA256` in PowerShell). Compressed artifact budgets are part of this gate; all seven public packages have independent consumer checks, including export followed by native `tsc` and Node execution without Twill hooks.
 
+CI's `candidate-build` artifact contains a single run's build and package outputs for parallel validators. It is not a release artifact. The required `verify` aggregate rejects failed, cancelled, missing or unexpectedly skipped checks, including the independent dependency audit and every selected platform job. Only after success does it recheck and upload the same archives/VSIX/manifest as `twill-packages`; `Package release` continues to download only that validated artifact. No rebuild or repack occurs during promotion.
+
 Documentation deploys independently through `.github/workflows/docs.yml`. It builds the canonical references and compiler worker, uploads a Pages artifact, then deploys it. Pages must be enabled with **GitHub Actions** as the source. The site is static and can also be hosted from `apps/docs/dist` elsewhere; adjust `TWILL_DOCS_BASE` for another path.
 
 ## Documentation domain
