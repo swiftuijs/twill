@@ -458,7 +458,7 @@ export function transform(source: string, options: TransformOptions = {}) {
         const statement = expressions[0]!;
         if (nativeChild) {
           code.remove(callEnd, statement.expression.start);
-          code.remove(statement.expression.end, closure.end);
+          code.overwrite(statement.expression.end, closure.end, '', { contentOnly: true });
         } else {
           code.remove(closure.start, closure.start + 1);
           code.remove(closure.end - 1, closure.end);
@@ -496,7 +496,7 @@ export function transform(source: string, options: TransformOptions = {}) {
       if (conciseSlot) {
         const statement = expressions[0]!;
         if (source[statement.end - 1] === ';') code.remove(statement.end - 1, statement.end);
-        code.overwrite(closure.end - 1, closure.end, ')');
+        code.overwrite(closure.end - 1, closure.end, ')', { contentOnly: true });
         continue;
       }
       if (content && !singleContent) {
