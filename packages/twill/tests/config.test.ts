@@ -1,5 +1,5 @@
 import { afterEach, expect, it } from 'vitest';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { loadConfig, configurationFiles } from '../src/config';
@@ -84,3 +84,33 @@ it.each(['null', '"auto"', 'true', '1', '[]', '{}'])(
     expect(() => loadConfig(root)).toThrow('runtime must be inline or external');
   },
 );
+
+it.each(['object', 'function'])('loads the %s Vue default-slot representation', (vueDefaultSlot) => {
+  const root = mkdtempSync(join(tmpdir(), 'twill-vue-config-'));
+  roots.push(root);
+  writeFileSync(join(root, 'twill.config.json'), JSON.stringify({ vueDefaultSlot }));
+  expect(loadConfig(root).vueDefaultSlot).toBe(vueDefaultSlot);
+});
+it.each(['null', '"auto"', 'true', '1', '[]', '{}'])(
+  'rejects an invalid Vue default-slot representation %s',
+  (source) => {
+    const root = mkdtempSync(join(tmpdir(), 'twill-vue-config-'));
+    roots.push(root);
+    writeFileSync(join(root, 'twill.config.json'), `{"vueDefaultSlot":${source}}`);
+    expect(() => loadConfig(root)).toThrow('vueDefaultSlot must be object or function');
+  },
+);
+it('ships matching compiler/editor schemas for the Vue slot setting', () => {
+  const schema = JSON.parse(
+    readFileSync(new URL('../schemas/twill.schema.json', import.meta.url), 'utf8'),
+  );
+  const editor = JSON.parse(
+    readFileSync(new URL('../../../editors/vscode/twill.schema.json', import.meta.url), 'utf8'),
+  );
+  expect(editor).toEqual(schema);
+  expect(schema.properties.vueDefaultSlot).toMatchObject({
+    type: 'string',
+    enum: ['object', 'function'],
+    default: 'object',
+  });
+});

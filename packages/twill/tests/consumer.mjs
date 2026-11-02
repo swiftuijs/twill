@@ -606,6 +606,42 @@ console.log('Vue 3.3 minimum: default-slot object preserves native tags and comp
   );
   assert(minimumVue.includes('Vue 3.3 minimum'));
   console.log(minimumVue.trim());
+
+  writeFileSync(join(root, 'twill.config.json'), '{"vueDefaultSlot":"function"}');
+  writeFileSync(
+    join(root, 'vue-function-slot.twillx'),
+    `/** @jsxImportSource vue */
+import assert from 'node:assert/strict';
+import {version,ref,h,defineComponent,createSSRApp} from 'vue';
+import {renderToString} from '@vue/server-renderer';
+import {transform} from '@swiftuijs/twill';
+assert.equal(version,'3.3.0');
+assert(!transform('Panel { "child"; }',{
+  filename:'slot.twillx',jsxImportSource:'vue',vueDefaultSlot:'function'
+}).code.includes('default:'));
+const current=ref('first');
+let reads=0;
+function read(){reads++;return current.value;}
+const Panel=defineComponent({setup(_,{slots}){
+  return()=>h('section',null,[...slots.default(),...(slots.footer?.()??[])]);
+}});
+const lazy=Panel { read(); };
+const named=Panel { read(); } footer: { "footer"; };
+assert.equal(reads,0);
+current.value='second';
+assert.equal(await renderToString(createSSRApp({render:()=>lazy})),'<section>second</section>');
+assert.equal(await renderToString(createSSRApp({render:()=>named})),'<section>secondfooter</section>');
+assert.equal(reads,2);
+console.log('Vue 3.3 minimum: configured function slots and named-slot fallback passed.');`,
+  );
+  const functionVue = execFileSync(
+    process.execPath,
+    ['--import', '@swiftuijs/twill/register', 'vue-function-slot.twillx'],
+    { cwd: root, encoding: 'utf8' },
+  );
+  assert(functionVue.includes('configured function slots'));
+  console.log(functionVue.trim());
+
   console.log(
     'Independent package install, exports, CLI, optional runtime and Node loader passed.',
   );

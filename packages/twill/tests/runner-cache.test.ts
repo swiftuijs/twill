@@ -1,4 +1,5 @@
 import { afterEach, expect, it } from 'vitest';
+import { fixtureRoot } from './helpers/fixture.js';
 import { spawn, spawnSync } from 'node:child_process';
 import {
   chmodSync,
@@ -253,3 +254,34 @@ it.skipIf(process.platform === 'win32' || process.getuid?.() === 0)(
     expect(execute(file, cache).stdout.trim()).toBe('[null]');
   },
 );
+
+it('invalidates cached Vue slot emission after same-timestamp configuration changes', () => {
+  const root = fixtureRoot('twill-vue-slot-cache-');
+  roots.push(root);
+  const file = join(root, 'main.twillx');
+  const cache = join(root, 'cache');
+  const config = join(root, 'twill.config.json');
+  writeFileSync(
+    file,
+    `/** @jsxImportSource vue */
+import {defineComponent,h,createSSRApp} from 'vue';
+import {renderToString} from '@vue/server-renderer';
+const Panel=defineComponent({setup(_,{slots}){return()=>h('section',null,slots.default?.());}});
+const view=Panel { <button>Save</button>; };
+console.log(await renderToString(createSSRApp({render:()=>view})));`,
+  );
+  writeFileSync(config, '{"vueDefaultSlot":"object"}');
+  for (const vueDefaultSlot of ['object', 'function', 'object']) {
+    const time = statSync(config);
+    writeFileSync(config, JSON.stringify({ vueDefaultSlot }));
+    utimesSync(config, time.atime, time.mtime);
+    for (let run = 0; run < 2; run++) {
+      const result = execute(file, cache);
+      expect(result.status, result.stderr).toBe(0);
+      expect(result.stdout.trim()).toBe('<section><button>Save</button></section>');
+      const [record] = records(cache);
+      expect(records(cache)).toHaveLength(1);
+      expect(/default:\s*\(\)\s*=>/.test(record.source)).toBe(vueDefaultSlot === 'object');
+    }
+  }
+});

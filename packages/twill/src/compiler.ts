@@ -18,6 +18,8 @@ export interface TransformOptions {
   sourceType?: 'module' | 'script';
   /** Standard JSX runtime source; normally inherited from tsconfig.json. */
   jsxImportSource?: string;
+  /** Vue default-slot representation; named slots always use an object. Defaults to object. */
+  vueDefaultSlot?: 'object' | 'function';
   /** Swift's single-expression implicit return. Defaults to true. */
   implicitReturn?: boolean;
   /** Share dynamic synchronous cleanup through the optional runtime. Defaults to inline. */
@@ -289,6 +291,7 @@ export function transform(source: string, options: TransformOptions = {}) {
   for (const node of parsed.calls) {
     const { callEnd, hadParens, originalArgs, closures } = node.trailing;
     const component = componentCalls.has(node);
+    const slotObject = vue && (options.vueDefaultSlot !== 'function' || closures.length > 1);
     let nativeChild = false;
     let bareChild = false;
     if (component) {
@@ -347,7 +350,8 @@ export function transform(source: string, options: TransformOptions = {}) {
           (child.body.body.length === 1 &&
             expression !== undefined &&
             expression.type !== 'SequenceExpression'));
-      const opening = vue ? '>{{default: ' : nativeChild ? '>' : bareChild ? '>{' : '>{(';
+      let opening = nativeChild ? '>' : bareChild ? '>{' : '>{(';
+      if (vue) opening = slotObject ? '>{{default: ' : '>{';
       code.appendLeft(node.callee.start, '(<');
       const props = originalArgs[0] as Node | undefined;
       const directAttributes =
@@ -617,7 +621,7 @@ export function transform(source: string, options: TransformOptions = {}) {
     if (component)
       code.prependLeft(
         closures.at(-1).end,
-        (vue ? '}}' : nativeChild ? '' : bareChild ? '}' : directChild ? ')}' : ')()}') +
+        (vue ? (slotObject ? '}}' : '}') : nativeChild ? '' : bareChild ? '}' : directChild ? ')}' : ')()}') +
           `</${calleeName(node.callee)}>)`,
       );
     else code.appendLeft(closures.at(-1).end, ')');

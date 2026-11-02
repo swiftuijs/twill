@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the opt-in Vue `vueDefaultSlot: "function"` representation across compiler/project and build-adapter options. Preserve compatible object output by default and whenever named slots are present; synchronize configuration schemas, editor inspection, script cache invalidation and guidance.
+
 - Unify lean emission for eligible direct JSX children, callbacks/render props/Vue slots and match/switch returns. Preserve native execution, lexical scopes, one-time evaluation, type checks, lazy timing and original-source mappings; validate every canonical playground example.
 
 - Build the VS Code tsserver bridge as an internal extension module instead of a separate workspace package. Preserve the shared compiler plugin, automatic native TS/JS integration and the private loader identity in packaged extensions.

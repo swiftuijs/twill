@@ -14,9 +14,18 @@
     },
     "runtime": {
       "type": "string",
-      "enum": ["inline", "external"],
+      "enum": [
+        "inline",
+        "external"
+      ],
       "default": "inline",
       "description": "Inline cleanup code, or import versioned runtime helpers for dynamic synchronous defer scopes."
+    },
+    "vueDefaultSlot": {
+      "type": "string",
+      "enum": ["object", "function"],
+      "default": "object",
+      "description": "Vue default slot representation. Function children require components or a compatible Vue native-tag runtime. Named slots always use an object."
     }
   }
 }

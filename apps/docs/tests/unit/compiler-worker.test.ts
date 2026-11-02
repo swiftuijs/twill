@@ -91,7 +91,10 @@ test('accepts the exact source limit and rejects oversized input before parsing 
 });
 test('keeps valid compiled output available when display formatting fails', async () => {
   vi.mocked(formatGenerated).mockRejectedValueOnce(new Error('display failed'));
-  expect((await compile('[1].map { n in n + 1 };')).result?.code).toContain('return (n + 1)');
+  const response = await compile('[1].map { n in n + 1 };');
+  expect(response.error).toBeUndefined();
+  expect(response.result?.code).toMatch(/=>\s*n \+ 1/);
+  expect(response.result?.code).not.toContain('return');
 });
 test('reports unexpected non-Error compiler failures without losing request identity', async () => {
   vi.mocked(transform).mockImplementationOnce(() => {

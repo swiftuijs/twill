@@ -15,6 +15,8 @@ pnpm exec twill --help
 
 Your normal `tsconfig.json` supplies project types and JSX settings. Commands work without `twill.config.json`; its optional `implicitReturn` setting changes that language behavior. The [runtime helper option](./runtime.md) in 0.2.0 also selects inline or external cleanup emission.
 
+The unreleased source compiler also accepts `{ "vueDefaultSlot": "function" }` in the application's `twill.config.json`; published 0.3.1 predates it. Compile/check/declarations/export, editor projects and source scripts read the common setting. It has no separate CLI flag. See [Vue default slots](./frameworks.md#choose-the-vue-default-slot-representation-unreleased) for defaults, named-slot fallback and runtime requirements.
+
 ## Run an executable script
 
 Twill 0.2.0 accepts both direct and explicit script invocation:

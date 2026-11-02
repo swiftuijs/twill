@@ -17,6 +17,8 @@ import rspackPlugin from '../src/rspack';
 import { createRequire } from 'node:module';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ReactNode } from 'react';
+import { createSSRApp } from 'vue';
+import { renderToString } from '@vue/server-renderer';
 
 const roots: string[] = [];
 afterEach(() => roots.splice(0).forEach((root) => rmSync(root, { recursive: true, force: true })));
@@ -315,3 +317,106 @@ it.each(['webpack', 'rspack'] as const)('bundles external cleanup with %s', asyn
     );
   }
 });
+
+it.each(['vite', 'rollup', 'esbuild', 'webpack', 'rspack'] as const)(
+  '%s reads the Vue slot setting and preserves explicit adapter overrides',
+  async (tool) => {
+    const root = fixture();
+    writeFileSync(join(root, 'twill.config.json'), '{"vueDefaultSlot":"function"}');
+    const input = join(root, 'slots.twillx');
+    writeFileSync(
+      input,
+      `import {defineComponent,h} from 'vue';
+const Panel=defineComponent({setup(_,{slots}){return()=>h('section',null,slots.default?.());}});
+export const view=Panel { <button>Save</button>; };`,
+    );
+    const external = ['vue', 'vue/jsx-runtime'];
+    const outfile = join(root, 'dist', 'slots.cjs');
+    for (const vueDefaultSlot of [undefined, 'object'] as const) {
+      const options = {
+        root,
+        jsxImportSource: 'vue',
+        ...(vueDefaultSlot ? { vueDefaultSlot } : {}),
+      };
+      let code: string;
+      if (tool === 'esbuild') {
+        const built = await esbuild({
+          entryPoints: [input],
+          bundle: true,
+          write: false,
+          platform: 'node',
+          format: 'cjs',
+          external,
+          plugins: [esbuildPlugin(options)],
+        });
+        code = built.outputFiles![0]!.text;
+      } else if (tool === 'rollup') {
+        const bundle = await rollup({ input, external, plugins: [rollupPlugin(options)] });
+        try {
+          const { output } = await bundle.generate({ format: 'cjs' });
+          const chunk = output[0]!;
+          if (chunk.type !== 'chunk') throw Error('Expected chunk');
+          code = chunk.code;
+        } finally {
+          await bundle.close();
+        }
+      } else if (tool === 'vite') {
+        await vite({
+          root,
+          configFile: false,
+          logLevel: 'silent',
+          plugins: [vitePlugin(options)],
+          build: {
+            outDir: join(root, 'dist'),
+            lib: { entry: input, formats: ['cjs'], fileName: () => 'slots.cjs' },
+            rollupOptions: { external },
+          },
+        });
+        code = readFileSync(outfile, 'utf8');
+      } else {
+        const config = {
+          mode: 'none' as const,
+          target: 'node',
+          entry: input,
+          externals: external,
+          output: { path: join(root, 'dist'), filename: 'slots.cjs', library: { type: 'commonjs2' } },
+          plugins: [tool === 'webpack' ? webpackPlugin(options) : rspackPlugin(options)],
+        };
+        const compiler =
+          tool === 'webpack'
+            ? webpack(config as webpack.Configuration)
+            : rspack(config as Parameters<typeof rspack>[0]);
+        if (!compiler) throw Error('Missing compiler');
+        try {
+          await new Promise<void>((resolve, reject) =>
+            compiler.run((error, stats) => {
+              if (error) reject(error);
+              else if (stats?.hasErrors())
+                reject(Error(stats.toString({ all: false, errors: true })));
+              else resolve();
+            }),
+          );
+          code = readFileSync(outfile, 'utf8');
+        } finally {
+          await new Promise<void>((resolve, reject) =>
+            compiler.close((error) => (error ? reject(error) : resolve())),
+          );
+        }
+      }
+      expect(code).toMatch(
+        vueDefaultSlot === 'object'
+          ? /children:\s*\{\s*default:/
+          : /children:\s*\(\)\s*=>/,
+      );
+      const module = { exports: {} as { view: any } };
+      Function('module', 'exports', 'require', code)(
+        module,
+        module.exports,
+        createRequire(import.meta.url),
+      );
+      expect(await renderToString(createSSRApp({ render: () => module.exports.view }))).toBe(
+        '<section><button>Save</button></section>',
+      );
+    }
+  },
+);

@@ -9,13 +9,19 @@ import { transformSync } from 'esbuild';
 import { createRequire } from 'node:module';
 import { writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { transform, isTwillFile, originalPosition } from '../src/compiler';
+import { transform, isTwillFile, originalPosition, type TransformOptions } from '../src/compiler';
 import { TwillProject } from '../src/project';
 import { loadConfig } from '../src/config';
 
 const require = createRequire(import.meta.url);
-function compile(body: string, bindings: Record<string, unknown>, jsxImportSource = 'react') {
+function compile(
+  body: string,
+  bindings: Record<string, unknown>,
+  jsxImportSource = 'react',
+  options: TransformOptions = {},
+) {
   const result = transform(`function example(){${body}}`, {
+    ...options,
     filename: 'example.twillx',
     jsxImportSource,
   });
@@ -31,7 +37,11 @@ function compile(body: string, bindings: Record<string, unknown>, jsxImportSourc
   )(require, {}, ...Object.values(bindings));
 }
 
-function diagnostics(source: string, jsxImportSource = 'react') {
+function diagnostics(
+  source: string,
+  jsxImportSource = 'react',
+  options: TransformOptions = {},
+) {
   // An ancestor node_modules supplies actual framework and declaration types.
   const root = fixtureRoot('.twill-ui-test-');
   writeFileSync(
@@ -50,6 +60,7 @@ function diagnostics(source: string, jsxImportSource = 'react') {
     }),
   );
   writeFileSync(join(root, 'main.twillx'), source);
+  writeFileSync(join(root, 'twill.config.json'), JSON.stringify(options));
   const p = new TwillProject(join(root, 'tsconfig.json'));
   try {
     return p.diagnostics();
@@ -633,4 +644,117 @@ describe('readable native children and lazy slots', () => {
       ]),
     );
   });
+});
+
+describe('Vue default-slot representation', () => {
+  it.each([
+    ['<button>{read()}</button>;', '<section><button>2</button></section>', []],
+    ['value in <button>{value + read()}</button>;', '<section><button>42</button></section>', []],
+    ['"before"; <button>{read()}</button>;', '<section>before<button>2</button></section>', []],
+    ['(read(), <button>Save</button>);', '<section><button>Save</button></section>', []],
+    [
+      'const text=read(); defer { events.push("cleanup"); }; <button>{text}</button>;',
+      '<section><button>2</button></section>',
+      ['cleanup'],
+    ],
+    ['/* empty slot */', '<section></section>', []],
+  ] as const)('keeps function slots lazy and scoped: %s', async (body, expected, cleanup) => {
+    const current = ref(1);
+    let reads = 0;
+    const read = () => {
+      reads++;
+      return current.value;
+    };
+    const events: string[] = [];
+    const Panel = defineComponent({
+      setup(_, { slots }) {
+        return () => h('section', null, slots.default?.(40));
+      },
+    });
+    const source = 'return Panel { ' + body + ' };';
+    const options = { vueDefaultSlot: 'function' } as const;
+    const result = transform(source, {
+      ...options,
+      filename: 'slot.twillx',
+      jsxImportSource: 'vue',
+    });
+    expect(result.code).toContain('<Panel>{');
+    expect(result.code).not.toContain('default:');
+    expect(result.code).toContain('=>');
+    const tree = compile(source, { Panel, read, events }, 'vue', options);
+    expect(reads).toBe(0);
+    expect(events).toEqual([]);
+    current.value = 2;
+    expect(await renderToString(createSSRApp({ render: () => tree }))).toBe(expected);
+    expect(reads).toBe(body === '/* empty slot */' ? 0 : 1);
+    expect(events).toEqual(cleanup);
+  });
+
+  it.each(['object', 'function'] as const)(
+    'keeps named slots in an object with the %s setting',
+    async (vueDefaultSlot) => {
+      const Panel = defineComponent({
+        setup(_, { slots }) {
+          return () => h('section', null, [...slots.default!(), ...slots.footer!()]);
+        },
+      });
+      const source = 'return Panel { <button>Save</button>; } footer: { <span>Tail</span>; };';
+      const options = { vueDefaultSlot };
+      expect(
+        transform(source, { ...options, filename: 'slots.twillx', jsxImportSource: 'vue' }).code,
+      ).toContain('{{default:');
+      expect(
+        await renderToString(
+          createSSRApp({ render: () => compile(source, { Panel }, 'vue', options) }),
+        ),
+      ).toBe('<section><button>Save</button><span>Tail</span></section>');
+    },
+  );
+
+  it('leaves React, authored JSX and ordinary callbacks unchanged', () => {
+    for (const source of [
+      'const view=Panel { <button/>; };',
+      'const view=<Panel>{()=> <button/>}</Panel>;',
+      'const value=(Panel) { value in value + 1 };',
+    ]) {
+      for (const jsxImportSource of ['react', 'vue']) {
+        if (jsxImportSource === 'vue' && source.startsWith('const view=Panel')) continue;
+        const options = { filename: 'boundary.twillx', jsxImportSource };
+        expect(transform(source, { ...options, vueDefaultSlot: 'function' }).code).toBe(
+          transform(source, options).code,
+        );
+      }
+    }
+  });
+
+  it('preserves parameter and JSX mappings with function slots', () => {
+    const source = 'const view=Panel { (value:number) in <button>{value}</button>; };';
+    const result = transform(source, {
+      filename: 'mapped-slot.twillx',
+      jsxImportSource: 'vue',
+      vueDefaultSlot: 'function',
+    });
+    for (const token of ['value:number', '<button>', 'value}</button>']) {
+      const generated = result.code.slice(0, result.code.indexOf(token)).split('\n');
+      expect(originalPosition(result, generated.length, generated.at(-1)!.length)).toMatchObject({
+        source: 'mapped-slot.twillx',
+        line: 1,
+        column: source.indexOf(token),
+      });
+    }
+  });
+});
+
+it('checks function-slot projects and maps original expression errors', () => {
+  const source =
+    'declare const Panel:any;\nconst view=Panel { (value:number) in <button>{value.toUpperCase()}</button>; };';
+  expect(diagnostics(source, 'vue', { vueDefaultSlot: 'function' })).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        code: 2339,
+        line: 2,
+        column: source.split('\n')[1]!.indexOf('toUpperCase'),
+      }),
+    ]),
+  );
 });
