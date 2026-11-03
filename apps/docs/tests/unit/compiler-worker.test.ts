@@ -28,9 +28,14 @@ afterEach(() => {
   worker.postMessage.mockClear();
 });
 afterAll(() => vi.unstubAllGlobals());
-async function compile(source: string, filename = 'example.twill', jsxImportSource = 'react') {
+async function compile(
+  source: string,
+  filename = 'example.twill',
+  jsxImportSource = 'react',
+  vueDefaultSlot?: 'object' | 'function',
+) {
   await worker.onmessage({
-    data: { id: 42, source, filename, jsxImportSource },
+    data: { id: 42, source, filename, jsxImportSource, vueDefaultSlot },
   } as MessageEvent<CompileRequest>);
   expect(worker.postMessage).toHaveBeenCalledOnce();
   return worker.postMessage.mock.calls[0]![0] as CompileResponse;
@@ -59,6 +64,18 @@ test('compiles UI files using the selected native JSX runtime', async () => {
   const response = await compile('const view = Panel { "child"; };', 'example.twillx', 'vue');
   expect(response.result!.code).toContain('@jsxImportSource vue');
   expect(response.result!.code).toContain('<Panel>');
+});
+
+test('applies the selected Vue function-slot option through the actual worker compiler', async () => {
+  const response = await compile(
+    'const view = Panel { <button>Count</button>; };',
+    'example.twillx',
+    'vue',
+    'function',
+  );
+  expect(response.error).toBeUndefined();
+  expect(response.result!.code).toMatch(/<Panel>\s*\{\(\) =>/);
+  expect(response.result!.code).not.toContain('default:');
 });
 
 test('compiles enum-case patterns in the browser worker without a matching runtime', async () => {

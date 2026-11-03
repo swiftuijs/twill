@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Audit shared generated output: reuse safe existing scopes for branch bindings and returned switch/match expressions, remove dummy exhaustiveness casts and duplicate callback grouping, and compact explicit value-return callbacks/render props. Preserve snapshots, per-arm bindings, eval isolation, mappings and actual exhaustiveness checking. Correct released playground feature labels and make the Vue component example explicitly use lazy function slots.
+
 - Add the opt-in Vue `vueDefaultSlot: "function"` representation across compiler/project and build-adapter options. Preserve compatible object output by default and whenever named slots are present; synchronize configuration schemas, editor inspection, script cache invalidation and guidance.
 
 - Unify lean emission for eligible direct JSX children, callbacks/render props/Vue slots and match/switch returns. Preserve native execution, lexical scopes, one-time evaluation, type checks, lazy timing and original-source mappings; validate every canonical playground example.

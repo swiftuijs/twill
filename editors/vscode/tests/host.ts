@@ -331,7 +331,7 @@ export async function run() {
   assert(await vscode.workspace.applyEdit(omit));
   await eventually(
     async () => vscode.languages.getDiagnostics(branching.uri),
-    (items) => items.some((item) => item.code === 1360),
+    (items) => items.length === 1 && items[0]!.code === 2344,
   );
   console.log(
     'PASS: destructured guard and pattern switch completion, rename, formatting and exhaustive diagnostics',
@@ -466,7 +466,7 @@ export async function run() {
   assert(await vscode.workspace.applyEdit(omitEnumCase));
   await eventually(
     async () => vscode.languages.getDiagnostics(enumeration.uri),
-    (items) => items.some((item) => item.code === 1360),
+    (items) => items.length === 1 && items[0]!.code === 2344,
   );
   console.log(
     'PASS: associated enum constructor completion, native consumer, formatting and exhausted switch diagnostics',

@@ -10,6 +10,7 @@ self.onmessage = async ({ data }: MessageEvent<CompileRequest>) => {
     const result = transform(data.source, {
       filename: data.filename,
       jsxImportSource: data.jsxImportSource,
+      vueDefaultSlot: data.vueDefaultSlot,
     });
     let code = result.code;
     try {

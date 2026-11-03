@@ -133,8 +133,8 @@ onBeforeUnmount(() => {
             <option value="members">Implicit members</option>
             <option value="cleanup">Guard and defer</option>
             <option value="branching">Typed outcome matching</option>
-            <option value="if-bindings">Branch bindings (unreleased)</option>
-            <option value="enum-patterns">Match expressions (unreleased)</option>
+            <option value="if-bindings">Branch bindings</option>
+            <option value="enum-patterns">Match expressions</option>
             <option value="react">React component</option>
             <option value="vue">Vue lazy slot</option>
           </select>

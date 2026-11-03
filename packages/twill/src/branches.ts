@@ -40,6 +40,39 @@ export function canInlineSwitchExpression(node: Node): boolean {
   return !directEval(node) && !suspension(node);
 }
 
+/** Reuse authored blocks only when no direct eval (including a captured one)
+ * can observe the added temporary's broader lifetime/temporal dead zone.
+ * Memoize shared parser nodes so this analysis stays linear in the AST size. */
+export function reusableStatements(ast: Node, usedNames: Set<string>): Set<Node> {
+  const reusable = new Set<Node>();
+  const observed = new Map<Node, boolean>();
+  const visit = (node: Node): boolean => {
+    const known = observed.get(node);
+    if (known !== undefined) return known;
+    if (node.type === 'Identifier' || node.type === 'JSXIdentifier') usedNames.add(node.name);
+    let observable =
+      node.type === 'CallExpression' &&
+      node.callee.type === 'Identifier' &&
+      node.callee.name === 'eval';
+    for (const [key, value] of Object.entries(node)) {
+      if (['loc', 'trailing'].includes(key)) continue;
+      for (const child of Array.isArray(value) ? value : [value])
+        if (child?.type && visit(child)) observable = true;
+    }
+    if (!observable && node.type === 'BlockStatement')
+      for (const statement of node.body)
+        if (
+          statement.type === 'TwillIfBinding' ||
+          (statement.argument ?? statement.expression)?.type === 'TwillSwitchExpression'
+        )
+          reusable.add(statement);
+    observed.set(node, observable);
+    return observable;
+  };
+  visit(ast);
+  return reusable;
+}
+
 /** Native switches with per-arm scopes. Direct returns and standalone variable
  * initializers need no extra function; other expressions keep a lexical IIFE. */
 export function lowerSwitchExpressions(
@@ -52,6 +85,7 @@ export function lowerSwitchExpressions(
   comments: { start: number; end: number }[],
   fail: (node: Node, message: string) => never,
   implicitReturns: Node[] = [],
+  reusable: Set<Node> = new Set(),
 ) {
   const returns = new Set<Node>();
   const implicit = new Set(implicitReturns);
@@ -82,15 +116,17 @@ export function lowerSwitchExpressions(
     }
   };
   const visit = (node: Node, parent?: Node) => {
-    if (node.type === 'BlockStatement' && node.body.length === 1) {
-      const statement = node.body[0];
-      const value =
-        statement.type === 'ReturnStatement' ? statement.argument : statement.expression;
-      if (
-        value?.type === 'TwillSwitchExpression' &&
-        (statement.type === 'ReturnStatement' || implicit.has(value))
-      )
-        sharedScopes.add(value);
+    if (node.type === 'BlockStatement') {
+      for (const statement of node.body) {
+        const value =
+          statement.type === 'ReturnStatement' ? statement.argument : statement.expression;
+        if (
+          value?.type === 'TwillSwitchExpression' &&
+          (node.body.length === 1 || reusable.has(statement)) &&
+          (statement.type === 'ReturnStatement' || implicit.has(value))
+        )
+          sharedScopes.add(value);
+      }
     }
     if (node.type === 'ExpressionStatement' && implicit.has(node.expression)) {
       grouping(node.start, node.expression.start);
@@ -276,15 +312,14 @@ export function lowerSwitchExpressions(
     const hasDefault = node.cases.some(
       (branch: Node) => !branch.pattern && !branch.enumPattern && branch.test === null,
     );
-    const check =
-      !hasDefault && language.startsWith('ts')
-        ? ` ${kind ? `(0 as unknown as typeof ${kind})` : subject} satisfies never;`
-        : '';
     // Transpile-only JS hosts cannot prove unions. Unexpected values fail
     // visibly rather than returning an accidental undefined.
+    // Keep the assertion result never even for invalid unions, so the type
+    // constraint is the only diagnostic, without cascading cast/ctor errors.
+    const check = !hasDefault && language.startsWith('ts') ? fresh('Check') : undefined;
     const failure = hasDefault
       ? ''
-      : `${check} throw new TypeError('Non-exhaustive switch expression');`;
+      : `${check ? ` type ${check}<T extends never = typeof ${kind ?? subject}> = T & never;` : ''} throw new TypeError('Non-exhaustive switch expression'${check ? ` as ${check}` : ''});`;
     const closing = initializer || (direct && !sharedScopes.has(node)) ? '}' : direct ? '' : '})()';
     code.overwrite(node.end - 1, node.end, `}${failure}${closing}`, {
       contentOnly: true,

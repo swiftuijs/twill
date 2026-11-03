@@ -272,6 +272,25 @@ function checked(source: string) {
   return project;
 }
 const union = 'type Result={kind:"ok";value:number}|{kind:"bad";error:string};';
+it.each(['any', 'unknown', 'number', 'string'])(
+  'requires a default for unbounded %s even with the erased exhaustiveness proof',
+  (type) => {
+    expect(
+      checked(`export function f(input:${type}){return switch(input){case 1:1;};}`)
+        .diagnostics()
+        .map((error) => error.code),
+    ).toContain(2344);
+  },
+);
+it('does not let a shadowed never-returning error constructor bypass exhaustiveness', () => {
+  expect(
+    checked(
+      'declare const TypeError:new(message:string)=>never;export function f(input:1|2){return switch(input){case 1:1;};}',
+    )
+      .diagnostics()
+      .map((error) => error.code),
+  ).toContain(2344);
+});
 it('narrows destructured guards and pattern payloads with strict unused checks', () => {
   const p = checked(
     union +
@@ -294,7 +313,7 @@ it('requires a default or a proven exhausted TS union', () => {
     union +
       'export function f(input:Result){return switch(input){case {kind:"ok",value}: value;};}',
   ).diagnostics();
-  expect(diagnostics.some((d) => d.code === 1360)).toBe(true);
+  expect(diagnostics.map((d) => d.code)).toEqual([2344]);
   expect(
     checked(
       union +

@@ -57,6 +57,22 @@ const card = `import type { ReactNode } from 'react';
 declare function Card(props: { title: string; onClick?: (event: { x: number }) => void; children?: ReactNode }): ReactNode;
 `;
 
+it('hides lifted compiler bindings from local completions while preserving authored names and refreshed files', () => {
+  let source =
+    'export function run(input:number|null){const __twillIf0=7;if const value=input{}return __twillIf0;}';
+  const { project, editor, file } = fixture({ 'main.twill': source });
+  const names = () =>
+    editor
+      .completions(file('main.twill'), source.indexOf('return ') + 7)
+      .info?.entries.map((entry) => entry.name);
+  expect(names()).toContain('__twillIf0');
+  expect(names()).not.toContain('__twillIf1');
+  source = source.replaceAll('__twillIf0', '__twillIf1');
+  project.update(file('main.twill'), source);
+  expect(names()).toContain('__twillIf1');
+  expect(names()).not.toContain('__twillIf0');
+});
+
 it('completes partially typed React prop names in source coordinates', () => {
   const source = card + `export const view = Card({ tit }) { 'Hello' };`;
   const { editor, file } = fixture({ 'view.twillx': source });

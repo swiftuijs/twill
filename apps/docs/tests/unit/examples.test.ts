@@ -45,11 +45,21 @@ it.each(Object.entries(snippets))(
       expect(describe.body!.statements[0]!.kind).toBe(ts.SyntaxKind.VariableStatement);
       expect(code).toContain('satisfies');
       expect(code).toContain('Non-exhaustive switch expression');
+      expect(code).not.toContain('0 as unknown');
+      const last = describe.body!.statements.at(-1)!;
+      expect(ts.isThrowStatement(last)).toBe(true);
+      if (ts.isThrowStatement(last) && ts.isNewExpression(last.expression))
+        expect(ts.isAsExpression(last.expression.arguments![0]!)).toBe(true);
+      expect(describe.body!.statements.some(ts.isTypeAliasDeclaration)).toBe(true);
+    }
+    if (['branching', 'if-bindings'].includes(name)) {
+      const fn = ast.statements.find(ts.isFunctionDeclaration)!;
+      expect(fn.body!.statements.some(ts.isBlock)).toBe(false);
     }
     if (name === 'react') expect(code).toMatch(/<Panel>\s*<button/);
     if (name === 'vue') {
-      expect(code).toMatch(/default:\s*\(\)\s*=>\s*(?:\(\s*)?<button/);
-      expect(code).not.toMatch(/default:\s*\(\)\s*=>\s*\{\s*return/);
+      expect(code).toMatch(/<Panel>\s*\{\(\)\s*=>\s*(?:\(\s*)?<button/);
+      expect(code).not.toContain('default:');
     }
   },
 );

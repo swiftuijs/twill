@@ -59,7 +59,7 @@ it('checks case references, binds narrowed payloads and preserves exhaustive che
     checked(declaration + read.replace('case enum State.idle():0;', ''))
       .project.diagnostics()
       .map((d) => d.code),
-  ).toContain(1360);
+  ).toContain(2344);
 });
 it('checks imported and native factories without runtime calls', () => {
   const source = `import {State as Native} from './native';export function read(state:{kind:'loaded';value:number}){return switch(state){case enum Native.loaded({value}):value;};}`;

@@ -3,6 +3,7 @@ export interface CompileRequest {
   source: string;
   filename: string;
   jsxImportSource: string;
+  vueDefaultSlot?: 'object' | 'function';
 }
 export interface CompileError {
   message: string;

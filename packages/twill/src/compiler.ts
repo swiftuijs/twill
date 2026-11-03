@@ -2,7 +2,11 @@ import MagicString from 'magic-string';
 import { Parser, tokTypes } from 'acorn';
 import { parse } from './parser.js';
 import { lowerDefers } from './defer.js';
-import { canInlineSwitchExpression, lowerSwitchExpressions } from './branches.js';
+import {
+  canInlineSwitchExpression,
+  lowerSwitchExpressions,
+  reusableStatements,
+} from './branches.js';
 import { lowerEnums, mapEnumCopies } from './enums.js';
 import {
   originalPositionFor,
@@ -66,16 +70,27 @@ type ClosureMetadata = {
   async: boolean;
   implicitMembers: number[];
 };
+function closureExpression(body: Node[]): Node | undefined {
+  if (body.length !== 1) return;
+  return body[0]!.type === 'ReturnStatement' ? body[0]!.argument : body[0]!.expression;
+}
 function conciseExpression(body: Node[]): boolean {
-  const expression =
-    body.length === 1 && body[0]!.type === 'ExpressionStatement' ? body[0]!.expression : undefined;
+  const expression = closureExpression(body);
   return (
     !!expression &&
     (expression.type !== 'TwillSwitchExpression' || !canInlineSwitchExpression(expression))
   );
 }
-function expressionGrouping(expression: Node): string {
-  return ['ObjectExpression', 'SequenceExpression'].includes(expression.type) ? '(' : '';
+function expressionGrouping(expression: Node, source: string, start: number): string {
+  while (
+    ['TSAsExpression', 'TSSatisfiesExpression', 'TSNonNullExpression'].includes(expression.type)
+  )
+    expression = expression.expression;
+  if (!['ObjectExpression', 'SequenceExpression'].includes(expression.type)) return '';
+  const tokens = Parser.tokenizer(source.slice(start, expression.start), { ecmaVersion: 'latest' });
+  for (let token = tokens.getToken(); token.type !== tokTypes.eof; token = tokens.getToken())
+    if (token.type === tokTypes.parenL) return '';
+  return '(';
 }
 function walk(node: Node, visit: (node: Node) => void): void {
   visit(node);
@@ -130,16 +145,20 @@ export function transform(source: string, options: TransformOptions = {}) {
     ? lowerEnums(source, parsed.ast, parsed.enums, code)
     : [];
   const usedNames = new Set<string>();
+  const reusable =
+    parsed.ifBindings.length || parsed.switches.length
+      ? reusableStatements(parsed.ast, usedNames)
+      : new Set<Node>();
   const patternGuards = parsed.guards.filter(
     (guard) => guard.binding && guard.binding.declarations[0].id.type !== 'Identifier',
   );
   if (
-    patternGuards.length ||
-    parsed.ifBindings.length ||
-    parsed.switches.length ||
-    parsed.defers.length ||
-    parsed.closures.some((closure) => closure.implicitMembers.length) ||
-    /\.twillx$/.test(filename.split(/[?#]/, 1)[0]!)
+    !parsed.ifBindings.length &&
+    !parsed.switches.length &&
+    (patternGuards.length ||
+      parsed.defers.length ||
+      parsed.closures.some((closure) => closure.implicitMembers.length) ||
+      /\.twillx$/.test(filename.split(/[?#]/, 1)[0]!))
   )
     walk(parsed.ast, (node) => {
       if (node.type === 'Identifier' || node.type === 'JSXIdentifier') usedNames.add(node.name);
@@ -155,7 +174,8 @@ export function transform(source: string, options: TransformOptions = {}) {
     const patternEnd = binding.typeAnnotation?.start ?? binding.end;
     // Evaluate in the outer scope, then move the original binding tokens into
     // the success branch. This preserves maps, narrowing and native defaults.
-    code.overwrite(statement.start, binding.start, `{const ${temporary}`);
+    const reuseScope = reusable.has(statement);
+    code.overwrite(statement.start, binding.start, `${reuseScope ? '' : '{'}const ${temporary}`);
     code.move(binding.start, patternEnd, statement.consequent.start + 1);
     code.prependRight(binding.start, 'const ');
     code.appendLeft(patternEnd, ` = ${temporary};`);
@@ -163,7 +183,7 @@ export function transform(source: string, options: TransformOptions = {}) {
       statement.consequent.start,
       `; if (${temporary} !== null && ${temporary} !== void 0) `,
     );
-    code.appendLeft(statement.end, '}');
+    if (!reuseScope) code.appendLeft(statement.end, '}');
   }
   for (const guard of parsed.guards) {
     // A guard is one source statement. Without these braces an outer `else`
@@ -243,8 +263,16 @@ export function transform(source: string, options: TransformOptions = {}) {
     while (usedNames.has(name));
     usedNames.add(name);
     const body = metadata.node.body.body as Node[];
-    const concise = options.implicitReturn !== false && conciseExpression(body);
-    const opening = concise ? expressionGrouping(body[0]!.expression) : '{';
+    const concise =
+      (options.implicitReturn !== false || body[0]?.type === 'ReturnStatement') &&
+      conciseExpression(body);
+    const opening = concise
+      ? expressionGrouping(
+          closureExpression(body)!,
+          source,
+          metadata.header?.end ?? metadata.node.start + 1,
+        )
+      : '{';
     code.overwrite(metadata.node.start, metadata.node.start + 1, `(${name}) => ${opening}`);
     for (const offset of metadata.implicitMembers) code.appendLeft(offset, name);
   }
@@ -476,13 +504,22 @@ export function transform(source: string, options: TransformOptions = {}) {
           ].includes(statement.type),
         ) &&
         body.filter((statement) => statement.type !== 'EmptyStatement').at(-1) === expressions[0];
+      const explicitReturn =
+        !content && body.length === 1 && body[0]!.type === 'ReturnStatement' && body[0]!.argument;
       const returnsValue =
+        explicitReturn ||
         singleContent ||
         (options.implicitReturn !== false &&
           body.length === 1 &&
           body[0]!.type === 'ExpressionStatement');
       const conciseBody = returnsValue && conciseExpression(body);
-      const grouping = conciseBody ? expressionGrouping(expressions[0]!.expression) : '{';
+      const grouping = conciseBody
+        ? expressionGrouping(
+            closureExpression(body)!,
+            source,
+            metadata.header?.end ?? closure.start + 1,
+          )
+        : '{';
       if (singleContent && body.length === 1 && !vue) {
         // A single JSX child is a value, not an array or an eagerly invoked
         // callback. This also supports libraries requiring ReactElement children.
@@ -528,7 +565,8 @@ export function transform(source: string, options: TransformOptions = {}) {
       } else if (!metadata.implicitMembers.length)
         code.overwrite(closure.start, closure.start + 1, `() => ${grouping}`);
       if (conciseBody) {
-        const statement = expressions[0]!;
+        const statement = body[0]!;
+        if (explicitReturn) code.remove(statement.start, statement.start + 6);
         if (source[statement.end - 1] === ';') code.remove(statement.end - 1, statement.end);
         code.overwrite(closure.end - 1, closure.end, grouping ? ')' : '', { contentOnly: true });
         continue;
@@ -601,7 +639,7 @@ export function transform(source: string, options: TransformOptions = {}) {
             ? `;return ${collector};`
             : `;return ${collector}.length === 1 ? ${collector}[0] : ${collector};`,
         );
-      } else if (returnsValue) {
+      } else if (returnsValue && !explicitReturn) {
         const statement = singleContent ? expressions[0]! : body[0]!;
         if (
           statement.expression.type === 'TwillSwitchExpression' &&
@@ -654,6 +692,7 @@ export function transform(source: string, options: TransformOptions = {}) {
         });
       },
       directReturns,
+      reusable,
     );
   // Apply outer attribute braces after nested call suffixes at the same offset.
   for (const end of attributeClosings) code.appendLeft(end, '}');

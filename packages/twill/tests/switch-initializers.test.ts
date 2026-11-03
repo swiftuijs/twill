@@ -206,7 +206,7 @@ it('checks exhaustiveness and maps enum binding diagnostics in lifted initialize
     checked('export function read(input:1|2){const result=switch(input){case 1:2;};return result;}')
       .project.diagnostics()
       .map((d) => d.code),
-  ).toContain(1360);
+  ).toContain(2344);
   const source =
     'declare const Factory:{loaded():{kind:"loaded";value:number}};export function read(input:{kind:"loaded";value:number}){\nconst result=switch(input){case enum Factory.loaded({missing}):missing;};return result;}';
   const diagnostic = checked(source)

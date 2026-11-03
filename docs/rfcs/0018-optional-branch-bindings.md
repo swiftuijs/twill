@@ -51,6 +51,10 @@ Lower to a hygienic temporary and a scoped native nullish conditional, then cons
 
 The actual temporary is collision-free. Keep original initializer, pattern, annotation and body tokens mapped for inference, diagnostics, references and safe edits. Inline and external-runtime modes emit the same branch lowering without adding a runtime dependency. Native declarations/export expose only the normal inferred public types.
 
+The unreleased emitter can reuse an existing authored block for its hygienic temporary instead of adding another block. It retains isolation when direct eval, including eval inside a capturing function, can observe the temporary's expanded scope/TDZ. Top-level and unbraced statement boundaries retain their own scope. The scope analysis shares identifier collection and visits each parser node once.
+
+`if const { value } = input` checks `input`, then performs ordinary destructuring: `{ value: undefined }` still succeeds. `if const value = input?.value` checks the field value instead; both forms preserve zero and false.
+
 Use strict comparisons and `void 0` so shadowed `undefined` and the browser's legacy `document.all` do not change the null/undefined contract. Existing guard emission retains its released native comparison behavior.
 
 An initializer written as a `match` expression retains the existing general-expression lowering, including its synchronous IIFE cost and suspension restrictions. This RFC does not optimize those separate expression contexts.
