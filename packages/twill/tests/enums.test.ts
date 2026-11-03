@@ -96,7 +96,7 @@ it('reports a missing enum case and invalid construction through native TS check
     export function run(state:State<number>) { return switch(state) {case {kind:'loaded',value}: value;}; }
     export const wrong:State<number>=State.loaded('bad');`);
   const diagnostics = project.diagnostics();
-  expect(diagnostics.map((d) => d.code)).toContain(1360);
+  expect(diagnostics.map((d) => d.code)).toContain(2344);
   expect(diagnostics.map((d) => d.code)).toContain(2322);
 });
 

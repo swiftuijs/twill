@@ -95,6 +95,8 @@ With `jsxImportSource: "vue"`, `Panel { <button>Save</button>; }` then emits:
 <Panel>{() => <button>Save</button>}</Panel>
 ```
 
+The playground's Vue component example explicitly selects this mode. The function preserves slot laziness: replacing it with `<Panel><button>Save</button></Panel>` in the standard TSX runtime path would evaluate the child and its reactive reads during the parent render.
+
 Use this mode for actual Vue components, or when your Vue runtime supports function children for every native tag a component variable may resolve. Vue 3.3 native tags do not support that replacement. Twill does not add runtime type/version checks. Scoped parameters, reactive reads, cleanup and collector bodies keep the same lazy callback behavior.
 
 If any named slot is supplied, Twill retains the complete object, including `default`, in either mode. Set `"vueDefaultSlot": "object"` or remove the setting to restore the default.

@@ -58,7 +58,7 @@ export function describe(input: { result: Result } | null): string {
   'if-bindings': {
     filename: 'example.twill',
     jsxImportSource: 'react',
-    note: 'Bind a non-nullish value only in the success branch; zero survives. The output is a native branch without a wrapper or runtime.',
+    note: 'This pattern checks input itself before destructuring; it does not check input.value. Zero survives. To check the field instead, write if const value = input?.value.',
     source: `export function label(input: { value: number } | null) {
   if const { value } = input {
     return value.toFixed(2);
@@ -105,10 +105,11 @@ export default function App() {
   vue: {
     filename: 'example.twillx',
     jsxImportSource: 'vue',
-    note: 'Vue closures become lazy slots. A single expression uses a concise arrow; the slot renderer still owns reactive reads.',
+    vueDefaultSlot: 'function' as const,
+    note: 'This component example opts into vueDefaultSlot: "function". The callback keeps reactive reads lazy; direct JSX children would evaluate them eagerly. Named slots retain an object.',
     source: `import { defineComponent, ref } from 'vue';
 
-declare const Panel: any;
+declare const Panel: import('vue').Component;
 
 export default defineComponent({ setup() {
   const count = ref(0);

@@ -53,7 +53,7 @@ it('checks match descriptors, payloads, result inference and exhaustiveness', ()
     checked(declaration + read.replace('case State.idle():0;', ''))
       .project.diagnostics()
       .map((d) => d.code),
-  ).toContain(1360);
+  ).toContain(2344);
   const code = transform(declaration + read).code;
   expect(code).not.toContain('match(');
   const exports: Record<string, any> = {};

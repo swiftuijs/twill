@@ -18,6 +18,7 @@ export interface CompletionRequest {
 export class TwillEditor {
   private attributeCache = new WeakMap<ts.SourceFile, ts.JsxAttribute[]>();
   private descriptorCache = new WeakMap<ts.Program, Set<ts.Symbol>>();
+  private internalBindingCache = new WeakMap<ts.SourceFile, Set<string>>();
   constructor(readonly project: TwillProject) {}
 
   private sourceFile(filename: string) {
@@ -83,11 +84,46 @@ export class TwillEditor {
 
   completions(filename: string, position: number, preferences: ts.UserPreferences = {}) {
     let { offset, props } = this.completionLocation(filename, position);
-    const info = this.project.service.getCompletionsAtPosition(virtualFilename(filename), offset, {
+    let info = this.project.service.getCompletionsAtPosition(virtualFilename(filename), offset, {
       includeCompletionsForModuleExports: true,
       includeCompletionsWithInsertText: true,
       ...preferences,
     });
+    if (
+      info &&
+      !info.isMemberCompletion &&
+      isTwillFile(sourceFilename(filename)) &&
+      this.project.transformed(filename)?.changed
+    ) {
+      const file = this.sourceFile(filename);
+      if (file) {
+        let internal = this.internalBindingCache.get(file);
+        if (!internal) {
+          internal = new Set<string>();
+          const visit = (node: ts.Node) => {
+            if (ts.isIdentifier(node) && node.text.startsWith('__twill')) {
+              const parent = node.parent;
+              if (
+                (ts.isVariableDeclaration(parent) ||
+                  ts.isBindingElement(parent) ||
+                  ts.isParameter(parent) ||
+                  ts.isTypeAliasDeclaration(parent) ||
+                  ts.isFunctionDeclaration(parent)) &&
+                parent.name === node &&
+                !this.mapSpan(filename, { start: node.getStart(), length: node.getWidth() })
+              )
+                internal!.add(node.text);
+            }
+            ts.forEachChild(node, visit);
+          };
+          visit(file);
+          this.internalBindingCache.set(file, internal);
+        }
+        const hidden = internal;
+        if (hidden.size)
+          info = { ...info, entries: info.entries.filter((entry) => !hidden.has(entry.name)) };
+      }
+    }
     if (props && !info?.isMemberCompletion) props = undefined;
     return { offset, info, props } satisfies CompletionRequest;
   }

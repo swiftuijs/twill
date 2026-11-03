@@ -339,7 +339,7 @@ test('live compilation, highlighted examples, located errors and recovery', asyn
   await expect(source.locator('.twill-contextual-keyword')).toHaveText(['defer', 'guard']);
   await page.getByLabel('Example', { exact: true }).selectOption('branching');
   await expect(page.getByRole('status')).toContainText('1 guard · 1 switch expression');
-  await expect(generated(page)).toContainText('satisfies never');
+  await expect(generated(page)).toContainText('extends never');
   await expect(generated(page)).toContainText('case \"ok\"');
   await page.getByLabel('Example', { exact: true }).selectOption('if-bindings');
   await expect(page.getByRole('status')).toContainText('1 if binding');
@@ -347,6 +347,7 @@ test('live compilation, highlighted examples, located errors and recovery', asyn
   await expect(generated(page)).toContainText('!== null');
   await expect(generated(page)).not.toContainText('=>');
   await page.getByLabel('Example', { exact: true }).selectOption('enum-patterns');
+  await expect(page.locator('#twill-example option:checked')).not.toContainText('unreleased');
   await expect(source).toContainText('case LoadState.loaded');
   await expect(
     source
@@ -356,8 +357,9 @@ test('live compilation, highlighted examples, located errors and recovery', asyn
       .filter({ hasText: /^match$/ }),
   ).toHaveCount(1);
   await expect(generated(page)).toContainText('typeof LoadState.loaded');
-  await expect(generated(page)).toContainText('satisfies never');
+  await expect(generated(page)).toContainText('extends never');
   await expect(generated(page)).not.toContainText('match (');
+  await expect(generated(page)).not.toContainText('0 as unknown');
   await page.getByLabel('Example', { exact: true }).selectOption('react');
   await expect(generated(page)).toContainText('<Panel>');
   await expect(generated(page)).toContainText(/<Panel>\s*<button/);
@@ -369,8 +371,8 @@ test('live compilation, highlighted examples, located errors and recovery', asyn
     await page.getByRole('button', { name: 'mobile navigation' }).click();
   await screenshot(page, info, 'playground-dark-react');
   await page.getByLabel('Example', { exact: true }).selectOption('vue');
-  await expect(generated(page)).toContainText(/default\s*:\s*\(/);
-  await expect(generated(page)).toContainText(/default:\s*\(\)\s*=>\s*(?:\(\s*)?<button/);
+  await expect(generated(page)).toContainText(/<Panel>\s*\{\(\)\s*=>\s*(?:\(\s*)?<button/);
+  await expect(generated(page)).not.toContainText('default:');
   await source.fill('fn {');
   await expect(page.getByRole('alert')).toContainText('Unable to compile');
   await expect(page.getByRole('button', { name: 'Copy output' })).toBeDisabled();
