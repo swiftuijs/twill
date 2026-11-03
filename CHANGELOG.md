@@ -11,7 +11,7 @@
 - Unify lean emission for eligible direct JSX children, callbacks/render props/Vue slots and match/switch returns. Preserve native execution, lexical scopes, one-time evaluation, type checks, lazy timing and original-source mappings; validate every canonical playground example.
 - Skip unrelated compiler/platform validation for trustworthy documentation-only main pushes; preserve independent Linux Pages deployment and full code/dependency/release checks.
 
-- Build CI candidates once and validate coverage, browser/editor integration and installed consumers in parallel. Keep the required aggregate, original coverage/size/security gates and exact-artifact promotion; isolate repository and minimum-consumer Node runtimes.
+- Build CI candidates once and validate coverage, browser/editor integration and installed consumers in parallel. Keep routing dependency-free, run static checks in the required tooling validator, consolidate all loader runtime checks into one job and move historical startup timing to manual benchmarks. Keep the required aggregate, original coverage/size/security gates and exact-artifact promotion; isolate repository and minimum-consumer Node runtimes.
 
 - Refresh Vite, URI parsing and extension-packaging dependencies, and validate scoped minimatch 11/glob 14 upgrades for repository tools. Preserve the audit gate and document application-level overrides for the upstream linter dependency chain; repository overrides do not propagate through published packages.
 

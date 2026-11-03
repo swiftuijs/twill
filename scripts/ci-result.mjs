@@ -15,7 +15,7 @@ export function verificationFailures(needs) {
   else {
     if (scope.shell === 'true' && scope.core !== 'true')
       failures.push('changes: platform checks require the core scope');
-    for (const name of ['build', 'unit', 'integration', 'loader-node'])
+    for (const name of ['build', 'unit', 'integration'])
       expected[name] = scope.core === 'true' ? 'success' : 'skipped';
     expected.docs = scope.core === 'true' ? 'skipped' : 'success';
     expected['shell-platforms'] = scope.shell === 'true' ? 'success' : 'skipped';

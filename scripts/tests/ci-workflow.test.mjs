@@ -53,11 +53,12 @@ test('the required verify check includes every validator and rejects cancellatio
 test('build and functional validators do not wait for the independent mandatory audit', () => {
   const dependencies = (name) =>
     list(jobs[name].needs).flatMap((need) => [need, ...dependencies(need)]);
-  for (const name of ['build', 'unit', 'integration', 'loader-node']) {
+  for (const name of ['build', 'unit', 'integration']) {
     assert(!dependencies(name).includes('dependencies'));
     assert(!dependencies(name).includes('verify'));
   }
   assert.equal(jobs.dependencies.steps.at(-1).run, 'pnpm deps:check');
+  assert.equal(jobs.dependencies.needs, undefined);
   assert.equal(
     readYaml('package.json').scripts['deps:check'],
     'pnpm audit --audit-level moderate && pnpm peers check',
@@ -66,7 +67,7 @@ test('build and functional validators do not wait for the independent mandatory 
 
 test('one candidate build feeds all Linux validators and only the successful aggregate promotes it', () => {
   assert.equal(jobs.build.steps.filter((step) => step.run === 'pnpm build').length, 1);
-  for (const name of ['unit', 'integration', 'loader-node'])
+  for (const name of ['unit', 'integration'])
     assert(uses(jobs[name].steps, './.github/actions/restore-build'));
   const uploads = Object.entries(jobs).flatMap(([job, value]) =>
     value.steps
@@ -112,12 +113,47 @@ test('Node 20 consumers run in isolation with no later repository pnpm command',
   assert(consumer.run.includes('consumer.mjs --packed'));
 });
 
-test('minimum editor, real loader APIs and platform consumers remain required at their existing boundaries', () => {
-  assert.deepEqual(jobs['loader-node'].strategy.matrix.node, ['22.12.0', '22.15.0', '26']);
-  const benchmark = jobs['loader-node'].steps.find(
+test('minimum editor, all loader runtimes and platform consumers remain required', () => {
+  assert.deepEqual(jobs.integration.strategy.matrix.suite, [
+    'browser',
+    'editor',
+    'consumers',
+    'loaders',
+  ]);
+  assert.equal(jobs.integration.strategy['fail-fast'], false);
+  assert.equal(jobs['loader-node'], undefined);
+  const loaderSteps = jobs.integration.steps.filter(
+    (step) => step.if === "matrix.suite == 'loaders'",
+  );
+  let runtime;
+  const verified = [];
+  for (const step of loaderSteps) {
+    if (step.uses) {
+      assert.equal(step.uses, 'actions/setup-node@v7.0.0');
+      runtime = String(step.with['node-version']);
+    } else {
+      assert.equal(step.run, 'node packages/twill/tests/loader-consumer.mjs');
+      verified.push(runtime);
+      runtime = undefined;
+    }
+  }
+  assert.deepEqual(verified, ['22.12.0', '22.15.0', '26']);
+  for (const job of Object.values(jobs))
+    assert(!job.steps.some((step) => step.run?.includes('benchmarks/loader-startup.mjs')));
+  const manual = readYaml('.github/workflows/validation.yml').jobs.benchmarks;
+  assert.equal(manual.if, 'inputs.benchmarks');
+  assert.equal(manual.steps[0].with['fetch-depth'], 0);
+  const benchmark = manual.steps.find(
     (step) => step.name === 'Compare old and new fresh-process startup',
   );
-  assert.match(benchmark.if, /github.event_name != 'pull_request'/);
+  assert.match(
+    benchmark.run,
+    /node packages\/twill\/benchmarks\/loader-startup.mjs .* loader-startup.json$/,
+  );
+  const switchIndex = manual.steps.findIndex((step) => step.with?.['node-version'] === '26');
+  assert(switchIndex > 0 && manual.steps[switchIndex + 1] === benchmark);
+  for (const step of manual.steps.slice(switchIndex + 1)) assert(!/\bpnpm\b/.test(step.run ?? ''));
+  assert(manual.steps.at(-1).with.path.includes('loader-startup.json'));
   const editor = jobs.integration.steps.find((step) => step.name === 'Minimum supported editor');
   assert.match(editor.if, /inputs.minimum-editor == true/);
   assert.equal(editor.env.TWILL_TEST_VSCODE_VERSION, '1.95.3');
@@ -129,6 +165,60 @@ test('minimum editor, real loader APIs and platform consumers remain required at
     /\bpack\b/.test(step.run ?? ''),
   ))
     assert.match(step.run, /--config.ignore-scripts=true/);
+});
+
+test('routing and gate preflight runs with native Node and no workspace dependencies', () => {
+  assert(!uses(jobs.changes.steps, './.github/actions/setup-workspace'));
+  assert.equal(
+    String(uses(jobs.changes.steps, 'actions/setup-node@v7.0.0').with['node-version']),
+    '22',
+  );
+  const preflight = jobs.changes.steps.find((step) => step.run?.startsWith('node --test '));
+  assert(preflight);
+  const directory = mkdtempSync(join(tmpdir(), 'twill-ci-preflight-'));
+  try {
+    for (const path of [
+      'scripts/ci-scope.mjs',
+      'scripts/ci-result.mjs',
+      'scripts/tests/ci-scope.test.mjs',
+      'scripts/tests/ci-result.test.mjs',
+    ]) {
+      const target = join(directory, path);
+      mkdirSync(join(target, '..'), { recursive: true });
+      writeFileSync(target, readFileSync(join(root, path)));
+    }
+    execFileSync(process.execPath, preflight.run.split(' ').slice(1), {
+      cwd: directory,
+      stdio: 'pipe',
+    });
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+  for (const name of ['build', 'docs'])
+    assert(
+      jobs[name].steps.some(
+        (step) => step.run === 'node --test scripts/tests/ci-workflow.test.mjs',
+      ),
+    );
+});
+
+test('static checks remain mandatory in tooling without delaying the shared build', () => {
+  const check = jobs.unit.steps.find(
+    (step) => step.name === 'Check types, lint, formatting and official skills',
+  );
+  assert.equal(check.if, "matrix.suite == 'tooling'");
+  for (const command of [
+    'pnpm typecheck',
+    'pnpm lint',
+    'pnpm format:check',
+    'pnpm verify:skills',
+  ]) {
+    assert(check.run.includes(command));
+    assert(!jobs.build.steps.some((step) => step.run?.includes(command)));
+  }
+  assert(jobs.verify.needs.includes('unit'));
+  assert(jobs.build.steps.some((step) => step.run?.includes('pnpm test:examples')));
+  assert(jobs.build.steps.some((step) => step.run?.includes('test:size')));
 });
 
 test('the actual build archive restores distributions and maps without dependency directories or script caches', () => {
