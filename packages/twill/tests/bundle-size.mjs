@@ -46,7 +46,7 @@ const fixtures = [
     sugar:
       'export function run(input: number[] | undefined) { guard const values = input else { return []; } return values.filter { value in value >= 0 }.map { value in value * 2 }; }',
     native:
-      'export function run(input: number[] | undefined) { const values = input; if (values == null) return []; return values.filter(value => value >= 0).map(value => value * 2); }',
+      'export function run(input: number[] | undefined) { const values = input; if (values === null || values === void 0) return []; return values.filter(value => value >= 0).map(value => value * 2); }',
   },
   {
     name: 'destructured-guard',
@@ -56,7 +56,7 @@ const fixtures = [
     sugar:
       'export function run(input: {value:number}|null|undefined) { guard const {value}=input else{return 0;} return value*2; }',
     native:
-      'export function run(input: {value:number}|null|undefined) { const valueOrNull=input; if(valueOrNull==null)return 0; const {value}=valueOrNull; return value*2; }',
+      'export function run(input: {value:number}|null|undefined) { const valueOrNull=input; if(valueOrNull===null||valueOrNull===void 0)return 0; const {value}=valueOrNull; return value*2; }',
   },
   {
     name: 'direct-pattern-switch',

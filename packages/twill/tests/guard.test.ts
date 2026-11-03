@@ -37,7 +37,7 @@ describe('general-purpose guards', () => {
   });
   it('binds a nullish value once while retaining falsy values', () => {
     const source = 'guard const item = record(value) else { return "missing"; } return item;';
-    for (const value of [0, false, '', 12]) {
+    for (const value of [0, -0, false, '', NaN, 0n, Symbol('value'), {}, [], () => {}, 12]) {
       let calls = 0;
       expect(
         run(source, value, (v: unknown) => {
@@ -49,6 +49,24 @@ describe('general-purpose guards', () => {
     }
     for (const value of [null, undefined])
       expect(run(source, value, (v: unknown) => v)).toBe('missing');
+  });
+  it('ignores a shadowed undefined and keeps authored loose conditions unchanged', () => {
+    const source =
+      'const undefined=7; guard const item=record(value) else{return "missing";} return item;';
+    for (const value of [null, undefined, 0, false])
+      expect(run(source, value, (v: unknown) => v)).toBe(
+        value === null || value === void 0 ? 'missing' : value,
+      );
+    const authored = 'function run(value){guard value != null else{return 0;}return 1;}';
+    expect(transform(authored).code).toContain('value != null');
+  });
+  it('does not coerce objects when selecting a successful binding', () => {
+    const value = {
+      [Symbol.toPrimitive]() {
+        throw new Error('Unexpected coercion');
+      },
+    };
+    expect(run('guard const item=value else{return 0;}return item;', value)).toBe(value);
   });
   it('supports ternaries, typed bindings, regexes, objects and comments', () => {
     const result = transform(

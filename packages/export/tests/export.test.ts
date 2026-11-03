@@ -172,6 +172,7 @@ it('exports destructured guards and exhaustive matching to checked native TS', a
   expect(result.diagnostics).toEqual([]);
   expect(nativeDiagnostics(result.tsconfig)).toEqual([]);
   const source = readFileSync(join(outDir, 'main.ts'), 'utf8');
+  expect(source).toMatch(/=== null \|\| .*=== void 0/);
   expect(source).toContain('extends never');
   expect(source).not.toContain('=>');
 });

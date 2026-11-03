@@ -195,6 +195,7 @@ import { createRequire } from 'node:module';
     { language: 'js' },
   );
   const runBranch = Function(branching.code + ';return run;')();
+  assert.match(branching.code, /=== null \|\| .*=== void 0/);
   assert.equal(runBranch(null), 0);
   assert.equal(runBranch({ result: { kind: 'ok', value: 3 } }), 6);
   assert.equal(branching.switches, 1);

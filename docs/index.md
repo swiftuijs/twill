@@ -29,7 +29,7 @@ async function readOwned(acquire) {
 
 ```ts
 const user = findUser(id);
-if (user == null) {
+if (user === null || user === void 0) {
   return 'Missing';
 }
 return user.name;

@@ -28,3 +28,11 @@ Native const plus an exiting nullish test remains supported. JS `let` keeps muta
 ## Decision history
 
 Retrospective nullish contract for released guard bindings.
+
+## Strict nullish consistency amendment (unreleased)
+
+Use the same null/undefined contract as RFC 0018 for every binding: lower guard failure to `value === null || value === void 0`, the complement of the branch binding's success test. Share this failure emission between identifier and destructured guards. Evaluate the initializer once and preserve narrowing, original tokens, TDZ, cleanup/exit ownership and existing falsy values. No runtime helper, closure or allocation is added.
+
+Published 0.3.1 uses `value == null` for guard bindings, which also rejects the browser's legacy `document.all`. The source compiler now accepts that non-nullish object consistently with branch bindings. Ordinary guard conditions and authored JS/TS equality operators retain native behavior. Use `guard value != null else { ... }` when that exact loose comparison is intended. This is a compatibility correction for the exotic browser object, not a change to ordinary null/undefined inputs.
+
+Validate identifier/object/array bindings, shadowed undefined, falsy values and coercion traps, original-source diagnostics and real browser document.all behavior, including defer cleanup. Compare emitted JS and bytes against natural strict handwritten checks; host minifiers retain their own exotic-object assumptions as documented in RFC 0018.

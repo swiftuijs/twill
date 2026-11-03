@@ -37,6 +37,10 @@ it.each(Object.entries(snippets))(
     };
     inspect(ast);
     expect(redundantReturns).toEqual([]);
+    if (['cleanup', 'branching'].includes(name)) {
+      expect(code).toMatch(/=== null \|\| .*=== void 0/);
+      expect(code).not.toContain('== null)');
+    }
     if (name === 'enum-patterns') {
       const describe = ast.statements.find(
         (node): node is ts.FunctionDeclaration =>
