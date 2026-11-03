@@ -12,7 +12,7 @@ function result(core = true, shell = true) {
     changes: { result: 'success', outputs: { core: String(core), shell: String(shell) } },
     dependencies: { result: 'success' },
     ...Object.fromEntries(
-      ['build', 'unit', 'integration', 'loader-node'].map((name) => [
+      ['build', 'unit', 'integration'].map((name) => [
         name,
         { result: core ? 'success' : 'skipped' },
       ]),

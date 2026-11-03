@@ -58,6 +58,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7.0.0
         with:
@@ -72,6 +74,11 @@ jobs:
       - run: pnpm benchmark:runtime --output runtime-results.json
       - run: pnpm benchmark:shell --output ../../shell-results.json
       - run: pnpm benchmark:react-framework --output ../../react-framework-results.json
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: '26'
+      - name: Compare old and new fresh-process startup
+        run: node packages/twill/benchmarks/loader-startup.mjs 5a258030ef3876bfaec3a858134e8535d019dede loader-startup.json
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: benchmark-results
@@ -84,3 +91,4 @@ jobs:
             runtime-results.json
             shell-results.json
             react-framework-results.json
+            loader-startup.json
