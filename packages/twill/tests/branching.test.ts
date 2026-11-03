@@ -56,6 +56,21 @@ describe('destructured guards', () => {
   it('retains native falsy coercion, TDZ and nested destructuring errors', () => {
     expect(run('guard const {length}=input else {return null;} return length;', '')).toBe(0);
   });
+  it('checks object and array guards without reading a shadowed undefined', () => {
+    for (const binding of ['{value=3}', '[value=3]']) {
+      const source = `const undefined=7;guard const ${binding}=record(input) else{return "missing";}return value;`;
+      for (const input of [null, undefined, binding.startsWith('{') ? {} : []]) {
+        let reads = 0;
+        expect(
+          run(source, input, (value: unknown) => {
+            reads++;
+            return value;
+          }),
+        ).toBe(input === null || input === void 0 ? 'missing' : 3);
+        expect(reads).toBe(1);
+      }
+    }
+  });
   it('does not expose pattern bindings before the successful check', () => {
     expect(() => run('guard const {value}=input else {return value;} return value;', null)).toThrow(
       ReferenceError,

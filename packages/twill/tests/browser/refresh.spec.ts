@@ -1,22 +1,66 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-test('branch bindings execute with native scope and falsy behavior through Vite', async ({
-  page,
-}) => {
+test('guard and branch bindings share strict nullish behavior through Vite', async ({ page }) => {
   const source = resolve('.twill/browser-fixture/if-bindings.twill');
   writeFileSync(
     source,
-    'export function read(input:{value:number}|null){const value=7;if const {value}=input{return value;}else{return value;}}export function present(input:unknown){if const value=input{return value===input;}return false;}',
+    `export function read(input:{value:number}|null){const value=7;if const {value}=input{return value;}else{return value;}}
+export function present(input:unknown){if const value=input{return Object.is(value,input);}return false;}
+export function guarded(input:unknown){guard const value=input else{return false;}return Object.is(value,input);}
+export function destructured(input:{length:number}|null|undefined){guard const {length}=input else{return -1;}return length;}
+export function condition(input:unknown){guard input else{return false;}return true;}
+export function loose(input:unknown){return input == null;}
+export function cleanup(input:unknown,events:string[]){defer {events.push('cleanup');}guard const value=input else{events.push('missing');return false;}events.push('value');return Object.is(value,input);}`,
   );
   try {
     await page.goto('/');
     const result = await page.evaluate(async () => {
       const path = '/if-bindings.twill';
-      const { read, present } = await import(/* @vite-ignore */ path);
-      return [read({ value: 0 }), read({ value: 3 }), read(null), present(document.all)];
+      const { read, present, guarded, destructured, condition, loose, cleanup } = await import(
+        /* @vite-ignore */ path
+      );
+      const values = [
+        null,
+        undefined,
+        false,
+        0,
+        -0,
+        0n,
+        NaN,
+        '',
+        Symbol(),
+        {},
+        [],
+        () => {},
+        document.all,
+      ];
+      return {
+        reads: [read({ value: 0 }), read({ value: 3 }), read(null)],
+        bindings: values.map((input) => {
+          const expected = input !== null && input !== void 0;
+          const events: string[] = [];
+          return (
+            present(input) === expected &&
+            guarded(input) === expected &&
+            cleanup(input, events) === expected &&
+            events.join(',') === (expected ? 'value,cleanup' : 'missing,cleanup')
+          );
+        }),
+        exotic: [
+          present(document.all),
+          guarded(document.all),
+          destructured(document.all) === document.all.length,
+          condition(document.all),
+          loose(document.all),
+        ],
+      };
     });
-    expect(result).toEqual([0, 3, 7, true]);
+    expect(result).toEqual({
+      reads: [0, 3, 7],
+      bindings: Array(13).fill(true),
+      exotic: [true, true, true, false, true],
+    });
     const output = await (await page.request.get('/if-bindings.twill?import')).text();
     expect(output).not.toContain('if const');
     expect(output).not.toContain('twill-runtime');

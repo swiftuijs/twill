@@ -14,7 +14,7 @@ const cases = [
     input: [null, { value: 3 }, { value: 0 }],
     sugar: 'function run(input){guard const {value}=input else{return 0;} return value*2;}',
     native:
-      'function run(input){const subject=input;if(subject==null)return 0;const {value}=subject;return value*2;}',
+      'function run(input){const subject=input;if(subject===null||subject===void 0)return 0;const {value}=subject;return value*2;}',
   },
   {
     name: 'direct-value-switch',

@@ -18,7 +18,7 @@ A nullable lookup should have an explicit failure path before the rest of the fu
 ```ts [TypeScript]
 function label(id: string) {
   const user = findUser(id);
-  if (user == null) {
+  if (user === null || user === void 0) {
     return 'Missing';
   }
   return user.name;

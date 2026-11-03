@@ -196,12 +196,16 @@ export function transform(source: string, options: TransformOptions = {}) {
       const binding = guard.binding.declarations[0].id;
       // Nullish checks preserve false, 0 and empty strings. The original
       // initializer runs once and the binding stays in the surrounding scope.
-      if (binding.type === 'Identifier') code.remove(guard.start, guard.start + 'guard'.length);
-      else {
+      let name: string;
+      if (binding.type === 'Identifier') {
+        name = binding.name;
+        code.remove(guard.start, guard.start + 'guard'.length);
+      } else {
         let temporary: string;
         do temporary = `__twillGuard${guardCounter++}`;
         while (usedNames.has(temporary));
         usedNames.add(temporary);
+        name = temporary;
         // Move native pattern tokens intact, preserving editor definitions and
         // initializer TDZ/shadowing. A type annotation belongs to the temporary.
         const patternEnd = binding.typeAnnotation?.start ?? binding.end;
@@ -209,13 +213,11 @@ export function transform(source: string, options: TransformOptions = {}) {
         code.move(binding.start, patternEnd, guard.end);
         code.prependRight(binding.start, '; const ');
         code.appendLeft(patternEnd, ` = ${temporary};`);
-        code.overwrite(guard.elseStart, guard.elseStart + 4, `; if (${temporary} == null)`);
-        continue;
       }
       code.overwrite(
         guard.elseStart,
         guard.elseStart + 'else'.length,
-        `; if (${binding.name} == null)`,
+        `; if (${name} === null || ${name} === void 0)`,
       );
     } else {
       code.overwrite(guard.start, guard.start + 'guard'.length, 'if (!(');

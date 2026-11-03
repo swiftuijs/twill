@@ -55,7 +55,7 @@ The unreleased emitter can reuse an existing authored block for its hygienic tem
 
 `if const { value } = input` checks `input`, then performs ordinary destructuring: `{ value: undefined }` still succeeds. `if const value = input?.value` checks the field value instead; both forms preserve zero and false.
 
-Use strict comparisons and `void 0` so shadowed `undefined` and the browser's legacy `document.all` do not change the null/undefined contract. Existing guard emission retains its released native comparison behavior.
+Use strict comparisons and `void 0` so shadowed `undefined` and the browser's legacy `document.all` do not change the null/undefined contract. The unreleased RFC 0007 amendment aligns identifier/destructured guard failure with this contract. Published 0.3.1 guard bindings still use loose equality and reject document.all; branch-binding semantics are unchanged.
 
 An initializer written as a `match` expression retains the existing general-expression lowering, including its synchronous IIFE cost and suspension restrictions. This RFC does not optimize those separate expression contexts.
 
