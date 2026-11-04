@@ -40,15 +40,15 @@ Install the compiler as a development dependency. These setup commands pin the p
 ::: code-group
 
 ```sh [pnpm]
-pnpm add -D @swiftuijs/twill@0.4.0
+pnpm add -D @swiftuijs/twill@0.4.1
 ```
 
 ```sh [npm]
-npm install --save-dev @swiftuijs/twill@0.4.0
+npm install --save-dev @swiftuijs/twill@0.4.1
 ```
 
 ```sh [Yarn]
-yarn add --dev @swiftuijs/twill@0.4.0
+yarn add --dev @swiftuijs/twill@0.4.1
 ```
 
 :::
@@ -163,7 +163,7 @@ For React state-preserving development, use the [React Vite integration](./frame
 Install the optional plugins alongside Prettier and ESLint. Keep Twill packages on the same version; formatter and linter dependencies include the matching compiler.
 
 ```sh
-pnpm add -D @swiftuijs/twill-formatter@0.4.0 prettier @swiftuijs/twill-linter@0.4.0 eslint
+pnpm add -D @swiftuijs/twill-formatter@0.4.1 prettier @swiftuijs/twill-linter@0.4.1 eslint
 ```
 
 `.prettierrc.json`:

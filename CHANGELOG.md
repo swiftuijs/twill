@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.4.1
+
 - Load the editor formatter only on formatting or generated-preview requests, bundle one Acorn entry in editor/compiler bridge and documentation worker builds, and retain one complete editor license notice. Preserve packaged formatting, source mappings and both host engines.
 - Defer CLI command backends until after help/argument validation, including the optional export backend. Build lint source/native line indexes in one newline scan while preserving CRLF, lone CR, Unicode separators and UTF-16 coordinates. Public APIs, emitted application code and shell process behavior are unchanged.
 

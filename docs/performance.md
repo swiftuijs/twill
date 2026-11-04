@@ -7,7 +7,7 @@ description: 'Understand generated JavaScript costs, compiler and editor work, s
 
 Twill compiles to ordinary JavaScript. Its performance depends on the emitted code, compilation workflow and optional libraries you use. This guide explains where costs arise and how to evaluate them in your application.
 
-The behavior described here applies to the 0.4.0 toolchain. Measurements below retain their original version and environment; they are examples of particular workloads, not new measurements of every 0.4.0 application.
+The behavior described here applies to the 0.4.1 toolchain. Measurements below retain their original version and environment; they are examples of particular workloads, not new measurements of every 0.4.1 application.
 
 | What you use                              | Where costs arise                                                                         | What to inspect                                            |
 | ----------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -43,10 +43,11 @@ The optional `@swiftuijs/twill-runtime` package shares selected dynamic synchron
 <a id="application-output-and-distribution-budgets"></a>
 
 <a id="unreleased-toolchain-optimization"></a>
+<a id="toolchain-optimization"></a>
 
 ### Tool downloads and application bundles are different
 
-The compiler, formatter, linter and editor are development tools. Their installed sizes are not application runtime overhead. Your application includes its emitted JavaScript, existing libraries and any runtime or shell package it explicitly imports. Unreleased tooling builds reduce duplicated parser/engine downloads and defer editor formatting and CLI backends. These changes preserve the emitted application code. See the [source-build toolchain comparison](./benchmark-history.md#unreleased-toolchain-optimization) for exact scopes, raw samples and released/source-only boundaries. CI checks representative emitted-output and distribution budgets separately; those budgets are not a size guarantee for arbitrary applications.
+The compiler, formatter, linter and editor are development tools. Their installed sizes are not application runtime overhead. Your application includes its emitted JavaScript, existing libraries and any runtime or shell package it explicitly imports. Twill 0.4.1 reduces duplicated parser/engine downloads and defer editor formatting and CLI backends. These changes preserve the emitted application code. See the [toolchain comparison](./benchmark-history.md#toolchain-optimization) for exact measurement scopes and raw samples. CI checks representative emitted-output and distribution budgets separately; those budgets are not a size guarantee for arbitrary applications.
 
 <a id="compiler-measurements"></a>
 <a id="mixed-projects-and-editing"></a>

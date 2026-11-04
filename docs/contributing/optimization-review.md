@@ -1,6 +1,6 @@
 # Toolchain optimization review
 
-Scope: unreleased source after 0.4.0. Existing public exports, dependencies, language output and correctness/coverage/size gates remain intact. Measurements and limits are in [benchmark history](../benchmark-history.md#unreleased-toolchain-optimization).
+Scope: the optimizations released in 0.4.1, reviewed and measured as a pre-release source build after 0.4.0. Existing public exports, dependencies, language output and correctness/coverage/size gates remain intact. Measurements and limits are in [benchmark history](../benchmark-history.md#toolchain-optimization).
 
 | Package/surface | Review outcome                                                                                                                                                                                                                                                   |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

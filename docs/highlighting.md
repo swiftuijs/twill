@@ -10,7 +10,7 @@ Use `@swiftuijs/twill-highlight` to display Twill in documentation, blogs, code 
 Install the highlighting package and Shiki in the application or documentation project:
 
 ```sh
-pnpm add shiki @swiftuijs/twill-highlight@0.4.0
+pnpm add shiki @swiftuijs/twill-highlight@0.4.1
 ```
 
 ```ts
