@@ -5,7 +5,7 @@ description: 'Reference Twill compile, check, run, declarations, export and doct
 
 # CLI reference
 
-The `@swiftuijs/twill` package provides the `twill` command. Install it in your application before running commands: `npm install --save-dev @swiftuijs/twill@0.3.1` or `pnpm add -D @swiftuijs/twill@0.3.1`. See [getting started](./getting-started.md#install) for prerequisites and a runnable first module, or [shell scripting](./scripting.md#install-a-global-command) for global installation.
+The `@swiftuijs/twill` package provides the `twill` command. Install it in your application before running commands: `npm install --save-dev @swiftuijs/twill@0.4.0` or `pnpm add -D @swiftuijs/twill@0.4.0`. See [getting started](./getting-started.md#install) for prerequisites and a runnable first module, or [shell scripting](./scripting.md#install-a-global-command) for global installation.
 
 Run project-local commands from your application root. Examples below use `pnpm exec twill ...`; with npm, use `npm exec -- twill ...`. Package scripts use `twill ...` directly. A global installation permits `twill ...` in your terminal.
 
@@ -15,7 +15,7 @@ pnpm exec twill --help
 
 Your normal `tsconfig.json` supplies project types and JSX settings. Commands work without `twill.config.json`; its optional `implicitReturn` setting changes that language behavior. The [runtime helper option](./runtime.md) in 0.2.0 also selects inline or external cleanup emission.
 
-The unreleased source compiler also accepts `{ "vueDefaultSlot": "function" }` in the application's `twill.config.json`; published 0.3.1 predates it. Compile/check/declarations/export, editor projects and source scripts read the common setting. It has no separate CLI flag. See [Vue default slots](./frameworks.md#choose-the-vue-default-slot-representation-unreleased) for defaults, named-slot fallback and runtime requirements.
+Twill 0.4.0 also accepts `{ "vueDefaultSlot": "function" }` in the application's `twill.config.json`. This setting requires 0.4.0 or newer. Compile/check/declarations/export, editor projects and source scripts read the common setting. It has no separate CLI flag. See [Vue default slots](./frameworks.md#vue-default-slot-representation) for defaults, named-slot fallback and runtime requirements.
 
 ## Run an executable script
 

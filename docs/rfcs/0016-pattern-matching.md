@@ -2,7 +2,7 @@
 
 **Release reference:** 0.2.0 implements the accepted scope; broader/deferred items below remain proposals.
 **Status:** Implemented in 0.2.0 for the accepted scope; deferred capabilities remain proposals.
-**Dependencies:** 0010, 0011, 0015. **Review:** The maintainer approved the `match` expression direction on 2026-10-07; implementation review is pending.
+**Dependencies:** 0010, 0011, 0015. **Review:** The maintainer approved the `match` expression direction on 2026-10-07; the accepted implementation shipped in 0.2.0, while deferred capabilities remain proposals.
 **Implementation:** The earlier explicit-marker prototype merged in [#14](https://github.com/swiftuijs/twill/pull/14). This amendment introduces the preferred `match` spelling.
 
 ## Problem and native baseline

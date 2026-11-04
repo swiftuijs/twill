@@ -51,11 +51,11 @@ Lower to a hygienic temporary and a scoped native nullish conditional, then cons
 
 The actual temporary is collision-free. Keep original initializer, pattern, annotation and body tokens mapped for inference, diagnostics, references and safe edits. Inline and external-runtime modes emit the same branch lowering without adding a runtime dependency. Native declarations/export expose only the normal inferred public types.
 
-The unreleased emitter can reuse an existing authored block for its hygienic temporary instead of adding another block. It retains isolation when direct eval, including eval inside a capturing function, can observe the temporary's expanded scope/TDZ. Top-level and unbraced statement boundaries retain their own scope. The scope analysis shares identifier collection and visits each parser node once.
+The 0.4.0 emitter can reuse an existing authored block for its hygienic temporary instead of adding another block. It retains isolation when direct eval, including eval inside a capturing function, can observe the temporary's expanded scope/TDZ. Top-level and unbraced statement boundaries retain their own scope. The scope analysis shares identifier collection and visits each parser node once.
 
 `if const { value } = input` checks `input`, then performs ordinary destructuring: `{ value: undefined }` still succeeds. `if const value = input?.value` checks the field value instead; both forms preserve zero and false.
 
-Use strict comparisons and `void 0` so shadowed `undefined` and the browser's legacy `document.all` do not change the null/undefined contract. The unreleased RFC 0007 amendment aligns identifier/destructured guard failure with this contract. Published 0.3.1 guard bindings still use loose equality and reject document.all; branch-binding semantics are unchanged.
+Use strict comparisons and `void 0` so shadowed `undefined` and the browser's legacy `document.all` do not change the null/undefined contract. The 0.4.0 RFC 0007 amendment aligns identifier/destructured guard failure with this contract. Version 0.3.1 guard bindings use loose equality and reject document.all; branch-binding semantics are unchanged.
 
 An initializer written as a `match` expression retains the existing general-expression lowering, including its synchronous IIFE cost and suspension restrictions. This RFC does not optimize those separate expression contexts.
 

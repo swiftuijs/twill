@@ -29,8 +29,8 @@ Evidence: [compiler tests](../../packages/twill/tests/compiler.test.ts), [edge c
 
 Records the released behavior from [the syntax contract](../syntax.md). No retrospective approval is implied.
 
-## Concise callback emission amendment (unreleased)
+## Concise callback emission amendment (0.4.0)
 
 A single-expression or single explicit value-return trailing callback can use a concise arrow body. Explicit returns retain their behavior when implicitReturn is false. Reuse authored object/comma parentheses instead of adding another pair. Keep lexical this/arguments, comments, original parameter/expression mappings, object/comma grouping and implicitReturn:false behavior. Preserve authored native arrows and block bodies needed for statements or cleanup. Eligible match/switch returns reuse native branches as specified by RFC 0010; direct eval and suspension retain their established boundaries.
 
-This is source-emission cleanup, not a new callback syntax or a change to published 0.3.1.
+This is source-emission cleanup, not a new callback syntax; it is included in 0.4.0.

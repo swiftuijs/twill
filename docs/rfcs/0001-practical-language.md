@@ -38,7 +38,7 @@ This is a prioritization proposal, not a commitment to implement every row. New 
 
 Destructured `guard const` checks the whole initializer once and destructures only after the exiting failure branch. Native field defaults, getters, annotations and temporal dead zones remain explicit. It does not validate untrusted shapes or test individual fields for truthiness.
 
-Switch expressions use native TS unions. Object cases bind the selected variant's payload; the checker proves exhaustiveness without an enum wrapper or separate type system. Native switch statements retain their grammar and semantics. Direct returns and the unreleased standalone identifier-initializer optimization lower to native branches; other expression positions retain a synchronous IIFE and disclose that cost. Await/yield inside the switch requires a direct return; no implicit async scheduling is added.
+Switch expressions use native TS unions. Object cases bind the selected variant's payload; the checker proves exhaustiveness without an enum wrapper or separate type system. Native switch statements retain their grammar and semantics. Direct returns and the 0.2.0 standalone identifier-initializer optimization lower to native branches; other expression positions retain a synchronous IIFE and disclose that cost. Await/yield inside the switch requires a direct return; no implicit async scheduling is added.
 
 The [syntax contract](../syntax.md) defines evaluation order, scopes, discriminator reads, source positions and limitations. The optional `recommendedTypeChecked` linter additionally checks native switches, including omitted union variants when a default exists. Transpile-only builds cannot prove arbitrary external types.
 

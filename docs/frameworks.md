@@ -14,8 +14,8 @@ Start with a working React or Vue application and [install the compiler](./getti
 Install Vite 8 and `@vitejs/plugin-react` 6 alongside the compiler. The optional React subpath composes the standard plugin with Twill compilation and includes `.twill` / `.twillx` in its Fast Refresh filters:
 
 ```sh
-npm install --save-dev @swiftuijs/twill@0.3.1 vite@^8 @vitejs/plugin-react@^6
-# pnpm add -D @swiftuijs/twill@0.3.1 vite@^8 @vitejs/plugin-react@^6
+npm install --save-dev @swiftuijs/twill@0.4.0 vite@^8 @vitejs/plugin-react@^6
+# pnpm add -D @swiftuijs/twill@0.4.0 vite@^8 @vitejs/plugin-react@^6
 ```
 
 Keep React/ReactDOM and their type declarations installed by your React project. Save the following as `vite.config.ts`:
@@ -59,9 +59,11 @@ Import components directly. [SwiftUI.js](https://swiftuijs.evecalm.com/) (`@swif
 
 Other libraries receive their normal JSX props/children/slot semantics. Follow each library's own SSR, styling and browser requirements.
 
-## Generated TSX readability (unreleased)
+<a id="generated-tsx-readability-unreleased"></a>
 
-The source compiler simplifies a lone JSX child to ordinary nested JSX:
+## Generated TSX readability (0.4.0)
+
+Twill 0.4.0 simplifies a lone JSX child to ordinary nested JSX:
 
 ```tsx
 <Panel>
@@ -75,13 +77,16 @@ A one-expression Vue slot uses a concise lazy arrow:
 <Panel>{{ default: () => <button>Save</button> }}</Panel>
 ```
 
-The Vue braces represent a JSX expression containing the slot object. The arrow preserves lazy evaluation and reactive reads. Dynamic React expressions and content requiring declarations, cleanup or control flow retain their necessary wrappers. Published 0.3.1 predates this output cleanup; no application syntax or configuration changes.
+The Vue braces represent a JSX expression containing the slot object. The arrow preserves lazy evaluation and reactive reads. Dynamic React expressions and content requiring declarations, cleanup or control flow retain their necessary wrappers. This cleanup requires 0.4.0 or newer; no application syntax or configuration changes.
 
 The slot object also preserves the declared Vue 3.3 compatibility floor for variables that resolve to native tags. A known component may accept a function-only default slot, but the compiler does not assume every uppercase tag is a component object. Named slots also retain their object representation.
 
-### Choose the Vue default-slot representation (unreleased)
+<a id="choose-the-vue-default-slot-representation-unreleased"></a>
+<a id="vue-default-slot-representation"></a>
 
-The source compiler accepts `vueDefaultSlot: "object" | "function"`. Published 0.3.1 does not include this setting. The default `"object"` preserves existing behavior, including Vue 3.3 dynamic native tags.
+### Choose the Vue default-slot representation (0.4.0)
+
+Twill 0.4.0 accepts `vueDefaultSlot: "object" | "function"`. The default `"object"` preserves existing behavior, including Vue 3.3 dynamic native tags.
 
 To opt in, create `twill.config.json` in your application's root beside `tsconfig.json`:
 

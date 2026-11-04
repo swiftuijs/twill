@@ -17,7 +17,7 @@ Pattern bindings remain in their native temporal dead zone during the initialize
 
 Use a collision-free const temporary, an exiting nullish test, and then the original native binding pattern. The initializer runs once. No defaults/getters/iterators run on nullish failure; successful native destructuring can read several properties. Await remains in its original async scope. Source mappings preserve actual binding/member tokens for inference and rename.
 
-The unreleased RFC 0007 consistency amendment uses `temporary === null || temporary === void 0`, shared with identifier guards and complementary to branch-binding success. Published 0.3.1 uses loose equality and rejects document.all; the source compiler accepts it and then performs native destructuring. No nested-field validation is added.
+The 0.4.0 RFC 0007 consistency amendment uses `temporary === null || temporary === void 0`, shared with identifier guards and complementary to branch-binding success. Published 0.3.1 uses loose equality and rejects document.all; 0.4.0 accepts it and then performs native destructuring. No nested-field validation is added.
 
 ## Compatibility and alternatives
 
