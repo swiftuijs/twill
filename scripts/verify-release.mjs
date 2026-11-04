@@ -61,7 +61,7 @@ for (const name of ['twill', 'formatter', 'linter', 'export', 'highlight', 'runt
 if (process.argv.includes('--artifacts')) {
   assert(existsSync('dist/twill.vsix'), 'Missing editor artifact');
   const bytes = statSync('dist/twill.vsix').size;
-  assert(bytes <= 3 * 1024 * 1024, 'VSIX exceeds its 3 MiB compressed budget');
+  assert(bytes <= 768 * 1024, 'VSIX exceeds its 768 KiB compressed budget');
   artifacts.push({
     filename: 'twill.vsix',
     bytes,

@@ -357,3 +357,31 @@ In that released implementation, ordinary Linux startup reads the current Node E
 The report preserves memory, filesystem, cancellation and cold observations alongside every warm/concurrency sample and source/build hash. Cold warmup initially failed on a workspace-only import after the dependency direction changed. A retained completion script verifies every unchanged runtime/build identity before fixing the unexecuted fixture's import and measuring only the eleven cold pairs; no earlier sample is repeated or removed. The [measurement history](https://github.com/swiftuijs/twill/blob/v0.2.0/packages/shell-native/benchmarks/results/README.md#rust-only-sdk-release) retains the incomplete checkpoints, failure logs, completion source and exact serialized report.
 
 The [final 0.2.0 shell recheck](https://github.com/swiftuijs/twill/blob/v0.2.0/packages/shell-native/benchmarks/results/release-final-linux-node24.json) retains a complete run after the Mac exit-race and unnamed-signal fixes. All seven warm workloads and both default-pool gates pass without changing sample counts or limits. Native launch/capture/input ratios are 0.555–0.679, Node interpreter launch is 0.948, and 32/128-child concurrency medians are 0.975/0.992 (upper 95% bounds 0.998/0.997). This is Linux readiness-path evidence; the report retains separate cold, memory, cancellation and filesystem observations, and establishes no universal or external-command speedup.
+
+## Unreleased toolchain optimization
+
+These are source-build diagnostics against published 0.4.0, not a claim that a newer version has shipped. [Artifact identities and all package comparisons](https://github.com/swiftuijs/twill/blob/main/docs/benchmarks/toolchain-optimization.json) retain byte sizes and SHA-256 hashes. Both minimum VS Code 1.95.3 / TS 5.6.3 and stable VS Code 1.144.0 / TS 6.0.3 run the extracted VSIX, including cold/deferred formatter loading and the original coverage gates.
+
+| Artifact                             |  Published 0.4.0 |    Source build |
+| ------------------------------------ | ---------------: | --------------: |
+| VSIX compressed                      |  2,796,981 bytes |   584,718 bytes |
+| VSIX extracted                       | 14,591,130 bytes | 2,312,282 bytes |
+| Compiler npm archive, retaining maps |    625,013 bytes |   502,260 bytes |
+| Playground compiler worker, gzip     |    340,876 bytes |   306,154 bytes |
+
+The earlier host-engine-only source build was 661,433 bytes. Parser deduplication, deferred formatting chunks and one retained editor license notice reduce that further to 584,718 bytes. The extension activation entry falls from 1,997,182 to 428,230 uncompressed bytes; formatting still works offline and loads its 1,426,622-byte chunk when first requested. Byte counts do not establish activation latency or RSS. Formatter, highlighting and runtime archives remain byte-identical. Shell runtime files and package metadata values are unchanged; key ordering changes the archive by one byte. Export's archive grows by twelve bytes while delaying its backend for help/invalid arguments.
+
+Fresh-process Linux/Node 22.23.4 CLI diagnostics pin CPU 0, warm each pair once and retain eleven alternating paired samples per command. stdout, stderr and status match the reference on every invocation. The baseline's declared dependencies are linked from the same installed workspace dependency tree. [Raw CLI observations and source/build identities](https://github.com/swiftuijs/twill/blob/main/packages/twill/benchmarks/results/cli-startup-2026-11-04.json) retain every sample.
+
+| CLI workload                   | 0.4.0 median | Source median |
+| ------------------------------ | -----------: | ------------: |
+| Help                           |     504.8 ms |       30.2 ms |
+| Compile help                   |     526.0 ms |       29.3 ms |
+| Invalid option                 |     552.6 ms |       29.8 ms |
+| Compile one small module to TS |     542.3 ms |      489.0 ms |
+| Compile the same module to JS  |     611.0 ms |      562.9 ms |
+| Check the same module          |   1,571.0 ms |    1,521.2 ms |
+
+These cold-command observations do not establish large-project checking, application or script-runtime speedups. Compiler algorithms, generated-language costs, the loader/cache and subprocess execution are unchanged.
+
+The lint line-index diagnostic compiles the old/new source through the same Twill/TypeScript pipeline. It uses three paired warmups and eleven alternating paired samples, each constructing 32 indexes and checking observable coordinates. All allocations and spontaneous GC remain inside timing. Construction after/before paired median ratios are **0.136** without newlines, **0.271** for sparse LF, **0.904** for dense LF and **0.941** for mixed CRLF/CR/Unicode/LF. These measure the indexing step, not complete ESLint execution. [Raw line-index observations and source/build identities](https://github.com/swiftuijs/twill/blob/main/packages/linter/benchmarks/results/positions-2026-11-04.json) preserve all results. Functional tests compare every UTF-16 offset against TypeScript coordinates and LF-only source-map coordinates.

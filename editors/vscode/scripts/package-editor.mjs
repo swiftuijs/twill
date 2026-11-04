@@ -1,5 +1,5 @@
 import { cpSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
-import { resolve, join, dirname } from 'node:path';
+import { resolve, join } from 'node:path';
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -33,30 +33,10 @@ const pluginName = stageTypeScriptPlugin(stage);
 // The bridge executes only in tsserver; ship its loader copy once.
 rmSync(join(stage, 'dist/tsserver.cjs'));
 rmSync(join(stage, 'dist/tsserver.LICENSE.txt'));
+// The complete editor notice is already retained under licenses/editor.txt.
+rmSync(join(stage, 'dist/THIRD_PARTY_LICENSES.txt'));
 manifest.dependencies = { [pluginName]: manifest.version };
 const require = createRequire(import.meta.url);
-// Both editor hosts share one pinned engine, independent of workspace installs.
-const typescriptRoot = dirname(require.resolve('typescript/package.json'));
-const typescript = join(stage, 'node_modules/typescript');
-mkdirSync(join(typescript, 'lib'), { recursive: true });
-for (const name of ['LICENSE.txt', 'ThirdPartyNoticeText.txt', 'lib/typescript.js'])
-  cpSync(join(typescriptRoot, name), join(typescript, name));
-const engineManifest = JSON.parse(readFileSync(join(typescriptRoot, 'package.json')));
-writeFileSync(
-  join(typescript, 'package.json'),
-  JSON.stringify(
-    {
-      name: engineManifest.name,
-      version: engineManifest.version,
-      license: engineManifest.license,
-      private: true,
-      main: './lib/typescript.js',
-    },
-    null,
-    2,
-  ) + '\n',
-);
-manifest.dependencies.typescript = engineManifest.version;
 writeFileSync(join(stage, 'package.json'), JSON.stringify(manifest, null, 2) + '\n');
 mkdirSync(resolve('dist'), { recursive: true });
 execFileSync(

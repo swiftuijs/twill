@@ -3,12 +3,7 @@ import { resolve, dirname } from 'node:path';
 import { parseArgs } from 'node:util';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
-import { transform, type TransformOptions } from './compiler.js';
-import { transpile } from './transpile.js';
-import { loadConfig } from './config.js';
-import { TwillProject } from './project.js';
-import { inspectProject } from './doctor.js';
-import { emitDeclarations } from './declarations.js';
+import type { TransformOptions } from './compiler.js';
 
 export async function main(args = process.argv.slice(2)): Promise<number> {
   const { values, positionals, tokens } = parseArgs({
@@ -65,6 +60,7 @@ export async function main(args = process.argv.slice(2)): Promise<number> {
   if (extra.length) throw new Error('Unexpected arguments: ' + extra.join(' '));
   if (command === 'declarations') {
     if (input) throw new Error('Use --project <tsconfig.json> with declarations');
+    const { emitDeclarations } = await import('./declarations.js');
     const result = emitDeclarations(resolve(values.project ?? 'tsconfig.json'), {
       outDir: values.out,
       build: values.build,
@@ -84,9 +80,11 @@ export async function main(args = process.argv.slice(2)): Promise<number> {
   }
   if (command === 'check' || command === 'doctor') {
     if (input) throw new Error('Use --project <tsconfig.json> with ' + command);
+    const { TwillProject } = await import('./project.js');
     const project = new TwillProject(resolve(values.project ?? 'tsconfig.json'));
     try {
       if (command === 'doctor') {
+        const { inspectProject } = await import('./doctor.js');
         const report = inspectProject(project);
         if (values.json) console.log(JSON.stringify(report, null, 2));
         else {
@@ -120,6 +118,7 @@ export async function main(args = process.argv.slice(2)): Promise<number> {
     throw new Error('Expected compile <file> or check. Use --help for usage.');
   const filename = resolve(input);
   const root = values.project ? dirname(resolve(values.project)) : process.cwd();
+  const { loadConfig } = await import('./config.js');
   const options = {
     ...loadConfig(root, values.project ? resolve(values.project) : undefined),
     filename,
@@ -128,7 +127,9 @@ export async function main(args = process.argv.slice(2)): Promise<number> {
       : { runtime: values.runtime as TransformOptions['runtime'] }),
   };
   const source = readFileSync(filename, 'utf8');
-  const result = values.js ? transpile(source, options) : transform(source, options);
+  const result = values.js
+    ? (await import('./transpile.js')).transpile(source, options)
+    : (await import('./compiler.js')).transform(source, options);
   if (values.out) {
     const output = resolve(values.out);
     if (output === filename) throw new Error('Output must differ from input');

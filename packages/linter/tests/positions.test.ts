@@ -2,8 +2,13 @@ import { expect, it } from 'vitest';
 import ts from 'typescript';
 import { SourcePositions } from '../src/positions.twill';
 
-it('matches TypeScript coordinates across mixed newlines and UTF-16 characters', () => {
-  const text = 'const a = "📦";\r\n// comment\rconst b = 2;\u2028\u2029\n';
+it.each([
+  '',
+  'const value = "📦";',
+  '\n\nconst value = 1;\n',
+  '\r\n\r\nconst value = 1;\r\n',
+  'const a = "📦";\r\n// comment\rconst b = 2;\u2028\u2029\n',
+])('matches TypeScript coordinates and LF source maps for %j', (text) => {
   const native = ts.createSourceFile('positions.ts', text, ts.ScriptTarget.Latest);
   const positions = new SourcePositions(text);
   for (let offset = 0; offset <= text.length; offset++) {

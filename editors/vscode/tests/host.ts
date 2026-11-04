@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import extensionManifest from '../package.json';
 import assert from 'node:assert/strict';
 import { join, isAbsolute } from 'node:path';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { Registry, INITIAL } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'vscode-oniguruma';
@@ -32,6 +32,17 @@ export async function run() {
   )!;
   assert(extension, 'The extracted VSIX must be installed');
   await extension.activate();
+  const extensionRequire = createRequire(join(extension.extensionPath, 'dist/extension.cjs'));
+  const formatterChunk = readdirSync(join(extension.extensionPath, 'dist')).find((name) =>
+    /^standalone-.*\.cjs$/.test(name),
+  );
+  assert(formatterChunk, 'Ship the formatter as an independently loadable chunk');
+  const formatterPath = join(extension.extensionPath, 'dist', formatterChunk);
+  assert(!extensionRequire.cache[formatterPath], 'Activation must not load the formatter');
+  assert(!existsSync(join(extension.extensionPath, 'node_modules/typescript')));
+  assert(!existsSync(join(extension.extensionPath, 'dist/typescript-lib')));
+  const builtin = vscode.extensions.getExtension('vscode.typescript-language-features')!;
+  const hostTypeScript = createRequire(join(builtin.extensionPath, 'package.json'))('typescript');
   const require = createRequire(join(root, '../tests.cjs'));
   const wasm = readFileSync(require.resolve('vscode-oniguruma/release/onig.wasm'));
   await loadWASM(wasm.buffer.slice(wasm.byteOffset, wasm.byteOffset + wasm.byteLength));
@@ -182,6 +193,7 @@ export async function run() {
     { tabSize: 2, insertSpaces: true },
   );
   assert(formatEdits?.length, 'The packaged formatter must return edits');
+  assert(extensionRequire.cache[formatterPath], 'First formatting loads the packaged formatter');
   const formatted = new vscode.WorkspaceEdit();
   formatted.set(formatting.uri, formatEdits!);
   assert(await vscode.workspace.applyEdit(formatted));
@@ -779,6 +791,7 @@ export async function run() {
   await vscode.commands.executeCommand('twill.projectInfo');
   const report = JSON.parse(vscode.window.activeTextEditor!.document.getText());
   assert.equal(report.twillVersion, extension.packageJSON.version);
+  assert.equal(report.typescriptVersion, hostTypeScript.version, "Use VS Code's TypeScript");
   assert(report.files.twill > 0);
   assert.equal(report.ok, false);
   assert(

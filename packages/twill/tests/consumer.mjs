@@ -8,6 +8,7 @@ import {
   existsSync,
   chmodSync,
   symlinkSync,
+  renameSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve, delimiter } from 'node:path';
@@ -98,6 +99,26 @@ try {
   const help = execFileSync(process.execPath, [cli, '--help'], { cwd: root, encoding: 'utf8' });
   assert(help.includes('twill export'), 'Unified CLI help must list source export');
   assert(help.includes('twill run'), 'Unified CLI help must list script execution');
+  // Help/argument errors must work before loading any compiler backend.
+  const hiddenDependencies = ['typescript', 'acorn'].map((name) =>
+    join(root, 'node_modules', name),
+  );
+  for (const path of hiddenDependencies) renameSync(path, path + '.unavailable');
+  try {
+    assert(
+      execFileSync(process.execPath, [cli, '--help'], { cwd: root, encoding: 'utf8' }).includes(
+        'twill compile',
+      ),
+    );
+    const invalid = spawnSync(process.execPath, [cli, '--unknown'], {
+      cwd: root,
+      encoding: 'utf8',
+    });
+    assert.equal(invalid.status, 1);
+    assert.match(invalid.stderr, /Unknown option/);
+  } finally {
+    for (const path of hiddenDependencies) renameSync(path + '.unavailable', path);
+  }
   const script = join(root, 'runner-script');
   writeFileSync(
     script,

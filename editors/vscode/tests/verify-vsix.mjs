@@ -43,14 +43,18 @@ try {
     'The bridge is an internal module, not a source package dependency',
   );
 
-  assert(files.has('extension/dist/typescript-lib/lib.es2022.full.d.ts'));
-  assert(files.has('extension/node_modules/typescript/lib/typescript.js'));
-  const engine = JSON.parse(files.get('extension/node_modules/typescript/package.json').toString());
-  assert.equal(engine.version, '5.9.3', 'The shared engine must match the tested TS contract');
-  assert.equal(manifest.dependencies.typescript, engine.version);
+  assert(!manifest.dependencies.typescript, 'Use the host TypeScript engine');
   assert(
-    statSync('dist/twill.vsix').size <= 3 * 1024 * 1024,
-    'VSIX exceeds the 3 MiB compressed budget',
+    ![...files.keys()].some(
+      (name) =>
+        name.startsWith('extension/node_modules/typescript/') ||
+        name.startsWith('extension/dist/typescript-lib/'),
+    ),
+    'Do not ship a duplicate TypeScript engine or standard library',
+  );
+  assert(
+    statSync('dist/twill.vsix').size <= 768 * 1024,
+    'VSIX exceeds the 768 KiB compressed budget',
   );
   for (const [name, contents] of files) {
     const path = join(root, name);

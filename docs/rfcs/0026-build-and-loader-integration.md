@@ -48,3 +48,7 @@ Validate the minimum old API boundary, the first synchronous API version and Nod
 ## Decision history
 
 Retrospective supported-host contract; new hosts require actual integration evidence.
+
+## Command-loading refinement (source implementation, unreleased)
+
+Parse CLI arguments and handle help/errors before loading command backends. Compile, checking/doctor and declaration commands import their existing implementation only when selected; the optional export CLI similarly delays its backend. Preserve awaited public CLI results, stdout/stderr, exit statuses, generated maps and project-local optional-package resolution. This changes initialization cost, not compilation, checking, script-cache or execution semantics. Independent installed consumers exercise help while compiler/formatter dependencies are unavailable, restore them and run actual commands. Fresh-process paired diagnostics retain all observations and build/source identities; help timings are not compilation or script-startup speedup claims.

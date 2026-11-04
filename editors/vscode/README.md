@@ -176,6 +176,8 @@ The extension includes a formatter. Add this to `.vscode/settings.json`:
 
 The bundled formatter uses editor indentation and Prettier defaults. For a shared `.prettierrc` and CLI formatting, use the standard Prettier extension with `@swiftuijs/twill-formatter`. Optional ESLint integration uses `@swiftuijs/twill-linter` and Microsoft's ESLint extension. Follow the [formatter and linter guide](https://twill.evecalm.com/tooling).
 
+Unreleased builds load the bundled formatter only on formatting or generated-preview requests, retaining offline formatting. Unreleased builds reuse VS Code's built-in TypeScript engine and standard libraries; no separate TypeScript installation is required for editor assistance. The native TS/JS bridge uses its TS server's engine. `twill check` retains the compiler package's independent TypeScript dependency, so editor diagnostics can vary with the VS Code version. Published 0.4.0 still bundles TypeScript 5.9.3; the parser's documented syntax support is unchanged.
+
 ## Useful commands
 
 Open the command palette with **Ctrl+Shift+P** on Windows/Linux or **Cmd+Shift+P** on macOS.

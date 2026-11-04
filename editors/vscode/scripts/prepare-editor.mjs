@@ -1,19 +1,8 @@
-import { copyFileSync, mkdirSync, writeFileSync, readdirSync, rmSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { createRequire } from 'node:module';
+import { copyFileSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 process.chdir(root);
-const require = createRequire(import.meta.url);
-const typescriptLib = dirname(require.resolve('typescript'));
-mkdirSync('editors/vscode/dist/typescript-lib', { recursive: true });
-for (const filename of readdirSync(typescriptLib))
-  if (/^lib(?:\..+)?\.d\.ts$/.test(filename))
-    copyFileSync(
-      join(typescriptLib, filename),
-      join('editors/vscode/dist/typescript-lib', filename),
-    );
 mkdirSync('editors/vscode/syntaxes', { recursive: true });
 for (const extension of ['twill', 'twillx'])
   copyFileSync(
@@ -31,7 +20,7 @@ copyFileSync(
 );
 writeFileSync(
   'editors/vscode/THIRD_PARTY_NOTICES.md',
-  '# Bundled dependencies\n\nVite generates the bundled dependency licenses. See `licenses/editor.txt`, `licenses/tsserver.txt` and `licenses/compiler-bridge.txt`. The shared pinned TypeScript engine includes its license and third-party notices under `node_modules/typescript`.\n',
+  '# Bundled dependencies\n\nVite generates the bundled dependency licenses. See `licenses/editor.txt`, `licenses/tsserver.txt` and `licenses/compiler-bridge.txt`. TypeScript and its standard libraries are supplied by VS Code; they are not bundled in this extension.\n',
 );
 copyFileSync('LICENSE', 'editors/vscode/LICENSE');
 copyFileSync('CHANGELOG.md', 'editors/vscode/CHANGELOG.md');

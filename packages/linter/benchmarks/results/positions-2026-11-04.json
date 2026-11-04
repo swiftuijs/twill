@@ -1,0 +1,490 @@
+{
+  "scope": "Line-index construction only; 32 objects/batch, three paired warmups, eleven alternating paired samples. Includes allocations and spontaneous GC. Not complete ESLint latency.",
+  "environment": {
+    "node": "v22.23.4",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "gitHead": "18cc8e47964d894aaa7a61496aa07915a2e80c05",
+  "gitStatus": "",
+  "baseline": {
+    "ref": "v0.4.0",
+    "sourceSHA256": "580c334ba36ab04439d1ed0e5e930f5bc5b36b989b8a2b68769eec7b5c37b41b",
+    "buildSHA256": "ddfc7ec4054ec77a3aa5fed1d285cc54e6c927524cc69ccb9748d34538ceff85"
+  },
+  "current": {
+    "sourceSHA256": "e04531c977d1daffe9fec929d16b14d6f3e7cbff63889128a0fa83f244f4779d",
+    "buildSHA256": "40a537fa93ab8aa7bdff085d9948c0adb9677aa401e192af4e43d6d31fe48578"
+  },
+  "results": [
+    {
+      "name": "no-newlines",
+      "bytes": 131072,
+      "samples": [
+        {
+          "before": {
+            "ms": 18.830206999999973,
+            "checksum": 32
+          },
+          "after": {
+            "ms": 2.4990189999999757,
+            "checksum": 32
+          }
+        },
+        {
+          "after": {
+            "ms": 2.6909279999999853,
+            "checksum": 32
+          },
+          "before": {
+            "ms": 19.003709999999955,
+            "checksum": 32
+          }
+        },
+        {
+          "before": {
+            "ms": 18.115229,
+            "checksum": 32
+          },
+          "after": {
+            "ms": 2.415292000000022,
+            "checksum": 32
+          }
+        },
+        {
+          "after": {
+            "ms": 2.355723000000012,
+            "checksum": 32
+          },
+          "before": {
+            "ms": 18.72413800000004,
+            "checksum": 32
+          }
+        },
+        {
+          "before": {
+            "ms": 18.652358999999933,
+            "checksum": 32
+          },
+          "after": {
+            "ms": 2.342412000000081,
+            "checksum": 32
+          }
+        },
+        {
+          "after": {
+            "ms": 2.608294000000001,
+            "checksum": 32
+          },
+          "before": {
+            "ms": 17.90838800000006,
+            "checksum": 32
+          }
+        },
+        {
+          "before": {
+            "ms": 19.33934499999998,
+            "checksum": 32
+          },
+          "after": {
+            "ms": 2.5553840000000037,
+            "checksum": 32
+          }
+        },
+        {
+          "after": {
+            "ms": 2.506279000000063,
+            "checksum": 32
+          },
+          "before": {
+            "ms": 18.434641000000056,
+            "checksum": 32
+          }
+        },
+        {
+          "before": {
+            "ms": 17.630498999999986,
+            "checksum": 32
+          },
+          "after": {
+            "ms": 2.6607529999999997,
+            "checksum": 32
+          }
+        },
+        {
+          "after": {
+            "ms": 2.4729200000000446,
+            "checksum": 32
+          },
+          "before": {
+            "ms": 18.08755700000006,
+            "checksum": 32
+          }
+        },
+        {
+          "before": {
+            "ms": 19.14120700000001,
+            "checksum": 32
+          },
+          "after": {
+            "ms": 2.7289050000000543,
+            "checksum": 32
+          }
+        }
+      ],
+      "medianRatio": 0.13595485803059879
+    },
+    {
+      "name": "sparse-lf",
+      "bytes": 109000,
+      "samples": [
+        {
+          "before": {
+            "ms": 12.07602699999984,
+            "checksum": 32032
+          },
+          "after": {
+            "ms": 2.963935999999876,
+            "checksum": 32032
+          }
+        },
+        {
+          "after": {
+            "ms": 3.009554999999864,
+            "checksum": 32032
+          },
+          "before": {
+            "ms": 37.26909300000011,
+            "checksum": 32032
+          }
+        },
+        {
+          "before": {
+            "ms": 13.65696099999991,
+            "checksum": 32032
+          },
+          "after": {
+            "ms": 5.385205000000042,
+            "checksum": 32032
+          }
+        },
+        {
+          "after": {
+            "ms": 3.0254390000000058,
+            "checksum": 32032
+          },
+          "before": {
+            "ms": 11.156672999999955,
+            "checksum": 32032
+          }
+        },
+        {
+          "before": {
+            "ms": 11.631187999999838,
+            "checksum": 32032
+          },
+          "after": {
+            "ms": 2.9660499999999956,
+            "checksum": 32032
+          }
+        },
+        {
+          "after": {
+            "ms": 3.091788999999835,
+            "checksum": 32032
+          },
+          "before": {
+            "ms": 11.759650999999849,
+            "checksum": 32032
+          }
+        },
+        {
+          "before": {
+            "ms": 11.124603999999863,
+            "checksum": 32032
+          },
+          "after": {
+            "ms": 3.2246889999998984,
+            "checksum": 32032
+          }
+        },
+        {
+          "after": {
+            "ms": 2.9892750000001342,
+            "checksum": 32032
+          },
+          "before": {
+            "ms": 11.810848999999962,
+            "checksum": 32032
+          }
+        },
+        {
+          "before": {
+            "ms": 12.67211599999996,
+            "checksum": 32032
+          },
+          "after": {
+            "ms": 9.092732000000069,
+            "checksum": 32032
+          }
+        },
+        {
+          "after": {
+            "ms": 33.875238999999965,
+            "checksum": 32032
+          },
+          "before": {
+            "ms": 28.801883999999973,
+            "checksum": 32032
+          }
+        },
+        {
+          "before": {
+            "ms": 32.12402999999995,
+            "checksum": 32032
+          },
+          "after": {
+            "ms": 10.444369999999935,
+            "checksum": 32032
+          }
+        }
+      ],
+      "medianRatio": 0.27117752756579117
+    },
+    {
+      "name": "dense-lf",
+      "bytes": 40000,
+      "samples": [
+        {
+          "before": {
+            "ms": 44.955547000000024,
+            "checksum": 1280032
+          },
+          "after": {
+            "ms": 41.33623200000011,
+            "checksum": 1280032
+          }
+        },
+        {
+          "after": {
+            "ms": 38.812449000000015,
+            "checksum": 1280032
+          },
+          "before": {
+            "ms": 42.70681800000011,
+            "checksum": 1280032
+          }
+        },
+        {
+          "before": {
+            "ms": 49.34454000000005,
+            "checksum": 1280032
+          },
+          "after": {
+            "ms": 43.73679900000002,
+            "checksum": 1280032
+          }
+        },
+        {
+          "after": {
+            "ms": 51.84980600000017,
+            "checksum": 1280032
+          },
+          "before": {
+            "ms": 48.14811699999996,
+            "checksum": 1280032
+          }
+        },
+        {
+          "before": {
+            "ms": 50.2455130000003,
+            "checksum": 1280032
+          },
+          "after": {
+            "ms": 39.344980999999734,
+            "checksum": 1280032
+          }
+        },
+        {
+          "after": {
+            "ms": 40.32632999999987,
+            "checksum": 1280032
+          },
+          "before": {
+            "ms": 44.32730000000038,
+            "checksum": 1280032
+          }
+        },
+        {
+          "before": {
+            "ms": 40.8636190000002,
+            "checksum": 1280032
+          },
+          "after": {
+            "ms": 40.19087599999966,
+            "checksum": 1280032
+          }
+        },
+        {
+          "after": {
+            "ms": 40.884141,
+            "checksum": 1280032
+          },
+          "before": {
+            "ms": 45.24208899999985,
+            "checksum": 1280032
+          }
+        },
+        {
+          "before": {
+            "ms": 49.237258999999995,
+            "checksum": 1280032
+          },
+          "after": {
+            "ms": 41.64534800000001,
+            "checksum": 1280032
+          }
+        },
+        {
+          "after": {
+            "ms": 42.258160999999745,
+            "checksum": 1280032
+          },
+          "before": {
+            "ms": 47.97531600000002,
+            "checksum": 1280032
+          }
+        },
+        {
+          "before": {
+            "ms": 53.48139900000024,
+            "checksum": 1280032
+          },
+          "after": {
+            "ms": 45.179663999999775,
+            "checksum": 1280032
+          }
+        }
+      ],
+      "medianRatio": 0.9036749165141366
+    },
+    {
+      "name": "mixed-newlines",
+      "bytes": 72000,
+      "samples": [
+        {
+          "before": {
+            "ms": 41.5127379999999,
+            "checksum": 896032
+          },
+          "after": {
+            "ms": 44.72976699999981,
+            "checksum": 896032
+          }
+        },
+        {
+          "after": {
+            "ms": 46.22968000000037,
+            "checksum": 896032
+          },
+          "before": {
+            "ms": 43.91842899999983,
+            "checksum": 896032
+          }
+        },
+        {
+          "before": {
+            "ms": 45.10373299999992,
+            "checksum": 896032
+          },
+          "after": {
+            "ms": 40.59480500000018,
+            "checksum": 896032
+          }
+        },
+        {
+          "after": {
+            "ms": 45.873319999999694,
+            "checksum": 896032
+          },
+          "before": {
+            "ms": 40.62716300000011,
+            "checksum": 896032
+          }
+        },
+        {
+          "before": {
+            "ms": 53.49452400000018,
+            "checksum": 896032
+          },
+          "after": {
+            "ms": 42.012490999999955,
+            "checksum": 896032
+          }
+        },
+        {
+          "after": {
+            "ms": 38.39681900000005,
+            "checksum": 896032
+          },
+          "before": {
+            "ms": 40.78857199999993,
+            "checksum": 896032
+          }
+        },
+        {
+          "before": {
+            "ms": 45.394414000000324,
+            "checksum": 896032
+          },
+          "after": {
+            "ms": 39.750376999999844,
+            "checksum": 896032
+          }
+        },
+        {
+          "after": {
+            "ms": 40.49911599999996,
+            "checksum": 896032
+          },
+          "before": {
+            "ms": 44.59312799999998,
+            "checksum": 896032
+          }
+        },
+        {
+          "before": {
+            "ms": 42.88461099999995,
+            "checksum": 896032
+          },
+          "after": {
+            "ms": 38.93463700000029,
+            "checksum": 896032
+          }
+        },
+        {
+          "after": {
+            "ms": 38.040410000000065,
+            "checksum": 896032
+          },
+          "before": {
+            "ms": 38.834006000000045,
+            "checksum": 896032
+          }
+        },
+        {
+          "before": {
+            "ms": 39.31172599999991,
+            "checksum": 896032
+          },
+          "after": {
+            "ms": 42.28179300000011,
+            "checksum": 896032
+          }
+        }
+      ],
+      "medianRatio": 0.9413621786023819
+    }
+  ]
+}

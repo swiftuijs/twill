@@ -4,6 +4,7 @@ import typescript from 'shiki/langs/typescript.mjs';
 import tsx from 'shiki/langs/tsx.mjs';
 import { dirname, resolve } from 'node:path';
 import { createRequire } from 'node:module';
+import { acornAlias } from '../../../packages/twill/scripts/node-vite-config.mjs';
 
 const require = createRequire(import.meta.url);
 const repository = 'https://github.com/swiftuijs/twill';
@@ -136,7 +137,12 @@ export default defineConfig({
   vite: {
     // Markdown lives in the canonical reference directory, outside this package.
     // Resolve its Vue imports from the docs package rather than root hoisting.
-    resolve: { alias: { vue: dirname(require.resolve('vue/package.json')) } },
+    resolve: {
+      alias: [
+        acornAlias,
+        { find: 'vue', replacement: dirname(require.resolve('vue/package.json')) },
+      ],
+    },
     publicDir: resolve(import.meta.dirname, '../public'),
     build: { sourcemap: false },
   },

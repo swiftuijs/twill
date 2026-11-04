@@ -23,11 +23,14 @@ for (const [name, contents] of files) {
 if (process.env.NODE_V8_COVERAGE) {
   // The VSIX omits development source maps. Supply its matching build map to
   // the coverage collector, without changing a byte of the shipped bundle.
-  const bundle = resolve('editors/vscode/dist/extension.cjs');
-  assert.deepEqual(files.get('extension/dist/extension.cjs'), readFileSync(bundle));
-  const map = JSON.parse(readFileSync(bundle + '.map', 'utf8'));
-  map.sources = map.sources.map((source) => resolve(dirname(bundle), source));
-  writeFileSync(join(root, 'extension/dist/extension.cjs.map'), JSON.stringify(map));
+  for (const [name, contents] of files) {
+    if (!name.startsWith('extension/dist/') || !name.endsWith('.cjs')) continue;
+    const bundle = resolve('editors/vscode', name.slice('extension/'.length));
+    assert.deepEqual(contents, readFileSync(bundle));
+    const map = JSON.parse(readFileSync(bundle + '.map', 'utf8'));
+    map.sources = map.sources.map((source) => resolve(dirname(bundle), source));
+    writeFileSync(join(root, name + '.map'), JSON.stringify(map));
+  }
 }
 const workspace = join(root, 'workspace');
 mkdirSync(workspace, { recursive: true });
@@ -42,6 +45,9 @@ mkdirSync(runtimePackage, { recursive: true });
 cpSync('packages/runtime/dist', join(runtimePackage, 'dist'), { recursive: true });
 cpSync('packages/runtime/package.json', join(runtimePackage, 'package.json'));
 const fixture = {
+  // A workspace package must never supply executable editor-assistance code.
+  'node_modules/typescript/package.json': JSON.stringify({ name: 'typescript', main: 'index.js' }),
+  'node_modules/typescript/index.js': 'throw new Error("Workspace TypeScript must not be loaded");',
   'tsconfig.json': JSON.stringify({
     compilerOptions: {
       strict: true,
@@ -88,7 +94,11 @@ const fixture = {
   'broken.twill': 'export const values = [1].map { value in value + };\n',
   'temporary.twill': 'export const value = 42;\n',
 };
-for (const [name, text] of Object.entries(fixture)) writeFileSync(join(workspace, name), text);
+for (const [name, text] of Object.entries(fixture)) {
+  const target = join(workspace, name);
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, text);
+}
 await build({
   ...nodeViteConfig({
     entry: resolve('editors/vscode/tests/host.ts'),

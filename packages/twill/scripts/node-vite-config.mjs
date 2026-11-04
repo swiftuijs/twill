@@ -1,7 +1,16 @@
-import { builtinModules } from 'node:module';
+import { builtinModules, createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+
+// Acorn's JSX plugin uses require(), while its TS plugin imports ESM. Bundle
+// one parser instance rather than retaining both conditional package entries.
+const require = createRequire(import.meta.url);
+export const acornAlias = {
+  find: /^acorn$/,
+  replacement: join(dirname(require.resolve('acorn')), 'acorn.mjs'),
+};
 
 /** Vite library mode for Node tooling, with an explicit external boundary.
- * @param {{ entry: string, filename: string, outDir?: string, external?: (string | RegExp)[], minify?: boolean, emptyOutDir?: boolean, footer?: string, license?: string }} options
+ * @param {import('./node-vite-config.d.mts').NodeViteOptions} options
  * @returns {import('vite').UserConfig}
  */
 export function nodeViteConfig({
@@ -16,7 +25,7 @@ export function nodeViteConfig({
 }) {
   return {
     publicDir: false,
-    resolve: { conditions: ['node'] },
+    resolve: { conditions: ['node'], alias: [acornAlias] },
     ssr: { noExternal: true },
     build: {
       ssr: true,

@@ -1,0 +1,145 @@
+{
+  "status": "Unreleased source build after 0.4.0; not published artifacts",
+  "sourceCommit": "18cc8e47964d894aaa7a61496aa07915a2e80c05",
+  "referenceRelease": "v0.4.0",
+  "vsix": {
+    "released": {
+      "bytes": 2796981,
+      "unpackedBytes": 14591130
+    },
+    "hostTypeScriptOnly": {
+      "commit": "2ffc2072c224670acd4e726b9186e56c6a14fa03",
+      "bytes": 661433,
+      "unpackedBytes": 2592985
+    },
+    "current": {
+      "bytes": 584718,
+      "unpackedBytes": 2312282,
+      "sha256": "a3814c80ccb453d343f00672418151954be6ff125be56de9cbe9a2930eccbcdc",
+      "chunks": [
+        {
+          "name": "extension/dist/extension.cjs",
+          "bytes": 428230,
+          "compressedBytes": 110412
+        },
+        {
+          "name": "extension/dist/standalone-BvzhwPAo.cjs",
+          "bytes": 1426622,
+          "compressedBytes": 327704
+        },
+        {
+          "name": "extension/node_modules/@swiftuijs/twill-vscode-tsserver/dist/index.cjs",
+          "bytes": 340934,
+          "compressedBytes": 98584
+        }
+      ]
+    },
+    "activationEntryBytes": 428230,
+    "activationEntryReferenceBytes": 1997182,
+    "note": "Byte reductions and cold formatter cache checks do not establish extension activation latency or runtime RSS."
+  },
+  "packages": [
+    {
+      "name": "twill",
+      "beforeBytes": 625013,
+      "afterBytes": 502260,
+      "changedFiles": [
+        "package/dist/cli.js",
+        "package/dist/cli.js.map",
+        "package/dist/compiler-CjBRt50t.js",
+        "package/dist/declarations-DXtb1AHP.js",
+        "package/dist/declarations-DXtb1AHP.js.map",
+        "package/dist/declarations.js",
+        "package/dist/declarations.js.map",
+        "package/dist/doctor-BHwU_YBw.js",
+        "package/dist/doctor-BHwU_YBw.js.map",
+        "package/dist/doctor.js",
+        "package/dist/doctor.js.map",
+        "package/dist/transpile-yriN2q3I.js",
+        "package/dist/typescript-plugin.cjs",
+        "package/dist/typescript-plugin.cjs.map"
+      ],
+      "sameFileContents": false,
+      "sha256": "1b567dfed3d3b5cde51ddc5a64e395ccac242d0e8ede3278e58c44bbf6ffe374"
+    },
+    {
+      "name": "twill-formatter",
+      "beforeBytes": 20424,
+      "afterBytes": 20424,
+      "changedFiles": [],
+      "sameFileContents": true,
+      "sha256": "ef47e7607478f76ffccc57e753f74cac9252f705a9e58b7f05cab7df6f90ad73"
+    },
+    {
+      "name": "twill-linter",
+      "beforeBytes": 12130,
+      "afterBytes": 12102,
+      "changedFiles": [
+        "package/dist/index.js",
+        "package/dist/index.js.map",
+        "package/dist/positions.d.ts.map"
+      ],
+      "sameFileContents": false,
+      "sha256": "dbd6e4369c2a588a9c235beaddec8d965547a7d815d3d80f12d6a10cef9aa09a"
+    },
+    {
+      "name": "twill-export",
+      "beforeBytes": 13515,
+      "afterBytes": 13527,
+      "changedFiles": [
+        "package/dist/cli.d.ts.map",
+        "package/dist/cli.js",
+        "package/dist/cli.js.map",
+        "package/package.json"
+      ],
+      "sameFileContents": false,
+      "sha256": "dd1dce993f534f8ab1cef11a4cc659d8dfb1a573f75086cf1310ac5e4e041bc7",
+      "note": "The 12-byte archive increase is retained for deferred command loading; metadata is structurally equal."
+    },
+    {
+      "name": "twill-highlight",
+      "beforeBytes": 9726,
+      "afterBytes": 9726,
+      "changedFiles": [],
+      "sameFileContents": true,
+      "sha256": "66aaebea8d8695764c88b8382e2a0b303b085e8460e490c59edf72a883528fc9"
+    },
+    {
+      "name": "twill-runtime",
+      "beforeBytes": 3291,
+      "afterBytes": 3291,
+      "changedFiles": [],
+      "sameFileContents": true,
+      "sha256": "aafb5b3eb16f55c230f4e603796db34b08ee5149b95a6f18aceb31e5cecb3a79"
+    },
+    {
+      "name": "twill-shell",
+      "beforeBytes": 16284,
+      "afterBytes": 16285,
+      "changedFiles": ["package/package.json"],
+      "sameFileContents": false,
+      "sha256": "b0875c450ea4ce6f5ad3756888ed40d78de574daf4ea0585d7ecfb5178d9f742",
+      "note": "Runtime files are byte-identical; package.json differs only in key order and is structurally equal."
+    }
+  ],
+  "documentationWorker": {
+    "baselineCommit": "523cb99d0ed00f2a12d350730991bf1108b0a2ee",
+    "before": {
+      "bytes": 1199505,
+      "gzipBytes": 340876,
+      "sha256": "6ddbf88226ea2c2836d36f53f45cabeff83413b1f53083abe3d633c90de77e56"
+    },
+    "after": {
+      "bytes": 1079652,
+      "gzipBytes": 306154,
+      "sha256": "6e25fcb9396d93b3fedaa09b6a5c190cc6adb229b595ca69ad13374e5ee93567"
+    },
+    "gzipMethod": "Python gzip.compress, level 9, mtime=0"
+  },
+  "measurements": {
+    "cpuAffinity": "taskset -c 0",
+    "runtime": "Node 22.23.4",
+    "cli": "packages/twill/benchmarks/results/cli-startup-2026-11-04.json",
+    "lint": "packages/linter/benchmarks/results/positions-2026-11-04.json"
+  }
+}
