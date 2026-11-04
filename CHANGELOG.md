@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+## 0.4.0
+
 - Align identifier/destructured guard bindings with branch bindings using strict null/undefined checks and shadow-safe `void 0`. Only the legacy browser `document.all` edge changes from published 0.3.1; authored conditions, one-time evaluation, destructuring and defer cleanup retain their contracts.
 
-- Audit shared generated output: reuse safe existing scopes for branch bindings and returned switch/match expressions, remove dummy exhaustiveness casts and duplicate callback grouping, and compact explicit value-return callbacks/render props. Preserve snapshots, per-arm bindings, eval isolation, mappings and actual exhaustiveness checking. Correct released playground feature labels and make the Vue component example explicitly use lazy function slots.
+- Audit shared generated output: reuse safe existing scopes for branch bindings and returned switch/match expressions, remove dummy exhaustiveness casts and duplicate callback grouping, and compact explicit value-return callbacks/render props. Preserve snapshots, per-arm bindings, eval isolation, mappings and actual exhaustiveness checking. Correct released playground feature labels and make the Vue component example explicitly use lazy function slots. Exhaustiveness constraint failures now report native TS2344 rather than TS1360; descriptor validation retains its existing checks.
 
 - Add the opt-in Vue `vueDefaultSlot: "function"` representation across compiler/project and build-adapter options. Preserve compatible object output by default and whenever named slots are present; synchronize configuration schemas, editor inspection, script cache invalidation and guidance.
 

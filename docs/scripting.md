@@ -37,11 +37,11 @@ Install the compiler locally. These commands pin 0.3.1 so the installed runner m
 ::: code-group
 
 ```sh [npm]
-npm install --save-dev @swiftuijs/twill@0.3.1
+npm install --save-dev @swiftuijs/twill@0.4.0
 ```
 
 ```sh [pnpm]
-pnpm add -D @swiftuijs/twill@0.3.1
+pnpm add -D @swiftuijs/twill@0.4.0
 ```
 
 :::
@@ -116,7 +116,7 @@ The shebang is `#!/usr/bin/env twill` with an ASCII `#!` at the very start of th
 For a standalone script that you want to run directly from your terminal, install the compiler globally:
 
 ```sh
-npm install --global @swiftuijs/twill@0.3.1
+npm install --global @swiftuijs/twill@0.4.0
 twill --help
 twill hello.twill 'hello world'
 ```
@@ -139,11 +139,11 @@ In the same project, install the SDK as a production dependency. Keep it on the 
 ::: code-group
 
 ```sh [npm]
-npm install @swiftuijs/twill-shell@0.3.1
+npm install @swiftuijs/twill-shell@0.4.0
 ```
 
 ```sh [pnpm]
-pnpm add @swiftuijs/twill-shell@0.3.1
+pnpm add @swiftuijs/twill-shell@0.4.0
 ```
 
 :::

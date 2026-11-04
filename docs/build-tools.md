@@ -7,7 +7,7 @@ description: 'Integrate Twill with Vite, Rollup, webpack, Rspack and esbuild whi
 
 Install `@swiftuijs/twill` as a development dependency in your application. Select the adapter for your existing bundler. Native TS/JS and Twill can share the graph; no component lists, wrapping APIs or Twill config file are needed.
 
-Run `npm install --save-dev @swiftuijs/twill@0.3.1` or `pnpm add -D @swiftuijs/twill@0.3.1` from the application's directory containing `package.json`. Keep the host bundler and its existing scripts installed. For a new project, [getting started](./getting-started.md#build-with-vite) includes a complete Vite entry, configuration and run/build commands. The examples below show how to add Twill to an existing host setup.
+Run `npm install --save-dev @swiftuijs/twill@0.4.0` or `pnpm add -D @swiftuijs/twill@0.4.0` from the application's directory containing `package.json`. Keep the host bundler and its existing scripts installed. For a new project, [getting started](./getting-started.md#build-with-vite) includes a complete Vite entry, configuration and run/build commands. The examples below show how to add Twill to an existing host setup.
 
 The [optional runtime](./runtime.md) in 0.2.0 reads `runtime` from the common project configuration, or from the adapter options. External cleanup requires the runtime as a production dependency; inline remains the default.
 
@@ -140,11 +140,13 @@ Relative extensionless imports are resolved by default. `resolveExtensions: fals
 
 Use normal tsconfig or file-level `@jsxImportSource` settings to choose the JSX runtime. Keep language settings consistent between the build and checker; ad hoc build-only overrides can otherwise make editor types differ from emitted code.
 
-## Vue default-slot output (unreleased)
+<a id="vue-default-slot-output-unreleased"></a>
 
-The source compiler's `vueDefaultSlot: "object" | "function"` setting selects the default-slot representation for Vue component closures. Published 0.3.1 predates it. Prefer `{ "vueDefaultSlot": "function" }` in your application's `twill.config.json` so builds, checking, editor inspection and scripts share the setting.
+## Vue default-slot output (0.4.0)
 
-Each adapter also accepts `twill({ vueDefaultSlot: 'function' })`. Explicit adapter options override project configuration; omit an override to inherit it. The default is `"object"`. Named slots always retain the complete object. Function mode requires actual components or compatible Vue native-tag handling; Vue 3.3 native tags are incompatible with that shorthand. See [Vue representation and examples](./frameworks.md#choose-the-vue-default-slot-representation-unreleased).
+Twill 0.4.0's `vueDefaultSlot: "object" | "function"` setting selects the default-slot representation for Vue component closures. Prefer `{ "vueDefaultSlot": "function" }` in your application's `twill.config.json` so builds, checking, editor inspection and scripts share the setting.
+
+Each adapter also accepts `twill({ vueDefaultSlot: 'function' })`. Explicit adapter options override project configuration; omit an override to inherit it. The default is `"object"`. Named slots always retain the complete object. Function mode requires actual components or compatible Vue native-tag handling; Vue 3.3 native tags are incompatible with that shorthand. See [Vue representation and examples](./frameworks.md#vue-default-slot-representation).
 
 ## Node ESM
 

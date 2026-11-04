@@ -7,7 +7,7 @@ description: 'Understand generated JavaScript costs, compiler and editor work, s
 
 Twill compiles to ordinary JavaScript. Its performance depends on the emitted code, compilation workflow and optional libraries you use. This guide explains where costs arise and how to evaluate them in your application.
 
-The behavior described here applies to the 0.3.1 toolchain. Measurements below retain their original version and environment; they are examples of particular workloads, not new measurements of every 0.3.1 application.
+The behavior described here applies to the 0.4.0 toolchain. Measurements below retain their original version and environment; they are examples of particular workloads, not new measurements of every 0.4.0 application.
 
 | What you use                              | Where costs arise                                                                         | What to inspect                                            |
 | ----------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -123,8 +123,10 @@ The [benchmark archive](./benchmark-history.md) preserves the original compiler,
 
 Correctness and generated-output budgets are enforced separately from timing observations. Controlled-host timing targets are not portable guarantees across CI runners. Reproduction instructions are in the archive and the [contributor guide](https://github.com/swiftuijs/twill/blob/main/docs/contributing/tooling.md#benchmark-changes).
 
-## Shared emission cleanup (unreleased)
+<a id="shared-emission-cleanup-unreleased"></a>
 
-The source compiler emits simple expression callbacks/render props/Vue slots and single explicit value-return callbacks/render props as concise arrows and eligible React JSX children as native nested JSX. Branch bindings and returned match/switch expressions reuse an existing braced scope where direct eval (including captured eval) cannot observe the change, even after preceding statements; eligible implicit callback returns use native branches without another IIFE. General expression and direct-eval boundaries, required cleanup functions, subject/tag snapshots, per-arm lexical scopes and erased type witnesses remain.
+## Shared emission cleanup (0.4.0)
 
-The canonical playground examples share one regression suite through the actual public compiler and generated-code formatter. Native differential execution, framework rendering, source mappings, strict checking and the existing minified-output budgets validate the cleanup. No runtime speedup or broad byte-parity claim follows from fewer TSX braces. These source changes are not included in published 0.3.1.
+Twill 0.4.0 emits simple expression callbacks/render props/Vue slots and single explicit value-return callbacks/render props as concise arrows and eligible React JSX children as native nested JSX. Branch bindings and returned match/switch expressions reuse an existing braced scope where direct eval (including captured eval) cannot observe the change, even after preceding statements; eligible implicit callback returns use native branches without another IIFE. General expression and direct-eval boundaries, required cleanup functions, subject/tag snapshots, per-arm lexical scopes and erased type witnesses remain.
+
+The canonical playground examples share one regression suite through the actual public compiler and generated-code formatter. Native differential execution, framework rendering, source mappings, strict checking and the existing minified-output budgets validate the cleanup. No runtime speedup or broad byte-parity claim follows from fewer TSX braces. These emission changes require 0.4.0 or newer; earlier timing reports above retain their original versions.

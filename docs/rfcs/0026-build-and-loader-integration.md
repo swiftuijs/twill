@@ -21,9 +21,9 @@ Host adapters pass module/runtime options into the same compiler and TS lowering
 
 Precompile to native sources or use RFC 0028's export when a host lacks an adapter. Vue SFC and arbitrary SSR-framework integration are outside the compiler contract. Standard native files must retain their parser meaning.
 
-## Development-mode amendment (unreleased)
+## Development-mode amendment (0.3.1)
 
-The adapters already exist in 0.1.2. This amendment specifies configuration freshness and real-host development validation; it does not add another language feature or claim the fixes are published.
+The adapters already exist in 0.1.2. The configuration-freshness and real-host development contracts in this amendment are available in 0.3.1; they do not add another language feature.
 
 Rollup watch, Webpack/Rspack watch and esbuild contexts must rebuild changed dialect and native dependencies, report a failed compilation, and recover after correction without recreating the plugin. Each build reads the current project configuration once, before module transforms. Explicit adapter options retain precedence. Configuration dependencies include inherited tsconfigs and optional project configs; creating, editing or deleting them must invalidate affected transforms. Track dependencies before compilation so failed source edits can recover.
 
