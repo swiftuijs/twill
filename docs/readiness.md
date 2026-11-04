@@ -48,7 +48,7 @@ The checker caches unchanged snapshots and transforms. Disk edits refresh affect
 
 A [pinned React core source study](react-source.md) additionally exercises real framework modules, dev/prod contracts and ReactDOM compatibility. It does not cover a complete framework rewrite, upstream test suite or typed team pilot.
 
-Representative native/dialect application bundles are checked for behavior parity and documented byte budgets. Release tarballs and the VSIX have enforced compressed size budgets. Published 0.4.0 includes one pinned engine shared on disk by both editor hosts. Unreleased editor builds instead reuse VS Code's engine/standard libraries and the native TS-server-supplied engine, with a 768 KiB compressed budget. Both minimum and stable editor hosts validate the extracted VSIX without workspace symlinks. The CLI retains its TypeScript 5.9 baseline.
+Representative native/dialect application bundles are checked for behavior parity and documented byte budgets. Release tarballs and the VSIX have enforced compressed size budgets. Editor 0.4.0 included one pinned engine shared on disk by both editor hosts. Starting with 0.4.1, the editor reuses VS Code's engine/standard libraries and the native TS-server-supplied engine, with a 768 KiB compressed budget. Both minimum and stable editor hosts validate the extracted VSIX without workspace symlinks. The CLI retains its TypeScript 5.9 baseline.
 
 ## Adoption and source export
 

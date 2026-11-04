@@ -29,7 +29,7 @@ Checking generated files with native tsc is an alternative but loses original so
 
 Retrospective specification; broader refactors require a separate amendment.
 
-## Host TypeScript amendment (source implementation, unreleased)
+## Host TypeScript amendment (implemented in 0.4.1)
 
 The VS Code extension reuses the TypeScript engine and standard-library declarations installed with the built-in `vscode.typescript-language-features` extension. Resolve that engine relative to the built-in extension's installation, including remote extension hosts; do not load executable code from a project's `typescript.tsdk` setting. The existing extension dependency guarantees the built-in extension is available. The CLI and npm compiler retain their independently installed TypeScript dependency and 5.9 baseline; the dialect parser's supported syntax does not expand when the editor ships a newer engine.
 

@@ -358,9 +358,11 @@ The report preserves memory, filesystem, cancellation and cold observations alon
 
 The [final 0.2.0 shell recheck](https://github.com/swiftuijs/twill/blob/v0.2.0/packages/shell-native/benchmarks/results/release-final-linux-node24.json) retains a complete run after the Mac exit-race and unnamed-signal fixes. All seven warm workloads and both default-pool gates pass without changing sample counts or limits. Native launch/capture/input ratios are 0.555–0.679, Node interpreter launch is 0.948, and 32/128-child concurrency medians are 0.975/0.992 (upper 95% bounds 0.998/0.997). This is Linux readiness-path evidence; the report retains separate cold, memory, cancellation and filesystem observations, and establishes no universal or external-command speedup.
 
-## Unreleased toolchain optimization
+<a id="unreleased-toolchain-optimization"></a>
 
-These are source-build diagnostics against published 0.4.0, not a claim that a newer version has shipped. [Artifact identities and all package comparisons](https://github.com/swiftuijs/twill/blob/main/docs/benchmarks/toolchain-optimization.json) retain byte sizes and SHA-256 hashes. Both minimum VS Code 1.95.3 / TS 5.6.3 and stable VS Code 1.144.0 / TS 6.0.3 run the extracted VSIX, including cold/deferred formatter loading and the original coverage gates.
+## Toolchain optimization
+
+These optimizations ship in 0.4.1. The following diagnostics compare the pre-release source build at `18cc8e4` against published 0.4.0. Original measurements are retained unchanged; their byte counts and hashes do not describe rebuilt 0.4.1 release artifacts. [Artifact identities and all package comparisons](https://github.com/swiftuijs/twill/blob/main/docs/benchmarks/toolchain-optimization.json) retain byte sizes and SHA-256 hashes. Both minimum VS Code 1.95.3 / TS 5.6.3 and stable VS Code 1.144.0 / TS 6.0.3 run the extracted VSIX, including cold/deferred formatter loading and the original coverage gates.
 
 | Artifact                             |  Published 0.4.0 |    Source build |
 | ------------------------------------ | ---------------: | --------------: |
