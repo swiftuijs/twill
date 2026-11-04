@@ -13,7 +13,7 @@
     "test": "node tests/test-editor.mjs",
     "test:unit": "vitest run",
     "test:watch": "vitest",
-    "test:coverage:host": "c8 --exclude-after-remap --check-coverage --statements=98 --lines=98 --functions=100 --branches=95 --extension=.twill --include=\"**/extension.twill\" --extension=.ts --extension=.js --extension=.cjs --reporter=text --reporter=json --reporter=json-summary --reporter=html node tests/test-editor.mjs && node tests/verify-coverage.mjs",
+    "test:coverage:host": "c8 --exclude-after-remap --check-coverage --statements=98 --lines=98 --functions=100 --branches=95 --extension=.twill --include=\"**/extension.twill\" --include=\"**/typescript.twill\" --extension=.ts --extension=.js --extension=.cjs --reporter=text --reporter=json --reporter=json-summary --reporter=html node tests/test-editor.mjs && node tests/verify-coverage.mjs",
     "package:built": "pnpm verify && node scripts/package-editor.mjs && node tests/verify-vsix.mjs"
   },
   "publisher": "forth-ink",

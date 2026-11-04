@@ -78,12 +78,7 @@ export function activate(context: vscode.ExtensionContext) {
       project = new TwillProject(
         config ?? join(root, 'tsconfig.json'),
         {},
-        {
-          inferred: true,
-          recover: true,
-          defaultLibFileName: (options) =>
-            join(context.extensionPath, 'dist/typescript-lib', ts.getDefaultLibFileName(options)),
-        },
+        { inferred: true, recover: true },
       );
       projects.set(root, project);
       for (const open of vscode.workspace.textDocuments) {

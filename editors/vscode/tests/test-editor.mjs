@@ -42,6 +42,9 @@ mkdirSync(runtimePackage, { recursive: true });
 cpSync('packages/runtime/dist', join(runtimePackage, 'dist'), { recursive: true });
 cpSync('packages/runtime/package.json', join(runtimePackage, 'package.json'));
 const fixture = {
+  // A workspace package must never supply executable editor-assistance code.
+  'node_modules/typescript/package.json': JSON.stringify({ name: 'typescript', main: 'index.js' }),
+  'node_modules/typescript/index.js': 'throw new Error("Workspace TypeScript must not be loaded");',
   'tsconfig.json': JSON.stringify({
     compilerOptions: {
       strict: true,
@@ -88,7 +91,11 @@ const fixture = {
   'broken.twill': 'export const values = [1].map { value in value + };\n',
   'temporary.twill': 'export const value = 42;\n',
 };
-for (const [name, text] of Object.entries(fixture)) writeFileSync(join(workspace, name), text);
+for (const [name, text] of Object.entries(fixture)) {
+  const target = join(workspace, name);
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, text);
+}
 await build({
   ...nodeViteConfig({
     entry: resolve('editors/vscode/tests/host.ts'),

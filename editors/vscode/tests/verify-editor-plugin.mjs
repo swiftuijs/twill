@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { stageTypeScriptPlugin } from '../scripts/stage-tsserver.mjs';
 
 process.chdir(fileURLToPath(new URL('../../../', import.meta.url)));
-// Resolve the external pinned TypeScript engine from the owning extension.
+// The bridge receives its TypeScript instance from the real TS server.
 mkdirSync('editors/vscode/.twill', { recursive: true });
 const root = mkdtempSync(resolve('editors/vscode/.twill/tsserver-probe-'));
 try {

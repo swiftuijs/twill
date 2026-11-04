@@ -29,6 +29,8 @@ Include dialect files in your normal tsconfig, for example `"include": ["src/**/
 
 The editor supports common incomplete input, but arbitrary malformed syntax can interrupt semantic assistance. General refactoring and fix-all are unavailable; unmappable edits are withheld. Use `twill check` for whole-project checks.
 
+**Unreleased editor builds:** Twill reuses VS Code's built-in TypeScript engine and standard libraries, so no separate TypeScript installation is needed for editor assistance. The native TS/JS bridge follows its TS server's engine. Editor diagnostics can vary with VS Code's TypeScript version; `twill check` uses the compiler package's own dependency and remains the build/CI check. Published 0.4.0 still bundles TypeScript 5.9.3. This packaging change does not expand Twill's documented parser syntax.
+
 ### Format on save
 
 The VSIX includes a formatter. Add this to `.vscode/settings.json` to select it explicitly:

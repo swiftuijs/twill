@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reuse VS Code's built-in TypeScript engine and standard-library declarations instead of shipping duplicate copies. The native TS-server bridge uses its host-provided engine; standalone Twill editor providers resolve only from the built-in extension, never workspace executable configuration. Keep the CLI's independent TypeScript dependency and validate minimum/current packaged editor hosts.
+
 ## 0.4.0
 
 - Align identifier/destructured guard bindings with branch bindings using strict null/undefined checks and shadow-safe `void 0`. Only the legacy browser `document.all` edge changes from published 0.3.1; authored conditions, one-time evaluation, destructuring and defer cleanup retain their contracts.

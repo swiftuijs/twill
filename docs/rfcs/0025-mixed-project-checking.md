@@ -28,3 +28,11 @@ Checking generated files with native tsc is an alternative but loses original so
 ## Decision history
 
 Retrospective specification; broader refactors require a separate amendment.
+
+## Host TypeScript amendment (source implementation, unreleased)
+
+The VS Code extension reuses the TypeScript engine and standard-library declarations installed with the built-in `vscode.typescript-language-features` extension. Resolve that engine relative to the built-in extension's installation, including remote extension hosts; do not load executable code from a project's `typescript.tsdk` setting. The existing extension dependency guarantees the built-in extension is available. The CLI and npm compiler retain their independently installed TypeScript dependency and 5.9 baseline; the dialect parser's supported syntax does not expand when the editor ships a newer engine.
+
+The native TS-server bridge uses the `typescript` instance passed to its plugin initializer, including when VS Code selects a workspace TS server. Its bundled project/editor imports must use that same instance. Initialize the bridge bundle inside the plugin factory so top-level TypeScript enum references are evaluated only after the host engine exists. Keep each initializer's module state isolated; do not patch Node's resolver or store an engine in process-global state.
+
+Remove the engine and declaration copies from the VSIX. This reduces installation/download bytes, but does not by itself eliminate either host's language-service instance or establish lower runtime memory. Preserve mixed-file diagnostics, mappings, completion, navigation, formatting, debugging and unsaved overlays. Validate the actual extracted VSIX in the minimum supported VS Code 1.95.3 (TypeScript 5.6) and current stable hosts, and exercise the bridge with real TS-server protocol probes. Arbitrary workspace engine versions remain outside the guaranteed compatibility range. Packaging rejects accidentally reintroduced engine/declaration copies and keeps its compressed size budget.

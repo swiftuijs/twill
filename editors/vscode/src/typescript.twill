@@ -1,0 +1,9 @@
+import type ts from 'typescript';
+import { extensions } from 'vscode';
+import { createRequire } from 'node:module';
+import { join } from 'node:path';
+
+// Resolve from the built-in extension, never from an untrusted workspace.
+// extensionDependencies guarantees this extension is installed in our host.
+const native = extensions.getExtension('vscode.typescript-language-features')!;
+export default createRequire(join(native.extensionPath, 'package.json'))('typescript') as typeof ts;
