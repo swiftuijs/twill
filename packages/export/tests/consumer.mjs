@@ -1,5 +1,13 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, readFileSync, rmSync, mkdirSync, existsSync } from 'node:fs';
+import {
+  mkdtempSync,
+  writeFileSync,
+  readFileSync,
+  rmSync,
+  mkdirSync,
+  existsSync,
+  renameSync,
+} from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
@@ -57,6 +65,15 @@ try {
   ];
   const help = run([command[0], 'export', '--help']);
   assert(help.includes('twill export'));
+  const hiddenDependencies = ['typescript', 'acorn', 'prettier'].map((name) =>
+    join(root, 'node_modules', name),
+  );
+  for (const path of hiddenDependencies) renameSync(path, path + '.unavailable');
+  try {
+    assert(run([command[0], 'export', '--help']).includes('twill export'));
+  } finally {
+    for (const path of hiddenDependencies) renameSync(path + '.unavailable', path);
+  }
   const exporterMetadata = JSON.parse(
     readFileSync(join(root, 'node_modules/@swiftuijs/twill-export/package.json'), 'utf8'),
   );

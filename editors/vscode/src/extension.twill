@@ -9,7 +9,6 @@ import {
 } from '@swiftuijs/twill/project';
 import { isTwillFile } from '@swiftuijs/twill';
 import { TwillEditor, type SourceEdit } from '@swiftuijs/twill/editor';
-import { format, formatGenerated } from '@swiftuijs/twill-formatter/standalone';
 import { inspectProject } from '@swiftuijs/twill/doctor';
 
 const languages = ['twill-typescript', 'twill-tsx'];
@@ -258,6 +257,7 @@ export function activate(context: vscode.ExtensionContext) {
       async provideDocumentFormattingEdits(document, options, token) {
         const version = document.version;
         try {
+          const { format } = await import('@swiftuijs/twill-formatter/standalone');
           const text = await format(document.getText(), {
             filepath: document.fileName,
             tabWidth: options.tabSize,
@@ -630,6 +630,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (result) {
         let content = result.code;
         try {
+          const { formatGenerated } = await import('@swiftuijs/twill-formatter/standalone');
           content = await formatGenerated(content, {
             filepath: source.fileName.replace(/\.twillx$/, '.tsx').replace(/\.twill$/, '.ts'),
           });

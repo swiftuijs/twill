@@ -5,9 +5,10 @@ export class SourcePositions {
 
   constructor(text: string) {
     const breaks = /\r\n|[\n\r\u2028\u2029]/g;
-    while (breaks.exec(text)) this.native.push(breaks.lastIndex);
-    for (let index = 0; index < text.length; index++)
-      if (text[index] === '\n') this.mapped.push(index + 1);
+    while (breaks.exec(text)) {
+      this.native.push(breaks.lastIndex);
+      if (text[breaks.lastIndex - 1] === '\n') this.mapped.push(breaks.lastIndex);
+    }
   }
 
   private position(starts: number[], offset: number) {

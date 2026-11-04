@@ -1,6 +1,5 @@
 import { parseArgs } from 'node:util';
 import { resolve } from 'node:path';
-import { exportProject } from './index.twill';
 
 export async function main(args = process.argv.slice(2)): Promise<number> {
   const { values, positionals } = parseArgs({
@@ -22,6 +21,7 @@ export async function main(args = process.argv.slice(2)): Promise<number> {
   guard positionals.length === 0 && values.out else {
     throw new Error('Specify --out <new directory>. Use --help for usage.');
   }
+  const { exportProject } = await import('./index.twill');
   const result = await exportProject(resolve(values.project ?? 'tsconfig.json'), {
     outDir: resolve(values.out),
     dryRun: values['dry-run'],

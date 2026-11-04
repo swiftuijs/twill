@@ -33,6 +33,8 @@ const pluginName = stageTypeScriptPlugin(stage);
 // The bridge executes only in tsserver; ship its loader copy once.
 rmSync(join(stage, 'dist/tsserver.cjs'));
 rmSync(join(stage, 'dist/tsserver.LICENSE.txt'));
+// The complete editor notice is already retained under licenses/editor.txt.
+rmSync(join(stage, 'dist/THIRD_PARTY_LICENSES.txt'));
 manifest.dependencies = { [pluginName]: manifest.version };
 const require = createRequire(import.meta.url);
 writeFileSync(join(stage, 'package.json'), JSON.stringify(manifest, null, 2) + '\n');

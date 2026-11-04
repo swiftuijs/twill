@@ -91,6 +91,15 @@ node packages/twill/benchmarks/startup-profile.mjs > startup-profile-results.jso
 pnpm --filter @swiftuijs/twill test:size --output ../../bundle-results.json
 ```
 
+CLI help/argument-loading and lint line-index diagnostics can be measured separately:
+
+```sh
+node packages/twill/benchmarks/cli-startup.mjs --baseline-cli /path/to/extracted-0.4.0/package/dist/cli.js --output cli-startup.json
+node packages/linter/benchmarks/positions.mjs --output lint-positions.json
+```
+
+Install or link the baseline package's declared dependencies before comparing it. Run without concurrent builds/tests. These diagnostics retain alternating paired samples, source/build identities and environment; they measure cold command dispatch and line-index construction, not whole-project checking/linting or application runtime.
+
 ## Shell SDK contracts
 
 The SDK owns validation, Node spawn/stream coordination and all public real-process contracts. Cover literal argv, PATH, simultaneous stdin/stdout/stderr, byte bounds, statuses/errors, input/environment/cwd snapshots, abort/timeout races, bounded failed teardown, descendant-held pipes, descriptor lifetime and host-pool availability. Boundary injection tests still launch real children and preserve primary/secondary errors. Cooperative worker cancellation and `process.exitCode` after awaited work are tested; the native abrupt-disposal barrier and numeric unnamed-signal guarantee are intentionally retired in the RFC amendment. Do not claim they survive or add a supervisor to simulate them.

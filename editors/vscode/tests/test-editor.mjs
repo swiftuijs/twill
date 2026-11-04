@@ -23,11 +23,14 @@ for (const [name, contents] of files) {
 if (process.env.NODE_V8_COVERAGE) {
   // The VSIX omits development source maps. Supply its matching build map to
   // the coverage collector, without changing a byte of the shipped bundle.
-  const bundle = resolve('editors/vscode/dist/extension.cjs');
-  assert.deepEqual(files.get('extension/dist/extension.cjs'), readFileSync(bundle));
-  const map = JSON.parse(readFileSync(bundle + '.map', 'utf8'));
-  map.sources = map.sources.map((source) => resolve(dirname(bundle), source));
-  writeFileSync(join(root, 'extension/dist/extension.cjs.map'), JSON.stringify(map));
+  for (const [name, contents] of files) {
+    if (!name.startsWith('extension/dist/') || !name.endsWith('.cjs')) continue;
+    const bundle = resolve('editors/vscode', name.slice('extension/'.length));
+    assert.deepEqual(contents, readFileSync(bundle));
+    const map = JSON.parse(readFileSync(bundle + '.map', 'utf8'));
+    map.sources = map.sources.map((source) => resolve(dirname(bundle), source));
+    writeFileSync(join(root, name + '.map'), JSON.stringify(map));
+  }
 }
 const workspace = join(root, 'workspace');
 mkdirSync(workspace, { recursive: true });

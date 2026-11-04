@@ -33,6 +33,8 @@ The editor supports common incomplete input, but arbitrary malformed syntax can 
 
 ### Format on save
 
+Unreleased editor builds load the bundled formatter on the first formatting or generated-preview request. Formatting stays available offline and requires no separate formatter extension.
+
 The VSIX includes a formatter. Add this to `.vscode/settings.json` to select it explicitly:
 
 ```json

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Load the editor formatter only on formatting or generated-preview requests, bundle one Acorn entry in editor/compiler bridge and documentation worker builds, and retain one complete editor license notice. Preserve packaged formatting, source mappings and both host engines.
+- Defer CLI command backends until after help/argument validation, including the optional export backend. Build lint source/native line indexes in one newline scan while preserving CRLF, lone CR, Unicode separators and UTF-16 coordinates. Public APIs, emitted application code and shell process behavior are unchanged.
+
 - Reuse VS Code's built-in TypeScript engine and standard-library declarations instead of shipping duplicate copies. The native TS-server bridge uses its host-provided engine; standalone Twill editor providers resolve only from the built-in extension, never workspace executable configuration. Keep the CLI's independent TypeScript dependency and validate minimum/current packaged editor hosts.
 
 ## 0.4.0
