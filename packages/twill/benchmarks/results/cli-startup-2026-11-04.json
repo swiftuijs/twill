@@ -1,0 +1,361 @@
+{
+  "scope": "Fresh Node process wall time, imports and captured output. One paired warmup, eleven alternating paired samples per command. Compile/check workloads use one small standalone module, not a large project or application/script performance.",
+  "environment": {
+    "node": "v22.23.4",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "gitHead": "18cc8e47964d894aaa7a61496aa07915a2e80c05",
+  "gitStatus": "",
+  "baseline": {
+    "ref": "v0.4.0",
+    "entrySHA256": "51b4024e98c1d86881cde706a9a8968091bbeb7b66dfa1eff55c9a22063d57ff",
+    "buildSHA256": "68d9932607768acf750c5798e7da6c1cce83ec185215b71c365d1ab1404f2a7c"
+  },
+  "current": {
+    "entrySHA256": "e9a2f06ecbf56de53e466f318a08559dd22b0f7767d76da249ab13834235aa3b",
+    "buildSHA256": "7eb15469dc5eb1be8fa1a3981269913c213aca17d64e74449573d261c0a7b792"
+  },
+  "fixture": {
+    "sourceSHA256": "c0742fc53609e3e1ca4f8f425aad74fd78dc70b91e5fc4848df3a33854fd9eb3",
+    "configSHA256": "e66047ea03f8837d002a723bf179ff17a106a5aac84d3174fae8462e9fd4239c"
+  },
+  "results": [
+    {
+      "args": ["--help"],
+      "expectedStatus": 0,
+      "outputSHA256": "a6fa73e5a76a3d7c4660af724f4af9dd46cd33dd8a42609ce3ad39025fde1891",
+      "samples": [
+        {
+          "before": 467.4829749999999,
+          "after": 38.078708000000006
+        },
+        {
+          "after": 40.73646399999984,
+          "before": 504.757069
+        },
+        {
+          "before": 542.7070470000001,
+          "after": 32.220406999999796
+        },
+        {
+          "after": 32.29780400000027,
+          "before": 500.6278150000003
+        },
+        {
+          "before": 495.36249399999997,
+          "after": 27.917921000000206
+        },
+        {
+          "after": 32.98141400000031,
+          "before": 476.03201000000035
+        },
+        {
+          "before": 634.2099079999998,
+          "after": 30.16574000000037
+        },
+        {
+          "after": 29.086111999999957,
+          "before": 506.53269
+        },
+        {
+          "before": 471.5629799999997,
+          "after": 27.545821000000615
+        },
+        {
+          "after": 30.11355099999946,
+          "before": 509.07894300000044
+        },
+        {
+          "before": 665.3211840000004,
+          "after": 29.52835900000082
+        }
+      ],
+      "beforeMedianMs": 504.757069,
+      "afterMedianMs": 30.16574000000037,
+      "medianRatio": 0.05915300841661297
+    },
+    {
+      "args": ["compile", "--help"],
+      "expectedStatus": 0,
+      "outputSHA256": "a6fa73e5a76a3d7c4660af724f4af9dd46cd33dd8a42609ce3ad39025fde1891",
+      "samples": [
+        {
+          "before": 500.80291899999975,
+          "after": 29.197001000000455
+        },
+        {
+          "after": 29.44108099999994,
+          "before": 683.9239020000005
+        },
+        {
+          "before": 526.0109949999987,
+          "after": 37.71633000000111
+        },
+        {
+          "after": 56.42037900000105,
+          "before": 540.3499209999991
+        },
+        {
+          "before": 515.8938880000005,
+          "after": 27.19947200000024
+        },
+        {
+          "after": 29.26973100000032,
+          "before": 688.4471999999987
+        },
+        {
+          "before": 502.7747670000008,
+          "after": 28.563976999999795
+        },
+        {
+          "after": 32.01529899999878,
+          "before": 515.8148399999991
+        },
+        {
+          "before": 486.76689199999964,
+          "after": 28.793555000000197
+        },
+        {
+          "after": 80.9244290000006,
+          "before": 562.2977179999998
+        },
+        {
+          "before": 526.4394319999992,
+          "after": 29.009720000000016
+        }
+      ],
+      "beforeMedianMs": 526.0109949999987,
+      "afterMedianMs": 29.26973100000032,
+      "medianRatio": 0.05830038103272411
+    },
+    {
+      "args": ["--unknown"],
+      "expectedStatus": 1,
+      "outputSHA256": "908bea87c656fcdb816167390cad6d69570469022b0ef8b9d0e36fda4e695aef",
+      "samples": [
+        {
+          "before": 610.6641490000002,
+          "after": 30.59692300000097
+        },
+        {
+          "after": 30.951606000000538,
+          "before": 493.23361300000033
+        },
+        {
+          "before": 627.4786089999998,
+          "after": 28.604450999999244
+        },
+        {
+          "after": 29.792978999999832,
+          "before": 475.9509829999988
+        },
+        {
+          "before": 634.0460050000002,
+          "after": 28.142488000001322
+        },
+        {
+          "after": 29.589391999998043,
+          "before": 492.2387149999995
+        },
+        {
+          "before": 552.6250239999972,
+          "after": 30.46131200000309
+        },
+        {
+          "after": 28.585321999998996,
+          "before": 616.945252999998
+        },
+        {
+          "before": 493.49761299999955,
+          "after": 29.39485500000228
+        },
+        {
+          "after": 31.06240699999762,
+          "before": 572.5993299999973
+        },
+        {
+          "before": 521.8561460000019,
+          "after": 31.112714000002597
+        }
+      ],
+      "beforeMedianMs": 552.6250239999972,
+      "afterMedianMs": 29.792978999999832,
+      "medianRatio": 0.05512112314335452
+    },
+    {
+      "args": [
+        "compile",
+        "/tmp/twill-cli-benchmark-6NPyJW/main.twill",
+        "-p",
+        "/tmp/twill-cli-benchmark-6NPyJW/tsconfig.json"
+      ],
+      "expectedStatus": 0,
+      "outputSHA256": "1f9b10804ea39a1fc256fbc98b0dfd2e8f4367c74a562f35e3e3374a838feee0",
+      "samples": [
+        {
+          "before": 528.7645650000013,
+          "after": 483.67376800000056
+        },
+        {
+          "after": 551.2931150000004,
+          "before": 524.9765490000027
+        },
+        {
+          "before": 535.616023999999,
+          "after": 527.865389999999
+        },
+        {
+          "after": 530.6865859999998,
+          "before": 557.1006310000012
+        },
+        {
+          "before": 525.1930979999997,
+          "after": 464.13050999999905
+        },
+        {
+          "after": 598.3143459999992,
+          "before": 550.1536090000009
+        },
+        {
+          "before": 536.4048919999987,
+          "after": 465.27226000000155
+        },
+        {
+          "after": 469.14571700000306,
+          "before": 631.7549040000013
+        },
+        {
+          "before": 542.2860739999996,
+          "after": 488.1468169999971
+        },
+        {
+          "after": 488.9679060000017,
+          "before": 739.3685100000002
+        },
+        {
+          "before": 694.547928,
+          "after": 491.21803199999704
+        }
+      ],
+      "beforeMedianMs": 542.2860739999996,
+      "afterMedianMs": 488.9679060000017,
+      "medianRatio": 0.900164766170996
+    },
+    {
+      "args": [
+        "compile",
+        "/tmp/twill-cli-benchmark-6NPyJW/main.twill",
+        "-p",
+        "/tmp/twill-cli-benchmark-6NPyJW/tsconfig.json",
+        "--js"
+      ],
+      "expectedStatus": 0,
+      "outputSHA256": "a8bd5f6550f3b16bb420d3c5915cb615d41e2ba9f81c1fb8503ef306be85718f",
+      "samples": [
+        {
+          "before": 573.1454349999985,
+          "after": 562.3738410000005
+        },
+        {
+          "after": 603.701439000004,
+          "before": 709.2304199999999
+        },
+        {
+          "before": 631.6716809999998,
+          "after": 711.0075069999948
+        },
+        {
+          "after": 564.7286869999953,
+          "before": 591.0322210000013
+        },
+        {
+          "before": 634.8928759999981,
+          "after": 614.0694329999969
+        },
+        {
+          "after": 524.6011490000019,
+          "before": 574.0922659999997
+        },
+        {
+          "before": 612.6099809999941,
+          "after": 542.6385309999969
+        },
+        {
+          "after": 562.9170959999974,
+          "before": 595.5944570000065
+        },
+        {
+          "before": 600.8023640000029,
+          "after": 579.869498
+        },
+        {
+          "after": 549.7807089999988,
+          "before": 755.5278309999994
+        },
+        {
+          "before": 611.0150470000008,
+          "after": 561.8160740000021
+        }
+      ],
+      "beforeMedianMs": 611.0150470000008,
+      "afterMedianMs": 562.9170959999974,
+      "medianRatio": 0.9451348805954237
+    },
+    {
+      "args": ["check", "-p", "/tmp/twill-cli-benchmark-6NPyJW/tsconfig.json", "--json"],
+      "expectedStatus": 0,
+      "outputSHA256": "32b591172e8e01cb9579709cbc195d9502b7587d7b54001ab9ce8c14944cf9c5",
+      "samples": [
+        {
+          "before": 1677.4418589999987,
+          "after": 1600.4206049999993
+        },
+        {
+          "after": 1521.1764080000066,
+          "before": 1482.0460559999992
+        },
+        {
+          "before": 1540.228479999998,
+          "after": 1378.5274970000028
+        },
+        {
+          "after": 1489.1234610000029,
+          "before": 1568.6262190000052
+        },
+        {
+          "before": 1693.5589830000026,
+          "after": 1418.1279360000044
+        },
+        {
+          "after": 1504.7335539999913,
+          "before": 1570.9915960000071
+        },
+        {
+          "before": 1545.410308000006,
+          "after": 1535.937281999999
+        },
+        {
+          "after": 1836.844775999998,
+          "before": 1850.6244429999933
+        },
+        {
+          "before": 1619.1958210000012,
+          "after": 1665.9665169999935
+        },
+        {
+          "after": 1356.0864140000049,
+          "before": 1620.0268629999919
+        },
+        {
+          "before": 1514.171416000012,
+          "after": 1724.6532480000023
+        }
+      ],
+      "beforeMedianMs": 1570.9915960000071,
+      "afterMedianMs": 1521.1764080000066,
+      "medianRatio": 0.9578240633694545
+    }
+  ]
+}

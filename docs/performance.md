@@ -42,9 +42,11 @@ The optional `@swiftuijs/twill-runtime` package shares selected dynamic synchron
 
 <a id="application-output-and-distribution-budgets"></a>
 
+<a id="unreleased-toolchain-optimization"></a>
+
 ### Tool downloads and application bundles are different
 
-The compiler, formatter, linter and editor are development tools. Their installed sizes are not application runtime overhead. Your application includes its emitted JavaScript, existing libraries and any runtime or shell package it explicitly imports. CI checks representative emitted-output and distribution budgets separately; those budgets are not a size guarantee for arbitrary applications.
+The compiler, formatter, linter and editor are development tools. Their installed sizes are not application runtime overhead. Your application includes its emitted JavaScript, existing libraries and any runtime or shell package it explicitly imports. Unreleased tooling builds reduce duplicated parser/engine downloads and defer editor formatting and CLI backends. These changes preserve the emitted application code. See the [source-build toolchain comparison](./benchmark-history.md#unreleased-toolchain-optimization) for exact scopes, raw samples and released/source-only boundaries. CI checks representative emitted-output and distribution budgets separately; those budgets are not a size guarantee for arbitrary applications.
 
 <a id="compiler-measurements"></a>
 <a id="mixed-projects-and-editing"></a>
